@@ -11,7 +11,7 @@
 	<groupId>com.grupoeimsa</groupId>
 	<artifactId>sigeim</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>sigeim</name>
+	<name>SIGEIM-BAKEND</name>
 	<description>sistema de gestion de equipos</description>
 	<url/>
 	<licenses>
