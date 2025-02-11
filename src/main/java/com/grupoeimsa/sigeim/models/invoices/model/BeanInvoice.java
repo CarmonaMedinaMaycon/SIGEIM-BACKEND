@@ -1,6 +1,9 @@
 package com.grupoeimsa.sigeim.models.invoices.model;
 
 
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
+import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -46,5 +49,7 @@ public class BeanInvoice {
     @Column(name = "cfdi", nullable = false)
     private String cfdi;
 
+    @OneToOne(mappedBy = "invoice", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    private BeanComputerEquipament computerEquipament;
 
 }

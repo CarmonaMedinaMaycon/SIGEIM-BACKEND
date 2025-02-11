@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.responsives.model;
 
+import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,12 +13,14 @@ import java.util.Date;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "responsives_equipaments")
-public class BeanResponsiveEquipaments {
+@Table(name = "responsives_cellphone")
+public class BeanResponsiveCellphone {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "responsive_equipament_id", updatable = false, nullable = false)
-    private Long responsiveEquipamentId;
+    @Column(name = "responsive_cellphone_id", updatable = false, nullable = false)
+    private Long responsiveCellphoneId;
+
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -57,7 +60,6 @@ public class BeanResponsiveEquipaments {
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "computer_equipament_id", updatable = false)
-    private BeanComputerEquipament computerEquipament;
-
+    @JoinColumn(name = "cellphone_id", updatable = false)
+    private BeanCellphone cellphone;
 }

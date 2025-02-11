@@ -1,7 +1,11 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.model;
 
+import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
+import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
+import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
+import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -72,4 +76,15 @@ public class BeanComputerEquipament {
     @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
     private List<BeanResponsiveEquipaments> responsiveEquipaments;
 
+    @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
+    private List<BeanHistoryPhotosEquipament> historyPhotosEquipament;
+
+    @OneToOne
+    @JoinColumn(name = "invoice_id")
+    private BeanInvoice invoice;
+
+
+    @OneToOne
+    @JoinColumn(name = "person_id", nullable = false)
+    private BeanPerson person;
 }

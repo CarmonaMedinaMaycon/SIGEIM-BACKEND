@@ -30,6 +30,8 @@ public class BeanUser {
     @Column(name = "status", nullable = false)
     private boolean status;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+
+    @OneToOne
+    @JoinColumn(name = "person_id", nullable = false)
     private BeanPerson person;
 }
