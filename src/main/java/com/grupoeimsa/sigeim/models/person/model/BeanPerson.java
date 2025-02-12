@@ -1,7 +1,10 @@
 package com.grupoeimsa.sigeim.models.person.model;
 
+import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
+import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.licenses.model.BeanLicenses;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -38,6 +41,15 @@ public class BeanPerson {
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanComputerEquipament computerEquipament;
+
+    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    private BeanLicenses licenses;
+
+    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    private BeanAccessCard accessCard;
+
+    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    private BeanAssets assets;
 
 
 }

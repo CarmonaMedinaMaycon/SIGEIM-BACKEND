@@ -1,5 +1,7 @@
 package com.grupoeimsa.sigeim.models.cellphones.model;
 
+import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosAssets;
+import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosCellphone;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCellphone;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
@@ -46,6 +48,10 @@ public class BeanCellphone {
 
     @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)
     private List<BeanResponsiveCellphone> responsiveCellphones;
+
+
+    @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)
+    private List<BeanHistoryPhotosCellphone> historyPhotosCellphones;
 
 
 }
