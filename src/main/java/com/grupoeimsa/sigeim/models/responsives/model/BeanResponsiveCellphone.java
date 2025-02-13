@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @NoArgsConstructor
@@ -21,7 +22,6 @@ public class BeanResponsiveCellphone {
     @Column(name = "responsive_cellphone_id", updatable = false, nullable = false)
     private Long responsiveCellphoneId;
 
-
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -35,7 +35,7 @@ public class BeanResponsiveCellphone {
     private String position;
 
     @Column(name = "date", nullable = false)
-    private Date date;
+    private LocalDate date;
 
     @Column(name = "description")
     private String description;
@@ -60,6 +60,6 @@ public class BeanResponsiveCellphone {
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cellphone_id", updatable = false)
+    @JoinColumn(name = "cellphone_id")
     private BeanCellphone cellphone;
 }

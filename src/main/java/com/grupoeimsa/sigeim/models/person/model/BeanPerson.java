@@ -7,9 +7,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEqui
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicenses;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,6 +26,8 @@ public class BeanPerson {
     private String surname;
     @Column(name = "lastname")
     private String lastname;
+    @Column(name = "email")
+    private String email;
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
     @Column(name = "status", nullable = false)

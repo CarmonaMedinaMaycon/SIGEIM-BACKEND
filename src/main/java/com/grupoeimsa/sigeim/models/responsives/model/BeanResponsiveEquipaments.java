@@ -57,7 +57,7 @@ public class BeanResponsiveEquipaments {
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "computer_equipament_id", updatable = false)
+    @JoinColumn(name = "computer_equipament_id")
     private BeanComputerEquipament computerEquipament;
 
 }
