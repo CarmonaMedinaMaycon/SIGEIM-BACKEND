@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.person.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
@@ -37,6 +38,7 @@ public class BeanPerson {
     private BeanUser user;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private BeanCellphone cellphone;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)

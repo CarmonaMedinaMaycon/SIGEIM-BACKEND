@@ -30,13 +30,21 @@ public class PersonService {
         return personRepository.existsByName(name);
     }
 
+
     @Transactional(readOnly = true)
-    public Page<ResponsePersonDTO> findAll(int page, int size) {
+    public Page<ResponsePersonDTO> findAll(String search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BeanPerson> person = personRepository.findAll(pageable);
-        if (person.isEmpty()){
-            throw new CustomException("no person were found");
+
+        Page<BeanPerson> person = personRepository.findAllBySearch(
+                search,
+                true,
+                pageable
+        );
+
+        if (person.isEmpty()) {
+            throw new CustomException("No persons were found");
         }
+
         return person.map(ResponsePersonDTO::new);
     }
 

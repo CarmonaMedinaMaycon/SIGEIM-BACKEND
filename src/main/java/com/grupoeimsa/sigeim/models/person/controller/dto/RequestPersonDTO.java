@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class RequestPersonDTO {
-    private String name;
+    private String search;
     private int page;
     private int size;
 }
