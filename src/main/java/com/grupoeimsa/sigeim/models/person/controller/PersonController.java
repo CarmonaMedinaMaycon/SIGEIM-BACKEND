@@ -2,12 +2,16 @@ package com.grupoeimsa.sigeim.models.person.controller;
 
 import com.grupoeimsa.sigeim.models.person.controller.dto.RequestPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.service.PersonService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/sigeim/person")
@@ -30,5 +34,41 @@ public class PersonController {
         );
     }
 
+    @PostMapping("/one")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
+    public ResponseEntity<ResponsePersonDTO> findOne(@Valid @RequestBody Map<String, String> requestBody){
+        String id = requestBody.get("id");
+        ResponsePersonDTO person = personService.findById(Long.valueOf(id));
+        return new ResponseEntity<>(person, HttpStatus.OK);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@Valid @RequestBody ResponseRegisterPersonDTO responseRegisterPersonDTO){
+        personService.registerPersonal(responseRegisterPersonDTO);
+        return new ResponseEntity<>(
+                "personal registered",
+                        HttpStatus.OK
+        );
+    }
+
+    @PutMapping("/enable-disable")
+    public ResponseEntity<String> enableDisable(@RequestBody Map < String, Object > requestBody){
+        Long id = Long.valueOf(requestBody.get("id").toString());
+        personService.enableDisable(id);
+        return new ResponseEntity<>(
+                "Person status modified",
+                HttpStatus.OK
+        );
+    }
+
+
+    @PutMapping("/update-person")
+    public ResponseEntity<String> updatePerson(@Valid @RequestBody ResponseUpdatePersonDTO responseUpdatePersonDTO){
+        personService.update(responseUpdatePersonDTO);
+        return new ResponseEntity<>(
+                "Person updated",
+                HttpStatus.OK
+        );
+    }
 
 }
