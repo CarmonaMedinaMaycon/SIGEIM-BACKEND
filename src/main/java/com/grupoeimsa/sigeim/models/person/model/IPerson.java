@@ -8,10 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface IPerson extends JpaRepository<BeanPerson, Long> {
-        boolean findByName(String name);
-        boolean findByEmail(String email);
         boolean existsByEmail(String email);
-        boolean existsByName(String name);
 
 
         @Query("SELECT p FROM BeanPerson p WHERE " +

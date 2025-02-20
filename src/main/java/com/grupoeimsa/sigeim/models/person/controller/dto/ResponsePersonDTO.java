@@ -4,7 +4,7 @@ import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
-import com.grupoeimsa.sigeim.models.licenses.model.BeanLicenses;
+import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,7 @@ public class ResponsePersonDTO {
     private BeanUser user;
     private BeanCellphone cellphone;
     private BeanComputerEquipament computerEquipament;
-    private BeanLicenses licenses;
+    private BeanLicense license;
     private BeanAccessCard accessCard;
     private BeanAssets assets;
 
@@ -40,7 +40,7 @@ public class ResponsePersonDTO {
         this.user = beanPerson.getUser();
         this.cellphone = beanPerson.getCellphone();
         this.computerEquipament = beanPerson.getComputerEquipament();
-        this.licenses = beanPerson.getLicenses();
+        this.license = beanPerson.getLicense();
         this.accessCard = beanPerson.getAccessCard();
         this.assets = beanPerson.getAssets();
 

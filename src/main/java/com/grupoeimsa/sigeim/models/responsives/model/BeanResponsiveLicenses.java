@@ -1,6 +1,6 @@
 package com.grupoeimsa.sigeim.models.responsives.model;
 
-import com.grupoeimsa.sigeim.models.licenses.model.BeanLicenses;
+import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -58,6 +58,6 @@ public class BeanResponsiveLicenses {
 
     @OneToOne
     @JoinColumn(name = "licenses_id", nullable = false)
-    private BeanLicenses licenses;
+    private BeanLicense license;
 
 }

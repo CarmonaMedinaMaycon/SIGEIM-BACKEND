@@ -43,6 +43,7 @@ public class PersonController {
     }
 
     @PostMapping("/register")
+    //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
     public ResponseEntity<String> register(@Valid @RequestBody ResponseRegisterPersonDTO responseRegisterPersonDTO){
         personService.registerPersonal(responseRegisterPersonDTO);
         return new ResponseEntity<>(
@@ -52,6 +53,7 @@ public class PersonController {
     }
 
     @PutMapping("/enable-disable")
+    //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
     public ResponseEntity<String> enableDisable(@RequestBody Map < String, Object > requestBody){
         Long id = Long.valueOf(requestBody.get("id").toString());
         personService.enableDisable(id);
@@ -63,6 +65,7 @@ public class PersonController {
 
 
     @PutMapping("/update-person")
+    //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
     public ResponseEntity<String> updatePerson(@Valid @RequestBody ResponseUpdatePersonDTO responseUpdatePersonDTO){
         personService.update(responseUpdatePersonDTO);
         return new ResponseEntity<>(

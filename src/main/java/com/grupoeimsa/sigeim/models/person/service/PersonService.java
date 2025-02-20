@@ -59,36 +59,6 @@ public class PersonService {
         person.setPhoneNumber(responsePersonDTO.getPhoneNumber());
         person.setStatus(true);
         personRepository.save(person);
-
-        if (responsePersonDTO.getIsUser()){
-            //insertar user
-            System.out.println("registrar user");
-        }
-
-        if (responsePersonDTO.getIsCellphone()){
-            //insertar celulares
-            System.out.println("registrar cellphone");
-        }
-
-        if (responsePersonDTO.getIsAccessCard()){
-            //insertar acceso de tarjetas
-            System.out.println("registrar access card");
-        }
-
-        if (responsePersonDTO.getIsLicense()){
-            //insertar licensias
-            System.out.println("registrar license");
-        }
-
-        if(responsePersonDTO.getIsComputerEquipament()){
-            //insertar compus
-            System.out.println("registrar computer equipment");
-        }
-
-        if(responsePersonDTO.getIsAssets()){
-            //insertar activos
-            System.out.println("registrar assets");
-        }
     }
 
     public void enableDisable(Long id){
