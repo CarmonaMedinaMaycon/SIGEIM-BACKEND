@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.controller;
 
 
+import com.grupoeimsa.sigeim.models.licenses.controller.dto.RegisterLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RequestLicensesDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.ResponseLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.service.LicenseService;
@@ -37,6 +38,24 @@ public class LicenseController {
         Long id = Long.valueOf(requestBody.get("id"));
         ResponseLicenseDTO licenseDTO = licenseService.findById(id);
         return new ResponseEntity<>(licenseDTO, HttpStatus.OK);
+    }
+
+    @PostMapping("/assign")
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterLicenseDTO responseLicenseDTO){
+        licenseService.assignLicense(responseLicenseDTO);
+        return new ResponseEntity<>(
+                "Licenses assigned",
+                HttpStatus.CREATED
+        );
+    }
+
+    @PutMapping("/update-assign")
+    public ResponseEntity<String> updateAssign(@Valid @RequestBody RegisterLicenseDTO responseUpdateLicenseDTO){
+        licenseService.editAssignLicense(responseUpdateLicenseDTO);
+        return new ResponseEntity<>(
+                "Licenses updated",
+                HttpStatus.OK
+        );
     }
 
 }

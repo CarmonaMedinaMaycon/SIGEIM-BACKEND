@@ -69,15 +69,13 @@ public class PersonService {
     }
 
     public void update(ResponseUpdatePersonDTO updatePersonDTO) {
-        personRepository.findById(updatePersonDTO.getPersonId())
+        BeanPerson person =  personRepository.findById(updatePersonDTO.getPersonId())
                 .orElseThrow(() -> new CustomException("Person not found"));
-        BeanPerson person = new BeanPerson();
         person.setName(updatePersonDTO.getName());
         person.setSurname(updatePersonDTO.getSurname());
         person.setLastname(updatePersonDTO.getLastname());
         person.setEmail(updatePersonDTO.getEmail());
         person.setPhoneNumber(updatePersonDTO.getPhoneNumber());
-
         personRepository.save(person);
     }
 
