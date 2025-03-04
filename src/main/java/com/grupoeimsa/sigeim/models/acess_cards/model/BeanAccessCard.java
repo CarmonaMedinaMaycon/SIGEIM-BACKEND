@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "responsives_cellphone")
+@Table(name = "access_card")
 public class BeanAccessCard {
 
     @Id

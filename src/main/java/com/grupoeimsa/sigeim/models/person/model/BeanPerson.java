@@ -1,15 +1,14 @@
 package com.grupoeimsa.sigeim.models.person.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
-import com.grupoeimsa.sigeim.models.licenses.model.BeanLicenses;
+import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,6 +27,8 @@ public class BeanPerson {
     private String surname;
     @Column(name = "lastname")
     private String lastname;
+    @Column(name = "email")
+    private String email;
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
     @Column(name = "status", nullable = false)
@@ -37,13 +38,15 @@ public class BeanPerson {
     private BeanUser user;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private BeanCellphone cellphone;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanComputerEquipament computerEquipament;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private BeanLicenses licenses;
+    @JsonManagedReference
+    private BeanLicense license;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanAccessCard accessCard;

@@ -1,10 +1,9 @@
 package com.grupoeimsa.sigeim.models.cellphones.model;
 
-import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosAssets;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosCellphone;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCellphone;
-import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,6 +43,7 @@ public class BeanCellphone {
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonBackReference
     private BeanPerson person;
 
     @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)
