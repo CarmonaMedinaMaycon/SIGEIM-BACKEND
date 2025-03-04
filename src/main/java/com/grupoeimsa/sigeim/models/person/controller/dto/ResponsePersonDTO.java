@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -21,6 +23,13 @@ public class ResponsePersonDTO {
     private String lastname;
     private String email;
     private String phoneNumber;
+    private String departament;
+    private String enterprise;
+    private String position;
+    private String comments;
+    private LocalDate dateStart ;
+    private LocalDate dateEnd ;
+    private LocalDate entryDate ;
     private Boolean status;
     private BeanUser user;
     private BeanCellphone cellphone;
@@ -36,6 +45,13 @@ public class ResponsePersonDTO {
         this.lastname = beanPerson.getLastname();
         this.email = beanPerson.getEmail();
         this.phoneNumber = beanPerson.getPhoneNumber();
+        this.departament = beanPerson.getDepartament();
+        this.enterprise = beanPerson.getEnterprise();
+        this.position = beanPerson.getPosition();
+        this.comments = beanPerson.getComments();
+        this.dateStart = beanPerson.getDateStart();
+        this.dateEnd = beanPerson.getDateEnd();
+        this.entryDate = beanPerson.getEntryDate();
         this.status = beanPerson.getStatus();
         this.user = beanPerson.getUser();
         this.cellphone = beanPerson.getCellphone();

@@ -10,6 +10,9 @@ import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -31,9 +34,22 @@ public class BeanPerson {
     private String email;
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
-    @Column(name = "status", nullable = false)
+    @Column(name="departament", nullable=false)
+    private String departament;
+    @Column(name="enterprise", nullable=false)
+    private String enterprise;
+    @Column(name = "position", nullable = false)
+    private String position;
+    @Column(name="comments", nullable=false)
+    private String comments;
+    @Column(name="dateStart", nullable=false)
+    private LocalDate dateStart ;
+    @Column(name="dateEnd", nullable=false)
+    private LocalDate dateEnd ;
+    @Column(name="entry_date", nullable=false)
+    private LocalDate entryDate ;
+    @Column(name = "status")
     private Boolean status;
-
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanUser user;
 
