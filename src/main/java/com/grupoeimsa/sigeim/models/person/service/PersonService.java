@@ -5,7 +5,6 @@ import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPerson
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
-import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,6 +56,13 @@ public class PersonService {
             throw new CustomException("email already exists");
         }
         person.setPhoneNumber(responsePersonDTO.getPhoneNumber());
+        person.setDepartament(responsePersonDTO.getDepartament());
+        person.setEnterprise(responsePersonDTO.getEnterprise());
+        person.setPosition(responsePersonDTO.getPosition());
+        person.setComments(responsePersonDTO.getComments());
+        person.setDateStart(responsePersonDTO.getDateStart());
+        person.setDateEnd(responsePersonDTO.getDateEnd());
+        person.setEntryDate(responsePersonDTO.getEntryDate());
         person.setStatus(true);
         personRepository.save(person);
     }
@@ -76,6 +82,11 @@ public class PersonService {
         person.setLastname(updatePersonDTO.getLastname());
         person.setEmail(updatePersonDTO.getEmail());
         person.setPhoneNumber(updatePersonDTO.getPhoneNumber());
+        person.setDepartament(updatePersonDTO.getDepartament());
+        person.setEnterprise(updatePersonDTO.getEnterprise());
+        person.setPosition(updatePersonDTO.getPosition());
+        person.setComments(updatePersonDTO.getComments());
+        person.setDateEnd(updatePersonDTO.getDateEnd());
         personRepository.save(person);
     }
 
