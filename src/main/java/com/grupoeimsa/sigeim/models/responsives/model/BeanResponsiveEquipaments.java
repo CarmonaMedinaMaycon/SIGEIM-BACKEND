@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,32 +19,9 @@ public class BeanResponsiveEquipaments {
     @Column(name = "responsive_equipament_id", updatable = false, nullable = false)
     private Long responsiveEquipamentId;
 
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @Column(name = "surname")
-    private String surname;
-
-    @Column(name="departament", nullable=false)
-    private String departament;
-
-    @Column(name = "position", nullable = false)
-    private String position;
 
     @Column(name = "date", nullable = false)
-    private Date date;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "comments")
-    private String comments;
-
-    @Column(name = "delivery_signature", nullable = false)
-    private String deliverySignature;
-
-    @Column(name = "receiver_signature", nullable = false)
-    private String receiverSignature;
+    private LocalDate date;
 
     @Column(name = "equipaments", nullable = false)
     private String equipaments;
@@ -57,7 +34,7 @@ public class BeanResponsiveEquipaments {
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "computer_equipament_id", updatable = false)
+    @JoinColumn(name = "computer_equipament_id")
     private BeanComputerEquipament computerEquipament;
 
 }

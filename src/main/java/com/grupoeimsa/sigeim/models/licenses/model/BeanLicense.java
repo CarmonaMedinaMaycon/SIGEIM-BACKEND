@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveLicenses;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "licenses")
-public class BeanLicenses {
+public class BeanLicense {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -166,9 +167,10 @@ public class BeanLicenses {
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonBackReference
     private BeanPerson person;
 
-    @OneToOne(mappedBy = "licenses", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "license", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanResponsiveLicenses responsiveLicenses;
 
 
