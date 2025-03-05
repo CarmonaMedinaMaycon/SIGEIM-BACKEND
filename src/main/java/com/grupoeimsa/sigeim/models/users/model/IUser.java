@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface IUser extends JpaRepository<BeanUser, Long> {
     Optional<BeanUser> findBeanUserByEmail (String email);
+    boolean existsBeanUserByEmail (String email);
 }
