@@ -7,10 +7,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Entity
 @Table(name = "users")
 public class BeanUser {
     @Id
@@ -29,7 +29,6 @@ public class BeanUser {
 
     @Column(name = "status", nullable = false)
     private boolean status;
-
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
