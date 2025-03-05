@@ -1,6 +1,6 @@
 package com.grupoeimsa.sigeim.models.users.controller;
 
-import com.grupoeimsa.sigeim.models.users.controller.dto.RequestRegisterAdministratorDto;
+import com.grupoeimsa.sigeim.models.users.controller.dto.RequestRegisterUserDto;
 import com.grupoeimsa.sigeim.models.users.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +18,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerAccount(@RequestBody RequestRegisterAdministratorDto request) {
-        String message = userService.registerAdministrator(request);
+    public ResponseEntity<String> registerAccount(@RequestBody RequestRegisterUserDto request) {
+        String message = userService.registerUser(request);
         return ResponseEntity.ok(message);
     }
 }

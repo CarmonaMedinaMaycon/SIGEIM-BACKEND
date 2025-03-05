@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestRegisterAdministratorDto {
+public class RequestRegisterUserDto {
 
     // Datos de la Persona
     private String name;
@@ -16,6 +16,7 @@ public class RequestRegisterAdministratorDto {
     private String email;
     private String phoneNumber;
     private String departament;
+    private Integer role;
     private String enterprise;
     private String position;
     private String password;

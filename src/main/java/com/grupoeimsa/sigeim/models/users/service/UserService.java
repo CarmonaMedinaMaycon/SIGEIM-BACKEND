@@ -2,7 +2,7 @@ package com.grupoeimsa.sigeim.models.users.service;
 
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
-import com.grupoeimsa.sigeim.models.users.controller.dto.RequestRegisterAdministratorDto;
+import com.grupoeimsa.sigeim.models.users.controller.dto.RequestRegisterUserDto;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import com.grupoeimsa.sigeim.models.users.model.ERole;
 import com.grupoeimsa.sigeim.models.users.model.IUser;
@@ -27,7 +27,7 @@ public class UserService {
     }
 
     @Transactional
-    public String registerAdministrator(RequestRegisterAdministratorDto request) {
+    public String registerUser(RequestRegisterUserDto request) {
         if (userRepository.existsBeanUserByEmail(request.getEmail())) {
             throw new CustomException("email already exists");
         }
@@ -51,8 +51,21 @@ public class UserService {
 
         BeanUser newUser = new BeanUser();
         newUser.setEmail(request.getEmail());
-        newUser.setPassword(passwordEncoder.encode(request.getPassword())); // Encriptar contraseña
-        newUser.setRole(ERole.ADMIN);
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        switch (request.getRole()) {
+            case 1:
+                newUser.setRole(ERole.ADMIN);
+                break;
+            case 2:
+                newUser.setRole(ERole.RRHH);
+                break;
+            case 3:
+                newUser.setRole(ERole.GUESS);
+            case 4:
+                newUser.setRole(ERole.BETO);
+            default:
+                throw new CustomException("Role not supported");
+        }
         newUser.setStatus(true);
         newUser.setPerson(savedPerson);
 
