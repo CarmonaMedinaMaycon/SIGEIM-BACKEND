@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -33,13 +34,16 @@ public class BeanCellphone {
     private int shortDialing; //marcacion rapida
 
     @Column(name = "date_renovation", nullable = false)
-    private Date dateRenovation;
+    private LocalDate dateRenovation;
 
     @Column(name = "imei", nullable = false)
     private String imei;
 
     @Column(name = "comments")
     private String comments;
+
+    @Column(name = "status")
+    private Boolean status;
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)

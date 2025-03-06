@@ -67,6 +67,7 @@ public class PersonService {
         personRepository.save(person);
     }
 
+    @Transactional
     public void enableDisable(Long id){
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
@@ -74,6 +75,7 @@ public class PersonService {
         personRepository.save(person);
     }
 
+    @Transactional
     public void update(ResponseUpdatePersonDTO updatePersonDTO) {
         BeanPerson person =  personRepository.findById(updatePersonDTO.getPersonId())
                 .orElseThrow(() -> new CustomException("Person not found"));
