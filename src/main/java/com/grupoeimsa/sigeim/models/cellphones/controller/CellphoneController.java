@@ -45,4 +45,18 @@ public class CellphoneController {
         cellphoneService.registerCellphone(registerCellphone);
         return new ResponseEntity<>("Cellphone registered", HttpStatus.OK);
     }
+
+    @PutMapping("/enable-disable")
+    public ResponseEntity<String> enableDisable(@RequestBody Map<String, Object> requestBody){
+        String id = requestBody.get("id").toString();
+        cellphoneService.enableDisable(Long.valueOf(id));
+        return new ResponseEntity<>("Cellphone modified\n" +
+                "modified", HttpStatus.OK);
+    }
+
+    @PutMapping("/update-cellphone")
+    public ResponseEntity<String> updateCellphone(@RequestBody ResponseRegisterCellphone registerCellphone){
+        cellphoneService.update(registerCellphone);
+        return new ResponseEntity<>("Cellphone updated", HttpStatus.OK);
+    }
 }

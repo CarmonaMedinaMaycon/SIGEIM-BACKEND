@@ -57,5 +57,24 @@ public class CellphoneService {
         cellphoneRepository.save(cellphone);
     }
 
+    @Transactional
+    public void enableDisable(Long id){
+        BeanCellphone cellphone = cellphoneRepository.findById(id).orElseThrow(() -> new CustomException("Person not found"));
+        cellphone.setStatus(!cellphone.getStatus());
+        cellphoneRepository.save(cellphone);
+    }
+
+    @Transactional
+    public void update(ResponseRegisterCellphone registerCellphone) {
+        BeanCellphone cellphone = cellphoneRepository.findById(registerCellphone.getCellphoneId()).orElseThrow(() -> new CustomException("The cellphone was not found"));
+        cellphone.setLegalName(registerCellphone.getLegalName());
+        cellphone.setCompany(registerCellphone.getCompany());
+        cellphone.setShortDialing(registerCellphone.getShortDialing());
+        cellphone.setDateRenovation(registerCellphone.getDateRenovation());
+        cellphone.setImei(registerCellphone.getImei());
+        cellphone.setComments(registerCellphone.getComments());
+        cellphoneRepository.save(cellphone);
+    }
+
 
 }

@@ -98,7 +98,6 @@ public class LicenseService {
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
         license.setPerson(licenseDTO.getPerson());
-        System.out.println(license);
         licensesRepository.save(license);
     }
 
@@ -156,11 +155,6 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
-
-        BeanPerson person = personsRepository.findById(licenseDTO.getPerson().getPersonId())
-                .orElseThrow(() -> new CustomException("Person not found"));
-        license.setPerson(person);
-
         licensesRepository.save(license);
     }
 }
