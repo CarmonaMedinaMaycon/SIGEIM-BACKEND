@@ -2,6 +2,8 @@ package com.grupoeimsa.sigeim.security.controller;
 
 
 import com.grupoeimsa.sigeim.security.controller.dto.RequestAuthDto;
+import com.grupoeimsa.sigeim.security.controller.dto.RequestChangePasswordDto;
+import com.grupoeimsa.sigeim.security.controller.dto.RequestVerificationCodeDto;
 import com.grupoeimsa.sigeim.security.controller.dto.ResponseAuthDto;
 import com.grupoeimsa.sigeim.security.service.UserDetailsServicePer;
 import jakarta.validation.Valid;
@@ -39,6 +41,20 @@ public class AuthController {
                 this.userDetailsServicePer.login(authRequest),
                 HttpStatus.OK
         );
+    }
+
+    @PostMapping("/send-verification-code")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> sendVerificationCode(@RequestBody RequestVerificationCodeDto request) {
+        userDetailsServicePer.sendVerificationCode(request.getEmail());
+        return ResponseEntity.ok("Verification code sent to email");
+    }
+
+    @PostMapping("/change-password-with-code")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> changePasswordWithCode(@RequestBody RequestChangePasswordDto request) {
+        userDetailsServicePer.changePasswordWithCode(request);
+        return ResponseEntity.ok("Password updated successfully");
     }
 
 }

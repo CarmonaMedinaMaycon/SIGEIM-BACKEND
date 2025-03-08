@@ -1,8 +1,10 @@
 package com.grupoeimsa.sigeim.models.users.controller;
 
+import com.grupoeimsa.sigeim.models.users.controller.dto.RequestReActivateAccountDto;
 import com.grupoeimsa.sigeim.models.users.controller.dto.RequestRegisterUserDto;
 import com.grupoeimsa.sigeim.models.users.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,14 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<String> registerAccount(@RequestBody RequestRegisterUserDto request) {
         String message = userService.registerUser(request);
+        return ResponseEntity.ok(message);
+    }
+
+
+    @PostMapping("/reactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> reActivateAccount(@RequestBody RequestReActivateAccountDto request) {
+        String message = userService.reActivateAccount(request);
         return ResponseEntity.ok(message);
     }
 }
