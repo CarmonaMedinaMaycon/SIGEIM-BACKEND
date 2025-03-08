@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -29,10 +31,7 @@ public class BeanComputerEquipament {
     private String serialNumber;
     
     @Column(name="id_esset", nullable = false)
-    private Long idEsset;
-    
-    @Column(name="responsible", nullable = false)
-    private String responsible;
+    private String idEsset;
 
     @Column(name = "departament", nullable = false)
     private String departament;
@@ -40,8 +39,8 @@ public class BeanComputerEquipament {
     @Column(name = "enterprise", nullable = false)
     private String enterprise;
 
-    @Column(name = "mode", nullable = false)
-    private String mode;
+    @Column(name = "work_modality", nullable = false)
+    private String workModality;
 
     @Column(name = "type", nullable = false)
     private String type;
@@ -68,10 +67,31 @@ public class BeanComputerEquipament {
     private String supplier;
 
     @Column(name = "status", nullable = false)
-    private EStatus status;
+    private CEStatus status;
+
+    @Column(name = "has_invoice", nullable = false)
+    private Boolean hasInvoice;
+
+    @Column(name = "invoice_folio", nullable = false)
+    private Long invoiceFolio;
 
     @Column(name = "system_observations", nullable = false)
     private String systemObservations;
+
+    @Column(name = "purchase_date", nullable = false)
+    private LocalDate purchaseDate;
+
+    @Column(name = "creation_date", nullable = false)
+    private LocalDate creationDate;
+
+    @Column(name = "last_update_date")
+    private LocalDate lastUpdateDate;
+
+    @Column(name = "asset_number", nullable = false)
+    private String assetNumber;
+
+    @Column(name = "price", nullable = false)
+    private Double price;
 
     @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
     private List<BeanResponsiveEquipaments> responsiveEquipaments;
@@ -82,7 +102,6 @@ public class BeanComputerEquipament {
     @OneToOne
     @JoinColumn(name = "invoice_id")
     private BeanInvoice invoice;
-
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
