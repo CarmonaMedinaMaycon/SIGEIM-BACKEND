@@ -2,16 +2,22 @@ package com.grupoeimsa.sigeim.models.computing_equipaments.service;
 
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ComputingEquipmentService {
@@ -110,5 +116,70 @@ public class ComputingEquipmentService {
         repository.save(equipment);
         return "Equipo actualizado con éxito";
     }
+
+    public Page<ResponseSeeAllEquipmentsDto> getAllEquipments(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<BeanComputerEquipament> equipmentPage = repository.findAll(pageable);
+
+        return equipmentPage.map(equipment -> {
+            ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
+            dto.setSerialNumber(equipment.getSerialNumber());
+            dto.setIdEsset(equipment.getIdEsset());
+            dto.setResponsibleName(equipment.getPerson().getName() + " " + equipment.getPerson().getSurname());
+            dto.setDepartament(equipment.getDepartament());
+            dto.setType(equipment.getType());
+            dto.setBrand(equipment.getBrand());
+            dto.setEquipmentStatus(equipment.getStatus().toString());
+            return dto;
+        });
+    }
+
+    public List<ResponseSeeAllEquipmentsDto> searchEquipments(ResponseSeeAllEquipmentsDto searchCriteria) {
+        // Convertir equipmentStatus de String a CEStatus
+        CEStatus equipmentStatus = null;
+        if (searchCriteria.getEquipmentStatus() != null) {
+            try {
+                equipmentStatus = CEStatus.valueOf(searchCriteria.getEquipmentStatus());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid status value: " + searchCriteria.getEquipmentStatus());
+            }
+        }
+
+        // Obtener la lista de equipos
+        List<BeanComputerEquipament> equipos = repository.findByFilters(
+                searchCriteria.getSerialNumber(),
+                searchCriteria.getIdEsset(),
+                searchCriteria.getResponsibleName(),
+                searchCriteria.getDepartament(),
+                searchCriteria.getType(),
+                searchCriteria.getBrand(),
+                equipmentStatus
+        );
+
+        // Convertir la lista de BeanComputerEquipament a ResponseSeeAllEquipmentsDto
+        List<ResponseSeeAllEquipmentsDto> result = new ArrayList<>();
+        for (BeanComputerEquipament equipo : equipos) {
+            ResponseSeeAllEquipmentsDto dto = getResponseSeeAllEquipmentsDto(equipo);
+            // Agregar el DTO a la lista de resultados
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    private static ResponseSeeAllEquipmentsDto getResponseSeeAllEquipmentsDto(BeanComputerEquipament equipo) {
+        ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
+        // Mapear los campos de BeanComputerEquipament a ResponseSeeAllEquipmentsDto
+        dto.setSerialNumber(equipo.getSerialNumber());
+        dto.setIdEsset(equipo.getIdEsset());
+        dto.setResponsibleName(equipo.getPerson() != null ? equipo.getPerson().getLastname() + " " + equipo.getPerson().getSurname() : "");
+        dto.setDepartament(equipo.getDepartament());
+        dto.setType(equipo.getType());
+        dto.setBrand(equipo.getBrand());
+        dto.setEquipmentStatus(equipo.getStatus().name()); // Si es un enum, convierte a String
+        return dto;
+    }
+
 
 }
