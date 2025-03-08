@@ -3,6 +3,7 @@ package com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -13,7 +14,7 @@ public class RequestRegisterComputingEquipmentDto {
     final Long personId;
     final String departament;
     final String enterprise;
-    final String place;
+    final String workModality;
     final String type;
     final String brand;
     final String model;
@@ -24,9 +25,9 @@ public class RequestRegisterComputingEquipmentDto {
     final Boolean hasInvoice;
     final String supplier;
     final Long invoiceFolio;
-    final Date purchaseDate;
+    final LocalDate purchaseDate;
     final String assetNumber;
-    final Long price;
+    final Double price;
     final Integer status;
     final String systemObservations;
 }

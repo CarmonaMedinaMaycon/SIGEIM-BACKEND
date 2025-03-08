@@ -1,10 +1,12 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.controller;
 
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.service.ComputingEquipmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,5 +23,11 @@ public class ComputingEquipmentController {
     public ResponseEntity<String> registerComputingEquipment(@RequestBody RequestRegisterComputingEquipmentDto dto) {
         String response = computingEquipmentService.createComputingEquipment(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<String> updateComputingEquipment(@RequestBody RequestUpdateComputingEquipmentDto dto) {
+        String response = computingEquipmentService.updateComputingEquipment(dto);
+        return ResponseEntity.ok(response);
     }
 }

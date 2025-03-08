@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -38,17 +39,14 @@ public class BeanComputerEquipament {
     @Column(name = "enterprise", nullable = false)
     private String enterprise;
 
-    @Column(name = "mode", nullable = false)
-    private String mode;
+    @Column(name = "work_modality", nullable = false)
+    private String workModality;
 
     @Column(name = "type", nullable = false)
     private String type;
 
     @Column(name = "brand", nullable = false)
     private String brand;
-
-    @Column(name = "place", nullable = false)
-    private String place;
 
     @Column(name = "model", nullable = false)
     private String model;
@@ -81,13 +79,19 @@ public class BeanComputerEquipament {
     private String systemObservations;
 
     @Column(name = "purchase_date", nullable = false)
-    private Date purchaseDate;
+    private LocalDate purchaseDate;
+
+    @Column(name = "creation_date", nullable = false)
+    private LocalDate creationDate;
+
+    @Column(name = "last_update_date")
+    private LocalDate lastUpdateDate;
 
     @Column(name = "asset_number", nullable = false)
     private String assetNumber;
 
     @Column(name = "price", nullable = false)
-    private Long price;
+    private Double price;
 
     @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
     private List<BeanResponsiveEquipaments> responsiveEquipaments;
