@@ -1,10 +1,12 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.controller;
 
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestEquipmentDetailsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestEquipmentsPaginationDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.service.ComputingEquipmentService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -59,5 +61,11 @@ public class ComputingEquipmentController {
     public Page<ResponseSeeAllEquipmentsDto> buscarEquipos(@RequestBody RequestSearchByFilteringEquipmentsDto filtros) {
         return computingEquipmentService.searchEquipments(filtros);
     }
+
+    @PostMapping("/see-details")
+    public ResponseSeeDetailsEquipmentDto verDetalles(@RequestBody RequestEquipmentDetailsDto requestDetails) {
+        return computingEquipmentService.getEquipamentDetails(requestDetails.getId());
+    }
+
 
 }

@@ -4,9 +4,12 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.Request
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
+import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
+import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.HistoryEquipmentPhotosGroupDto;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
@@ -24,15 +27,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ComputingEquipmentService {
     private final IComputerEquipament repository;
     private final IPerson personRepository;
+    private final BeanHistoryPhotosEquipament beanHistoryPhotosEquipament;
 
-    public ComputingEquipmentService(IComputerEquipament repository, IPerson personRepository) {
+    public ComputingEquipmentService(IComputerEquipament repository, IPerson personRepository, BeanHistoryPhotosEquipament beanHistoryPhotosEquipament) {
         this.repository = repository;
         this.personRepository = personRepository;
+        this.beanHistoryPhotosEquipament = beanHistoryPhotosEquipament;
     }
 
     @Transactional
@@ -224,6 +230,54 @@ public class ComputingEquipmentService {
 
         return equipos.map(this::getResponseSeeAllEquipmentsDto);
     }
+
+    public ResponseSeeDetailsEquipmentDto getEquipamentDetails(Long id) {
+        // Fetching the equipment by id
+        BeanComputerEquipament equipo = repository.findById(id)
+                .orElseThrow(() -> new CustomException("Equipment not found with id: " + id));
+
+        // Agrupar fotos por fecha y responsable
+        Map<String, List<String>> groupedPhotos = equipo.getHistoryPhotosEquipament().stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getDate() + " - " + p.getPersonName(),
+                        Collectors.mapping(BeanHistoryPhotosEquipament::getPhoto, Collectors.toList())
+                ));
+
+        List<HistoryEquipmentPhotosGroupDto> historyPhotos = groupedPhotos.entrySet().stream()
+                .map(entry -> {
+                    String[] parts = entry.getKey().split(" - ");
+                    return new HistoryEquipmentPhotosGroupDto(LocalDate.parse(parts[0]), parts[1], entry.getValue());
+                })
+                .collect(Collectors.toList());
+
+        return new ResponseSeeDetailsEquipmentDto(
+                equipo.getSerialNumber(),
+                equipo.getIdEsset(),
+                equipo.getPerson().getFullName(),
+                equipo.getDepartament(),
+                equipo.getEnterprise(),
+                equipo.getWorkModality(),
+                equipo.getType(),
+                equipo.getBrand(),
+                equipo.getModel(),
+                equipo.getRamMemoryCapacity(),
+                equipo.getMemoryCapacity(),
+                equipo.getProcessor(),
+                equipo.getPurchasingCompany(),
+                equipo.getHasInvoice(),
+                equipo.getSupplier(),
+                equipo.getInvoiceFolio(),
+                equipo.getPurchaseDate(),
+                equipo.getAssetNumber(),
+                equipo.getPrice(),
+                equipo.getStatus().toString(),
+                equipo.getSystemObservations(),
+                equipo.getCreationDate(),
+                equipo.getLastUpdateDate(),
+                historyPhotos
+        );
+    }
+
 
 
 

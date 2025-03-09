@@ -70,5 +70,8 @@ public class BeanPerson {
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanAssets assets;
 
+    public String getFullName() {
+        return name + " " + surname + (lastname != null ? " " + lastname : "");
+    }
 
 }
