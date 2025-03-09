@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.service;
 
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
@@ -12,12 +13,17 @@ import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class ComputingEquipmentService {
@@ -168,7 +174,7 @@ public class ComputingEquipmentService {
         return result;
     }
 
-    private static ResponseSeeAllEquipmentsDto getResponseSeeAllEquipmentsDto(BeanComputerEquipament equipo) {
+    private ResponseSeeAllEquipmentsDto getResponseSeeAllEquipmentsDto(BeanComputerEquipament equipo) {
         ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
         // Mapear los campos de BeanComputerEquipament a ResponseSeeAllEquipmentsDto
         dto.setSerialNumber(equipo.getSerialNumber());
@@ -180,6 +186,45 @@ public class ComputingEquipmentService {
         dto.setEquipmentStatus(equipo.getStatus().name()); // Si es un enum, convierte a String
         return dto;
     }
+
+    public Map<String, List<String>> getAvailableFilters() {
+        Map<String, List<String>> filters = new HashMap<>();
+
+        filters.put("tipos", repository.findDistinctTypes());
+        filters.put("proveedores", repository.findDistinctSuppliers());
+        filters.put("estados", Arrays.stream(CEStatus.values()).map(Enum::name).toList());
+        filters.put("marcas", repository.findDistinctBrands());
+
+        return filters;
+    }
+
+    public Page<ResponseSeeAllEquipmentsDto> searchEquipments(RequestSearchByFilteringEquipmentsDto filtros) {
+        CEStatus equipmentStatus = null;
+        if (filtros.getEquipmentStatus() != null && !filtros.getEquipmentStatus().equalsIgnoreCase("Todos")) {
+            try {
+                equipmentStatus = CEStatus.valueOf(filtros.getEquipmentStatus());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid status value: " + filtros.getEquipmentStatus());
+            }
+        }
+
+        // Valores por defecto si no se envían en el body
+        int page = (filtros.getPage() != null) ? filtros.getPage() : 0;
+        int size = (filtros.getSize() != null) ? filtros.getSize() : 10;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "creationDate"));
+
+        Page<BeanComputerEquipament> equipos = repository.findByFilters(
+                Optional.ofNullable(filtros.getType()).filter(type -> !type.equalsIgnoreCase("Todos")).orElse(null),
+                Optional.ofNullable(filtros.getSupplier()).filter(supplier -> !supplier.equalsIgnoreCase("Todos")).orElse(null),
+                Optional.ofNullable(filtros.getBrand()).filter(brand -> !brand.equalsIgnoreCase("Todos")).orElse(null),
+                equipmentStatus,
+                pageable
+        );
+
+        return equipos.map(this::getResponseSeeAllEquipmentsDto);
+    }
+
 
 
 }

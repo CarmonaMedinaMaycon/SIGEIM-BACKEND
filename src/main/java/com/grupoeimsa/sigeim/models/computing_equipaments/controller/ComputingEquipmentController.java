@@ -2,6 +2,7 @@ package com.grupoeimsa.sigeim.models.computing_equipaments.controller;
 
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestEquipmentsPaginationDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.service.ComputingEquipmentService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/sigeim/computing-equipment")
@@ -47,4 +49,15 @@ public class ComputingEquipmentController {
     public List<ResponseSeeAllEquipmentsDto> buscarEquipos(@RequestBody ResponseSeeAllEquipmentsDto searchCriteria) {
         return computingEquipmentService.searchEquipments(searchCriteria);
     }
+
+    @PostMapping("/filters")
+    public Map<String, List<String>> obtenerFiltrosDisponibles() {
+        return computingEquipmentService.getAvailableFilters();
+    }
+
+    @PostMapping("/search-equipment-by-filtering")
+    public Page<ResponseSeeAllEquipmentsDto> buscarEquipos(@RequestBody RequestSearchByFilteringEquipmentsDto filtros) {
+        return computingEquipmentService.searchEquipments(filtros);
+    }
+
 }
