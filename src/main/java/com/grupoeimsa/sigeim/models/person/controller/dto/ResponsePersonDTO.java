@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,13 +28,13 @@ public class ResponsePersonDTO {
     private String enterprise;
     private String position;
     private String comments;
-    private LocalDate dateStart ;
-    private LocalDate dateEnd ;
-    private LocalDate entryDate ;
+    private LocalDate dateStart;
+    private LocalDate dateEnd;
+    private LocalDate entryDate;
     private Boolean status;
     private BeanUser user;
     private BeanCellphone cellphone;
-    private BeanComputerEquipament computerEquipament;
+    private List<BeanComputerEquipament> computerEquipaments; // Cambio aquí
     private BeanLicense license;
     private BeanAccessCard accessCard;
     private BeanAssets assets;
@@ -55,10 +56,9 @@ public class ResponsePersonDTO {
         this.status = beanPerson.getStatus();
         this.user = beanPerson.getUser();
         this.cellphone = beanPerson.getCellphone();
-        this.computerEquipament = beanPerson.getComputerEquipament();
+        this.computerEquipaments = beanPerson.getComputerEquipaments(); // Cambio aquí
         this.license = beanPerson.getLicense();
         this.accessCard = beanPerson.getAccessCard();
         this.assets = beanPerson.getAssets();
-
     }
 }

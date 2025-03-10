@@ -13,6 +13,11 @@ import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.HistoryE
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +25,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -49,47 +58,44 @@ public class ComputingEquipmentService {
         equipment.setIdEsset(dto.getIdEsset());
         BeanPerson person = personRepository.findById(dto.getPersonId())
                 .orElseThrow(() -> new CustomException("Person not found with ID: " + dto.getPersonId()));
-        equipment.setPerson(person);
-        equipment.setDepartament(dto.getDepartament());
-        equipment.setEnterprise(dto.getEnterprise());
-        equipment.setWorkModality(dto.getWorkModality());
-        equipment.setType(dto.getType());
-        equipment.setBrand(dto.getBrand());
-        equipment.setModel(dto.getModel());
-        equipment.setRamMemoryCapacity(dto.getRamMemoryCapacity());
-        equipment.setMemoryCapacity(dto.getMemoryCapacity());
-        equipment.setProcessor(dto.getProcessor());
-        equipment.setPurchasingCompany(dto.getPurchasingCompany());
+        ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(), dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(), dto.getProcessor(), dto.getPurchasingCompany(), dto);
+        if (!Objects.equals(person.getName(), "Sistemas")){
+            equipment.setStatus(CEStatus.OCUPADO);
+        }else{
+            equipment.setStatus(CEStatus.DISPONIBLE);
+        }
         equipment.setHasInvoice(dto.getHasInvoice());
         equipment.setSupplier(dto.getSupplier());
         equipment.setInvoiceFolio(dto.getInvoiceFolio());
         equipment.setPurchaseDate(dto.getPurchaseDate());
         equipment.setAssetNumber(dto.getAssetNumber());
         equipment.setPrice(dto.getPrice());
-        switch (dto.getStatus()){
-            case 1:
-                equipment.setStatus(CEStatus.OCUPADO);
-                break;
-            case 2:
-                equipment.setStatus(CEStatus.DISPONIBLE);
-                break;
-            case 3:
-                equipment.setStatus(CEStatus.CAMBIO_DISCO_AMPLIACION_RAM);
-                break;
-            case 4:
-                equipment.setStatus(CEStatus.BAJA);
-                break;
-            case 5:
-                equipment.setStatus(CEStatus.REPARACION);
-                break;
-            default:
-                throw new CustomException("Status is not valid");
-        }
         equipment.setCreationDate(LocalDate.now());
         equipment.setSystemObservations(dto.getSystemObservations());
         repository.save(equipment);
         return "Equipo registrado con exito";
     }
+
+    private void ComputerData(BeanComputerEquipament equipment, BeanPerson person, String departament, String enterprise, String workModality, String type, String brand, String model, Long ramMemoryCapacity, Long memoryCapacity, String processor, String purchasingCompany, Object dto) {
+        equipment.setPerson(person);
+        equipment.setDepartament(departament);
+        equipment.setEnterprise(enterprise);
+        equipment.setWorkModality(workModality);
+        equipment.setType(type);
+        equipment.setBrand(brand);
+        equipment.setModel(model);
+        equipment.setRamMemoryCapacity(ramMemoryCapacity);
+        equipment.setMemoryCapacity(memoryCapacity);
+        equipment.setProcessor(processor);
+        equipment.setPurchasingCompany(purchasingCompany);
+
+        if (dto instanceof RequestRegisterComputingEquipmentDto) {
+            RequestRegisterComputingEquipmentDto registerDto = (RequestRegisterComputingEquipmentDto) dto;
+        } else if (dto instanceof RequestUpdateComputingEquipmentDto) {
+            RequestUpdateComputingEquipmentDto updateDto = (RequestUpdateComputingEquipmentDto) dto;
+        }
+    }
+
 
     @Transactional
     public String updateComputingEquipment(RequestUpdateComputingEquipmentDto dto) {
@@ -104,17 +110,7 @@ public class ComputingEquipmentService {
         // Actualizar los datos del equipo
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
-        equipment.setPerson(person);
-        equipment.setDepartament(dto.getDepartament());
-        equipment.setEnterprise(dto.getEnterprise());
-        equipment.setWorkModality(dto.getWorkModality());
-        equipment.setType(dto.getType());
-        equipment.setBrand(dto.getBrand());
-        equipment.setModel(dto.getModel());
-        equipment.setRamMemoryCapacity(dto.getRamMemoryCapacity());
-        equipment.setMemoryCapacity(dto.getMemoryCapacity());
-        equipment.setProcessor(dto.getProcessor());
-        equipment.setPurchasingCompany(dto.getPurchasingCompany());
+        ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(), dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(), dto.getProcessor(), dto.getPurchasingCompany(), dto);
         equipment.setSupplier(dto.getSupplier());
         equipment.setInvoiceFolio(dto.getInvoiceFolio());
         equipment.setPurchaseDate(dto.getPurchaseDate());
@@ -278,7 +274,101 @@ public class ComputingEquipmentService {
         );
     }
 
+    @Transactional
+    public String changeStatus(Long equipamentId, CEStatus newStatus) {
+        BeanComputerEquipament equipament = repository.findById(equipamentId)
+                .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + equipamentId));
 
+        if (equipament.getStatus().equals(newStatus)) {
+            throw new CustomException("El estado ya es el mismo que el actual");
+        }
+
+        if (equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.OCUPADO)){
+            throw new CustomException("El estado no puede pasar a ocupado si el responsable es sistemas");
+        }
+
+        if (!equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.DISPONIBLE)){
+            throw new CustomException("El estado no puede pasar a disponible si tiene un responsable asignado");
+        }
+
+        if (!equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.REPARACION)){
+            throw new CustomException("El estado no puede pasar a reparacion si tiene un responsable asignado");
+        }
+
+        if (!equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.CAMBIO_DISCO_AMPLIACION_RAM)){
+            throw new CustomException("El estado no puede pasar a revisar para cambio de disco duro y/o ampliacion de RAM si tiene un responsable asignado");
+        }
+
+        equipament.setStatus(newStatus);
+        repository.save(equipament);
+        return "Estado cambiado con exito";
+    }
+
+    @Transactional
+    public BeanComputerEquipament assignToSistemas(Long equipamentId, Long sistemasPersonId) {
+        BeanComputerEquipament equipament = repository.findById(equipamentId)
+                .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + equipamentId));
+
+        BeanPerson sistemasPerson = personRepository.findById(sistemasPersonId)
+                .orElseThrow(() -> new CustomException("Persona de Sistemas no encontrada con ID: " + sistemasPersonId));
+
+        equipament.setPerson(sistemasPerson);
+        return repository.save(equipament);
+    }
+
+    public byte[] generateExcelFile() throws IOException {
+        List<BeanComputerEquipament> equipments = repository.findAll();
+
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Equipos de Cómputo");
+
+        String[] headers = {
+                "Núm.", "Núm. Serie", "ID ESSET", "Responsable", "Depto", "Empresa", "Lugar", "Tipo", "Marca", "Modelo",
+                "Núm. Serie", "Memoria RAM", "Disco Duro", "Procesador", "Empresa compradora", "Factura",
+                "Proveedor", "Folio Factura", "Fecha de Adquisición", "Núm. Activo", "Costo", "Estado", "Observaciones"
+        };
+
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+
+        int rowNum = 1;
+        for (BeanComputerEquipament equipment : equipments) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(rowNum - 1);
+            row.createCell(1).setCellValue(equipment.getSerialNumber());
+            row.createCell(2).setCellValue(equipment.getIdEsset());
+            row.createCell(3).setCellValue(equipment.getPerson().getName());
+            row.createCell(4).setCellValue(equipment.getDepartament());
+            row.createCell(5).setCellValue(equipment.getEnterprise());
+            row.createCell(6).setCellValue(equipment.getWorkModality());
+            row.createCell(7).setCellValue(equipment.getType());
+            row.createCell(8).setCellValue(equipment.getBrand());
+            row.createCell(9).setCellValue(equipment.getModel());
+            row.createCell(10).setCellValue(equipment.getSerialNumber());
+            row.createCell(11).setCellValue(equipment.getRamMemoryCapacity());
+            row.createCell(12).setCellValue(equipment.getMemoryCapacity());
+            row.createCell(13).setCellValue(equipment.getProcessor());
+            row.createCell(14).setCellValue(equipment.getPurchasingCompany());
+            row.createCell(15).setCellValue(equipment.getHasInvoice() ? "Sí" : "No");
+            row.createCell(16).setCellValue(equipment.getSupplier());
+            row.createCell(17).setCellValue(equipment.getInvoiceFolio());
+            row.createCell(18).setCellValue(equipment.getPurchaseDate().toString());
+            row.createCell(19).setCellValue(equipment.getAssetNumber());
+            row.createCell(20).setCellValue(equipment.getPrice());
+            row.createCell(21).setCellValue(equipment.getStatus().name());
+            row.createCell(22).setCellValue(equipment.getSystemObservations());
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        return baos.toByteArray();
+    }
 
 
 }

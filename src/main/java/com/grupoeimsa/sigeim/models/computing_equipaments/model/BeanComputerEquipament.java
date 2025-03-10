@@ -103,7 +103,7 @@ public class BeanComputerEquipament {
     @JoinColumn(name = "invoice_id")
     private BeanInvoice invoice;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
     private BeanPerson person;
 }
