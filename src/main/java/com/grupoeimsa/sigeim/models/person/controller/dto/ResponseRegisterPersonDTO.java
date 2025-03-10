@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,7 +34,7 @@ public class ResponseRegisterPersonDTO {
     private Boolean status;
     private BeanUser user;
     private BeanCellphone cellphone;
-    private BeanComputerEquipament computerEquipament;
+    private List<BeanComputerEquipament> computerEquipament;
     private BeanLicense license;
     private BeanAccessCard accessCard;
     private BeanAssets assets;
@@ -55,7 +56,7 @@ public class ResponseRegisterPersonDTO {
         this.status = beanPerson.getStatus();
         this.user = beanPerson.getUser();
         this.cellphone = beanPerson.getCellphone();
-        this.computerEquipament = beanPerson.getComputerEquipament();
+        this.computerEquipament = beanPerson.getComputerEquipaments();
         this.license = beanPerson.getLicense();
         this.accessCard = beanPerson.getAccessCard();
         this.assets = beanPerson.getAssets();

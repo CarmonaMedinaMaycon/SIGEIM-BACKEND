@@ -9,9 +9,11 @@ import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -57,8 +59,8 @@ public class BeanPerson {
     @JsonManagedReference
     private BeanCellphone cellphone;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private BeanComputerEquipament computerEquipament;
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<BeanComputerEquipament> computerEquipaments;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -70,5 +72,8 @@ public class BeanPerson {
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanAssets assets;
 
+    public String getFullName() {
+        return name + " " + surname + (lastname != null ? " " + lastname : "");
+    }
 
 }

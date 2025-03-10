@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +25,12 @@ public class BeanUser {
 
     @Column(name = "password", nullable = true)
     private String password;
+
+    @Column(name = "attempts")
+    private int attempts;
+
+    @Column(name = "last_try")
+    private LocalTime lastTry;
 
     @Enumerated(EnumType.STRING)
     private ERole role;
