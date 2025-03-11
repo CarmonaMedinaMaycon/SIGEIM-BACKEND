@@ -14,10 +14,13 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.service.ComputingEquip
 import jakarta.validation.Valid;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -113,5 +116,30 @@ public class ComputingEquipmentController {
                 .headers(headers)
                 .body(resource);
     }
+
+    @PostMapping("/generate-qr")
+    public ResponseEntity<byte[]> generateEquipmentQr(@RequestBody RequestEquipmentDetailsDto request) throws Exception {
+        String qrContent = "api/sigeim/computing-equipments/mobile-details/" + request.getId();
+
+        byte[] qrImage = computingEquipmentService.generateQRCodeImage(qrContent, 500, 500);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDisposition(ContentDisposition.attachment()
+                .filename("qr_equipment_" + request.getId() + ".png")
+                .build());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(qrImage);
+    }
+
+
+    @GetMapping("/mobile-details/{id}")
+    public ResponseEntity<ResponseSeeDetailsEquipmentDto> getEquipmentDetails(@PathVariable Long id) {
+        ResponseSeeDetailsEquipmentDto equipmentDetails = computingEquipmentService.getEquipamentDetails(id);
+        return ResponseEntity.ok(equipmentDetails);
+    }
+
 
 }

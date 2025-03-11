@@ -23,8 +23,9 @@ public class BeanHistoryPhotosEquipament {
     @Column(name = "history_equipament_id", updatable = false, nullable = false)
     private Long historyEquipamentId;
 
-    @Column(name = "photo")
-    private String photo;
+    @Lob
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    private byte[] photo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "computer_equipament_id", nullable = false)

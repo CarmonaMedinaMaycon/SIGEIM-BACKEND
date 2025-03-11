@@ -1,5 +1,10 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
@@ -31,6 +36,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +58,6 @@ public class ComputingEquipmentService {
 
     @Transactional
     public String createComputingEquipment(RequestRegisterComputingEquipmentDto dto) {
-        // Crear la entidad a partir del DTO
         BeanComputerEquipament equipment = new BeanComputerEquipament();
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
@@ -99,15 +104,12 @@ public class ComputingEquipmentService {
 
     @Transactional
     public String updateComputingEquipment(RequestUpdateComputingEquipmentDto dto) {
-        // Buscar el equipo usando el id que viene en el DTO
         BeanComputerEquipament equipment = repository.findById(dto.getId())
                 .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + dto.getId()));
 
-        // Validar existencia del responsable
         BeanPerson person = personRepository.findById(dto.getPersonId())
                 .orElseThrow(() -> new CustomException("Responsable no encontrado con ID: " + dto.getPersonId()));
 
-        // Actualizar los datos del equipo
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
         ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(), dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(), dto.getProcessor(), dto.getPurchasingCompany(), dto);
@@ -118,7 +120,6 @@ public class ComputingEquipmentService {
         equipment.setPrice(dto.getPrice());
         equipment.setSystemObservations(dto.getSystemObservations());
 
-        // Actualizar la fecha de última modificación
         equipment.setLastUpdateDate(LocalDate.now());
 
         repository.save(equipment);
@@ -144,7 +145,6 @@ public class ComputingEquipmentService {
     }
 
     public List<ResponseSeeAllEquipmentsDto> searchEquipments(ResponseSeeAllEquipmentsDto searchCriteria) {
-        // Convertir equipmentStatus de String a CEStatus
         CEStatus equipmentStatus = null;
         if (searchCriteria.getEquipmentStatus() != null) {
             try {
@@ -154,7 +154,6 @@ public class ComputingEquipmentService {
             }
         }
 
-        // Obtener la lista de equipos
         List<BeanComputerEquipament> equipos = repository.findByFilters(
                 searchCriteria.getSerialNumber(),
                 searchCriteria.getIdEsset(),
@@ -165,11 +164,9 @@ public class ComputingEquipmentService {
                 equipmentStatus
         );
 
-        // Convertir la lista de BeanComputerEquipament a ResponseSeeAllEquipmentsDto
         List<ResponseSeeAllEquipmentsDto> result = new ArrayList<>();
         for (BeanComputerEquipament equipo : equipos) {
             ResponseSeeAllEquipmentsDto dto = getResponseSeeAllEquipmentsDto(equipo);
-            // Agregar el DTO a la lista de resultados
             result.add(dto);
         }
 
@@ -178,14 +175,13 @@ public class ComputingEquipmentService {
 
     private ResponseSeeAllEquipmentsDto getResponseSeeAllEquipmentsDto(BeanComputerEquipament equipo) {
         ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
-        // Mapear los campos de BeanComputerEquipament a ResponseSeeAllEquipmentsDto
         dto.setSerialNumber(equipo.getSerialNumber());
         dto.setIdEsset(equipo.getIdEsset());
         dto.setResponsibleName(equipo.getPerson() != null ? equipo.getPerson().getLastname() + " " + equipo.getPerson().getSurname() : "");
         dto.setDepartament(equipo.getDepartament());
         dto.setType(equipo.getType());
         dto.setBrand(equipo.getBrand());
-        dto.setEquipmentStatus(equipo.getStatus().name()); // Si es un enum, convierte a String
+        dto.setEquipmentStatus(equipo.getStatus().name());
         return dto;
     }
 
@@ -210,7 +206,6 @@ public class ComputingEquipmentService {
             }
         }
 
-        // Valores por defecto si no se envían en el body
         int page = (filtros.getPage() != null) ? filtros.getPage() : 0;
         int size = (filtros.getSize() != null) ? filtros.getSize() : 10;
 
@@ -228,23 +223,22 @@ public class ComputingEquipmentService {
     }
 
     public ResponseSeeDetailsEquipmentDto getEquipamentDetails(Long id) {
-        // Fetching the equipment by id
         BeanComputerEquipament equipo = repository.findById(id)
                 .orElseThrow(() -> new CustomException("Equipment not found with id: " + id));
 
-        // Agrupar fotos por fecha y responsable
         Map<String, List<String>> groupedPhotos = equipo.getHistoryPhotosEquipament().stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getDate() + " - " + p.getPersonName(),
-                        Collectors.mapping(BeanHistoryPhotosEquipament::getPhoto, Collectors.toList())
+                        Collectors.mapping(p -> Base64.getEncoder().encodeToString(p.getPhoto()), Collectors.toList())
                 ));
+
 
         List<HistoryEquipmentPhotosGroupDto> historyPhotos = groupedPhotos.entrySet().stream()
                 .map(entry -> {
                     String[] parts = entry.getKey().split(" - ");
                     return new HistoryEquipmentPhotosGroupDto(LocalDate.parse(parts[0]), parts[1], entry.getValue());
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return new ResponseSeeDetailsEquipmentDto(
                 equipo.getSerialNumber(),
@@ -269,8 +263,7 @@ public class ComputingEquipmentService {
                 equipo.getStatus().toString(),
                 equipo.getSystemObservations(),
                 equipo.getCreationDate(),
-                equipo.getLastUpdateDate(),
-                historyPhotos
+                equipo.getLastUpdateDate()
         );
     }
 
@@ -319,7 +312,6 @@ public class ComputingEquipmentService {
     public byte[] generateExcelFile() throws IOException {
         List<BeanComputerEquipament> equipments = repository.findAll();
 
-
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Equipos de Cómputo");
 
@@ -329,38 +321,49 @@ public class ComputingEquipmentService {
                 "Proveedor", "Folio Factura", "Fecha de Adquisición", "Núm. Activo", "Costo", "Estado", "Observaciones"
         };
 
+        // Crear la fila de cabecera
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
         }
 
+        // Ajustar el tamaño de las columnas de la cabecera
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
         int rowNum = 1;
         for (BeanComputerEquipament equipment : equipments) {
             Row row = sheet.createRow(rowNum++);
+
             row.createCell(0).setCellValue(rowNum - 1);
-            row.createCell(1).setCellValue(equipment.getSerialNumber());
-            row.createCell(2).setCellValue(equipment.getIdEsset());
-            row.createCell(3).setCellValue(equipment.getPerson().getName());
-            row.createCell(4).setCellValue(equipment.getDepartament());
-            row.createCell(5).setCellValue(equipment.getEnterprise());
-            row.createCell(6).setCellValue(equipment.getWorkModality());
-            row.createCell(7).setCellValue(equipment.getType());
-            row.createCell(8).setCellValue(equipment.getBrand());
-            row.createCell(9).setCellValue(equipment.getModel());
-            row.createCell(10).setCellValue(equipment.getSerialNumber());
-            row.createCell(11).setCellValue(equipment.getRamMemoryCapacity());
-            row.createCell(12).setCellValue(equipment.getMemoryCapacity());
-            row.createCell(13).setCellValue(equipment.getProcessor());
-            row.createCell(14).setCellValue(equipment.getPurchasingCompany());
-            row.createCell(15).setCellValue(equipment.getHasInvoice() ? "Sí" : "No");
-            row.createCell(16).setCellValue(equipment.getSupplier());
-            row.createCell(17).setCellValue(equipment.getInvoiceFolio());
-            row.createCell(18).setCellValue(equipment.getPurchaseDate().toString());
-            row.createCell(19).setCellValue(equipment.getAssetNumber());
-            row.createCell(20).setCellValue(equipment.getPrice());
-            row.createCell(21).setCellValue(equipment.getStatus().name());
-            row.createCell(22).setCellValue(equipment.getSystemObservations());
+            row.createCell(1).setCellValue(getSafeValue(equipment.getSerialNumber()));
+            row.createCell(2).setCellValue(getSafeValue(equipment.getIdEsset()));
+            row.createCell(3).setCellValue(getSafeValue(equipment.getPerson() != null ? equipment.getPerson().getName() : null));
+            row.createCell(4).setCellValue(getSafeValue(equipment.getDepartament()));
+            row.createCell(5).setCellValue(getSafeValue(equipment.getEnterprise()));
+            row.createCell(6).setCellValue(getSafeValue(equipment.getWorkModality()));
+            row.createCell(7).setCellValue(getSafeValue(equipment.getType()));
+            row.createCell(8).setCellValue(getSafeValue(equipment.getBrand()));
+            row.createCell(9).setCellValue(getSafeValue(equipment.getModel()));
+            row.createCell(10).setCellValue(getSafeValue(equipment.getSerialNumber()));
+            row.createCell(11).setCellValue(getSafeValue(equipment.getRamMemoryCapacity()));
+            row.createCell(12).setCellValue(getSafeValue(equipment.getMemoryCapacity()));
+            row.createCell(13).setCellValue(getSafeValue(equipment.getProcessor()));
+            row.createCell(14).setCellValue(getSafeValue(equipment.getPurchasingCompany()));
+            row.createCell(15).setCellValue(equipment.getHasInvoice() != null ? (equipment.getHasInvoice() ? "Sí" : "No") : "SIN-INF");
+            row.createCell(16).setCellValue(getSafeValue(equipment.getSupplier()));
+            row.createCell(17).setCellValue(getSafeValue(equipment.getInvoiceFolio()));
+            row.createCell(18).setCellValue(getSafeValue(equipment.getPurchaseDate()));
+            row.createCell(19).setCellValue(getSafeValue(equipment.getAssetNumber()));
+            row.createCell(20).setCellValue(getSafeValue(equipment.getPrice()));
+            row.createCell(21).setCellValue(equipment.getStatus() != null ? equipment.getStatus().name() : "SIN-INF");
+            row.createCell(22).setCellValue(getSafeValue(equipment.getSystemObservations()));
+
+            for (int i = 0; i < headers.length-1; i++) {
+                sheet.autoSizeColumn(i);
+            }
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -370,5 +373,22 @@ public class ComputingEquipmentService {
         return baos.toByteArray();
     }
 
+
+    private String getSafeValue(Object value) {
+        return (value != null) ? value.toString() : "SIN-INF";
+    }
+
+    public byte[] generateQRCodeImage(String text, int width, int height) throws Exception {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height, hints);
+
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+
+        return pngOutputStream.toByteArray();
+    }
 
 }
