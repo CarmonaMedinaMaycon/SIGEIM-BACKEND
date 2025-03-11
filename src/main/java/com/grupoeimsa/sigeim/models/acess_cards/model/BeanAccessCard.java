@@ -19,6 +19,24 @@ public class BeanAccessCard {
     @Column(name = "access_card_id", updatable = false, nullable = false)
     private Long accessCardId;
 
+    @Column(name = "access_between_building", nullable = false)
+    private boolean accessBetweenBuildings;
+
+    @Column(name = "main_door", nullable = false)
+    private boolean mainDoor;
+
+    @Column(name = "access_technicalService", nullable = false)
+    private boolean accessTechnicalService;
+
+    @Column(name = "main_warehouse", nullable = false)
+    private boolean mainWarehouse;
+
+    @Column(name = "warehouse_basement", nullable = false)
+    private boolean WarehouseBasement;
+
+    @Column(name = "technical_service_warehouses", nullable = false)
+    private boolean TechnicalServiceWarehouses;
+
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
     private BeanPerson person;
