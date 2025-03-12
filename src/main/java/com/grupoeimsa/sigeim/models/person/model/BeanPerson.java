@@ -73,7 +73,7 @@ public class BeanPerson {
     private BeanAssets assets;
 
     public String getFullName() {
-        return name + " " + surname + (lastname != null ? " " + lastname : "");
+        return name + " " + lastname + (surname != null ? " " + surname : "");
     }
 
 }

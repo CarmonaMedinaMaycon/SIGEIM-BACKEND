@@ -18,8 +18,11 @@ public class BeanTemplateResponsive {
     @Column(name = "template_id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "template", nullable = false)
-    private String template;
+    @Lob
+    @Column(name = "template_file", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] templateFile;
 
+    @Column(name = "template_name", nullable = false)
+    private String templateName;
 
 }

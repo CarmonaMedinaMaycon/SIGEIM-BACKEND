@@ -33,5 +33,4 @@ public class ResponseSeeDetailsEquipmentDto {
     private String systemObservations;
     private LocalDate creationDate;
     private LocalDate lastUpdateDate;
-    private List<HistoryEquipmentPhotosGroupDto> historyPhotos;
 }

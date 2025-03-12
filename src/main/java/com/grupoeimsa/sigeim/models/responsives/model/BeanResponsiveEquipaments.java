@@ -23,14 +23,16 @@ public class BeanResponsiveEquipaments {
     @Column(name = "date", nullable = false)
     private LocalDate date;
 
-    @Column(name = "equipaments", nullable = false)
+    @Lob
+    @Column(name = "equipaments", nullable = false, columnDefinition = "TEXT")
     private String equipaments;
 
     @Column(name = "status", nullable = false)
     private EStatus status;
 
-    @Column(name = "generated_doc", nullable = false)
-    private String generatedDoc;
+    @Lob
+    @Column(name = "generated_doc", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] generatedDoc;
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)
