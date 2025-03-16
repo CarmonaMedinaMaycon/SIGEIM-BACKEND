@@ -57,162 +57,10 @@ public class ResponsiveService {
     }
 
 
-
-
-//    public void generateResponsive(GenerateResponsiveDto dto) throws Exception {
-//        BeanTemplateResponsive template = templateRepository.findById(dto.getTemplateId())
-//                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
-//
-//        BeanComputerEquipament computerEquipament = equipamentRepository.findById(dto.getEquipmentId())
-//                .orElseThrow(() -> new RuntimeException("Equipo de cómputo no encontrado"));
-//
-//        ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
-//        XWPFDocument document = new XWPFDocument(inputStream);
-//
-//        // Buscar y reemplazar marcadores en
-//        replaceTextInDocument(document, dto.getPlaceholders());
-//
-//        // Llenar la tabla de equipos (segunda tabla en el documento)
-//        fillEquipmentTable(document, dto.getEquipaments());
-//
-//        // Guardar el documento generado
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        document.write(outputStream);
-//        byte[] generatedBytes = outputStream.toByteArray();
-//
-//        BeanResponsiveEquipaments responsive = new BeanResponsiveEquipaments();
-//        responsive.setDate(LocalDate.now());
-//        responsive.setEquipaments(new ObjectMapper().writeValueAsString(dto.getEquipaments()));
-//        responsive.setGeneratedDoc(generatedBytes);
-//        responsive.setStatus(EStatus.ACTIVA);
-//        responsive.setComputerEquipament(computerEquipament);
-//
-//        responsiveEquipmentRepository.save(responsive);
-//
-//        document.close();
-//        inputStream.close();
-//        outputStream.close();
-//    }
-//
-//    private void replaceTextInDocument(XWPFDocument document, Map<String, String> placeholders) {
-//        // Buscar y reemplazar en párrafos del documento
-//        for (XWPFParagraph paragraph : document.getParagraphs()) {
-//            replaceTextInParagraph(paragraph, placeholders);
-//        }
-//
-//        // Buscar y reemplazar en tablas
-//        for (XWPFTable table : document.getTables()) {
-//            for (XWPFTableRow row : table.getRows()) {
-//                for (XWPFTableCell cell : row.getTableCells()) {
-//                    for (XWPFParagraph paragraph : cell.getParagraphs()) {
-//                        replaceTextInParagraph(paragraph, placeholders);
-//                    }
-//                }
-//            }
-//        }
-//
-//        // Buscar y reemplazar en encabezados
-//        for (XWPFHeader header : document.getHeaderList()) {
-//            for (XWPFParagraph paragraph : header.getParagraphs()) {
-//                replaceTextInParagraph(paragraph, placeholders);
-//            }
-//        }
-//
-//        // Buscar y reemplazar en pies de página
-//        for (XWPFFooter footer : document.getFooterList()) {
-//            for (XWPFParagraph paragraph : footer.getParagraphs()) {
-//                replaceTextInParagraph(paragraph, placeholders);
-//            }
-//        }
-//    }
-//
-//    private void replaceTextInParagraph(XWPFParagraph paragraph, Map<String, String> placeholders) {
-//        for (XWPFRun run : paragraph.getRuns()) {
-//            String text = run.getText(0);
-//            if (text != null) {
-//                for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-//                    text = text.replace("<" + entry.getKey() + ">", entry.getValue());
-//                }
-//                run.setText(text, 0);
-//            }
-//        }
-//    }
-//
-//    private void fillEquipmentTable(XWPFDocument document, List<Map<String, String>> equipaments) {
-//        int tableIndex = 0;
-//        for (XWPFTable table : document.getTables()) {
-//            if (tableIndex == 1) { // Modificar solo la segunda tabla
-//                if (table.getRows().size() > 1) {
-//                    List<XWPFTableRow> rows = table.getRows();
-//                    int rowIndex = 1;
-//
-//                    for (Map<String, String> equip : equipaments) {
-//                        XWPFTableRow row;
-//
-//                        if (rowIndex < rows.size()) {
-//                            row = rows.get(rowIndex);
-//                        } else {
-//                            row = table.createRow();
-//                        }
-//
-//                        int cellIndex = 0;
-//                        for (String header : new String[]{"Tipo", "Marca", "Modelo", "No. Serie", "No. Inventario", "Fecha"}) {
-//                            XWPFTableCell cell;
-//
-//                            if (cellIndex < row.getTableCells().size()) {
-//                                cell = row.getCell(cellIndex);
-//                            } else {
-//                                cell = row.createCell();
-//                            }
-//
-//                            for (int i = cell.getParagraphs().size() - 1; i >= 0; i--) {
-//                                cell.removeParagraph(i);
-//                            }
-//
-//                            XWPFParagraph paragraph = cell.addParagraph();
-//                            XWPFRun run = paragraph.createRun();
-//                            run.setText(equip.get(header));
-//
-//                            cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
-//                            paragraph.setAlignment(ParagraphAlignment.CENTER);
-//
-//                            for (XWPFParagraph p : cell.getParagraphs()) {
-//                                p.setAlignment(ParagraphAlignment.CENTER);
-//                            }
-//
-//                            cellIndex++;
-//                        }
-//
-//                        rowIndex++;
-//                    }
-//
-//                    CTTblPr tblPr = table.getCTTbl().getTblPr();
-//                    if (tblPr == null) {
-//                        tblPr = table.getCTTbl().addNewTblPr();
-//                    }
-//
-//                    CTTblPPr tblpPr = tblPr.isSetTblpPr() ? tblPr.getTblpPr() : tblPr.addNewTblpPr();
-//                    tblpPr.setTblpX(BigInteger.valueOf(0));
-//                    tblpPr.setTblpY(BigInteger.valueOf(0));
-//
-//                    if (!tblPr.isSetTblOverlap()) {
-//                        tblPr.addNewTblOverlap();
-//                    }
-//                    tblPr.getTblOverlap().setVal(STTblOverlap.NEVER);
-//
-//                    CTTblLayoutType layoutType = tblPr.isSetTblLayout()
-//                            ? tblPr.getTblLayout()
-//                            : tblPr.addNewTblLayout();
-//                    layoutType.setType(STTblLayoutType.FIXED);
-//                    break;
-//                }
-//            }
-//            tableIndex++;
-//        }
-//    }
-
-
     public void generateResponsive(GenerateResponsiveDto dto) throws Exception {
+
+        System.out.println("Placeholders recibidos: " + dto.getPlaceholders());
+
         BeanTemplateResponsive template = templateRepository.findById(dto.getTemplateId())
                 .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
 
@@ -341,16 +189,51 @@ public class ResponsiveService {
     }
 
     private void replaceTextInParagraph(XWPFParagraph paragraph, Map<String, String> placeholders) {
-        for (XWPFRun run : paragraph.getRuns()) {
-            String text = run.getText(0);
-            if (text != null) {
-                for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-                    text = text.replace("<<" + entry.getKey() + ">>", entry.getValue());
-                }
-                run.setText(text, 0);
-            }
+        StringBuilder fullText = new StringBuilder();
+        List<XWPFRun> runs = paragraph.getRuns();
+
+        if (runs.isEmpty()) {
+            return; // Si no hay texto, salir
         }
+
+        // Construir el texto completo del párrafo
+        for (XWPFRun run : runs) {
+            fullText.append(run.getText(0) != null ? run.getText(0) : "");
+        }
+
+        String updatedText = fullText.toString();
+
+        // Reemplazar los placeholders en el texto completo
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            updatedText = updatedText.replace("${" + entry.getKey() + "}", entry.getValue());
+        }
+
+        // Guardar el formato del primer run
+        XWPFRun firstRun = runs.get(0);
+        boolean isBold = firstRun.isBold();
+        boolean isItalic = firstRun.isItalic();
+        String fontFamily = firstRun.getFontFamily();
+        int fontSize = firstRun.getFontSize();
+        int color = firstRun.getColor() != null ? Integer.parseInt(firstRun.getColor(), 16) : -1;
+
+        // Limpiar los runs existentes
+        while (!paragraph.getRuns().isEmpty()) {
+            paragraph.removeRun(0);
+        }
+
+        // Crear un nuevo run con el formato original
+        XWPFRun newRun = paragraph.createRun();
+        newRun.setText(updatedText);
+        newRun.setBold(isBold);
+        newRun.setItalic(isItalic);
+        if (fontFamily != null) newRun.setFontFamily(fontFamily);
+        if (fontSize > 0) newRun.setFontSize(fontSize);
+        if (color != -1) newRun.setColor(String.format("%06X", color));
+
+        // Mantener la alineación del párrafo
+        paragraph.setAlignment(paragraph.getAlignment());
     }
+
 
     public ResponseEntity<byte[]> downloadResponsive(DownloadResponsiveDto dto) {
         Optional<BeanResponsiveEquipaments> responsive = responsiveEquipmentRepository.findById(dto.getResponsiveId());
