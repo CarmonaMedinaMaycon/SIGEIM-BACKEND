@@ -13,16 +13,15 @@ public interface IComputerEquipament extends JpaRepository<BeanComputerEquipamen
 
     @Query("SELECT e FROM BeanComputerEquipament e " +
             "JOIN e.person p " +
-            "WHERE " +
-            "(e.serialNumber LIKE %:serialNumber% OR :serialNumber IS NULL) AND " +
-            "(e.idEsset LIKE %:idEsset% OR :idEsset IS NULL) AND " +
-            "(CONCAT(p.lastname, ' ', p.surname, ' ', p.name) LIKE %:responsibleName% OR :responsibleName IS NULL) AND " +
-            "(e.departament LIKE %:departament% OR :departament IS NULL) AND " +
-            "(e.type LIKE %:type% OR :type IS NULL) AND " +
-            "(e.brand LIKE %:brand% OR :brand IS NULL) AND " +
-            "(e.status = :equipmentStatus OR :equipmentStatus IS NULL)")
-    List<BeanComputerEquipament> findByFilters(String serialNumber, String idEsset, String responsibleName,
-                                               String departament, String type, String brand, CEStatus equipmentStatus);
+            "WHERE (:searchQuery IS NULL OR :searchQuery = '' OR " +
+            "LOWER(e.serialNumber) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
+            "LOWER(e.idEsset) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
+            "LOWER(CONCAT(p.lastname, ' ', p.surname, ' ', p.name)) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
+            "LOWER(e.departament) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
+            "LOWER(e.type) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
+            "LOWER(e.brand) LIKE LOWER(CONCAT('%', :searchQuery, '%')) OR " +
+            "LOWER(CAST(e.status AS string)) LIKE LOWER(CONCAT('%', :searchQuery, '%')))")
+    List<BeanComputerEquipament> findBySearchQuery(@Param("searchQuery") String searchQuery);
 
     @Query("SELECT DISTINCT e.type FROM BeanComputerEquipament e")
     List<String> findDistinctTypes();

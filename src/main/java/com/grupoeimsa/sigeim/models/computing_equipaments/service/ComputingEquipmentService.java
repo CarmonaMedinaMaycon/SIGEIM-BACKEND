@@ -33,8 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -144,40 +142,19 @@ public class ComputingEquipmentService {
         });
     }
 
-    public List<ResponseSeeAllEquipmentsDto> searchEquipments(ResponseSeeAllEquipmentsDto searchCriteria) {
-        CEStatus equipmentStatus = null;
-        if (searchCriteria.getEquipmentStatus() != null) {
-            try {
-                equipmentStatus = CEStatus.valueOf(searchCriteria.getEquipmentStatus());
-            } catch (IllegalArgumentException e) {
-                System.out.println("Invalid status value: " + searchCriteria.getEquipmentStatus());
-            }
-        }
-
-        List<BeanComputerEquipament> equipos = repository.findByFilters(
-                searchCriteria.getSerialNumber(),
-                searchCriteria.getIdEsset(),
-                searchCriteria.getResponsibleName(),
-                searchCriteria.getDepartament(),
-                searchCriteria.getType(),
-                searchCriteria.getBrand(),
-                equipmentStatus
-        );
-
-        List<ResponseSeeAllEquipmentsDto> result = new ArrayList<>();
-        for (BeanComputerEquipament equipo : equipos) {
-            ResponseSeeAllEquipmentsDto dto = getResponseSeeAllEquipmentsDto(equipo);
-            result.add(dto);
-        }
-
-        return result;
+    public List<ResponseSeeAllEquipmentsDto> searchEquipments(String searchQuery) {
+        return repository.findBySearchQuery(searchQuery)
+                .stream()
+                .map(this::getResponseSeeAllEquipmentsDto)
+                .collect(Collectors.toList());
     }
+
 
     private ResponseSeeAllEquipmentsDto getResponseSeeAllEquipmentsDto(BeanComputerEquipament equipo) {
         ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
         dto.setSerialNumber(equipo.getSerialNumber());
         dto.setIdEsset(equipo.getIdEsset());
-        dto.setResponsibleName(equipo.getPerson() != null ? equipo.getPerson().getLastname() + " " + equipo.getPerson().getSurname() : "");
+        dto.setResponsibleName(equipo.getPerson() != null ? equipo.getPerson().getName() + " " + equipo.getPerson().getLastname() + " " + equipo.getPerson().getSurname() : "");
         dto.setDepartament(equipo.getDepartament());
         dto.setType(equipo.getType());
         dto.setBrand(equipo.getBrand());
@@ -196,7 +173,7 @@ public class ComputingEquipmentService {
         return filters;
     }
 
-    public Page<ResponseSeeAllEquipmentsDto> searchEquipments(RequestSearchByFilteringEquipmentsDto filtros) {
+    public Page<ResponseSeeAllEquipmentsDto> searchEquipmentsFiltering(RequestSearchByFilteringEquipmentsDto filtros) {
         CEStatus equipmentStatus = null;
         if (filtros.getEquipmentStatus() != null && !filtros.getEquipmentStatus().equalsIgnoreCase("Todos")) {
             try {
@@ -209,7 +186,7 @@ public class ComputingEquipmentService {
         int page = (filtros.getPage() != null) ? filtros.getPage() : 0;
         int size = (filtros.getSize() != null) ? filtros.getSize() : 10;
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "creationDate"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "computerEquipamentId"));
 
         Page<BeanComputerEquipament> equipos = repository.findByFilters(
                 Optional.ofNullable(filtros.getType()).filter(type -> !type.equalsIgnoreCase("Todos")).orElse(null),
