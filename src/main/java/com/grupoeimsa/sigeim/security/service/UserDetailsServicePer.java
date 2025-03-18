@@ -125,7 +125,7 @@ public class UserDetailsServicePer implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String email) {
         BeanUser user = userRepository.findBeanUserByEmail(email)
-                .orElseThrow(() -> new CustomException("User or password incorrect"));
+                .orElseThrow(() -> new CustomException("Usuario o contraseña incorrectos"));
 
         List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
         authorityList.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString()));

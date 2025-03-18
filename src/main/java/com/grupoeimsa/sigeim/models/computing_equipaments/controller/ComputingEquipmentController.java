@@ -9,6 +9,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.Request
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.SearchEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.service.ComputingEquipmentService;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,15 +31,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("api/sigeim/computing-equipment")
+@CrossOrigin(origins = {"*"})
 public class ComputingEquipmentController {
     private final ComputingEquipmentService computingEquipmentService;
+
     public ComputingEquipmentController(ComputingEquipmentService computingEquipmentService) {
         this.computingEquipmentService = computingEquipmentService;
     }
@@ -62,8 +64,8 @@ public class ComputingEquipmentController {
     }
 
     @PostMapping("/search-equipment")
-    public List<ResponseSeeAllEquipmentsDto> buscarEquipos(@RequestBody ResponseSeeAllEquipmentsDto searchCriteria) {
-        return computingEquipmentService.searchEquipments(searchCriteria);
+    public List<ResponseSeeAllEquipmentsDto> buscarEquipos(@RequestBody SearchEquipmentDto searchCriteria) {
+        return computingEquipmentService.searchEquipments(searchCriteria.getSearchQuery());
     }
 
     @PostMapping("/filters")
@@ -73,7 +75,7 @@ public class ComputingEquipmentController {
 
     @PostMapping("/search-equipment-by-filtering")
     public Page<ResponseSeeAllEquipmentsDto> buscarEquipos(@RequestBody RequestSearchByFilteringEquipmentsDto filtros) {
-        return computingEquipmentService.searchEquipments(filtros);
+        return computingEquipmentService.searchEquipmentsFiltering(filtros);
     }
 
     @PostMapping("/see-details")
@@ -102,14 +104,6 @@ public class ComputingEquipmentController {
         InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(excelData));
 
         HttpHeaders headers = new HttpHeaders();
-
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String formattedDate = today.format(formatter);
-
-        headers.add("Content-Disposition", "attachment; filename=SIGEIM-Bitacora-de-Equipos-de-Computo-" +
-                formattedDate +
-                ".xlsx");
         headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
         return ResponseEntity.ok()
