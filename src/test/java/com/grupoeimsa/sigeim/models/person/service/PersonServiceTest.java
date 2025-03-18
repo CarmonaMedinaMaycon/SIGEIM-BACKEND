@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.person.service;
 
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,5 +96,66 @@ class PersonServiceTest {
         assertEquals(1, result.getTotalElements());
         assertEquals("John", result.getContent().get(0).getName());
         assertEquals("Doe", result.getContent().get(0).getSurname());
+    }
+
+    @Test
+    void testRegisterPersonal_Success() {
+        // Configuración del DTO de entrada
+        ResponseRegisterPersonDTO responsePersonDTO = new ResponseRegisterPersonDTO();
+        responsePersonDTO.setName("John");
+        responsePersonDTO.setSurname("Doe");
+        responsePersonDTO.setLastname("Smith");
+        responsePersonDTO.setEmail("john.doe@example.com");
+        responsePersonDTO.setPhoneNumber("1234567890");
+        responsePersonDTO.setDepartament("IT");
+        responsePersonDTO.setEnterprise("Company");
+        responsePersonDTO.setPosition("Manager");
+        responsePersonDTO.setComments("New employee");
+        responsePersonDTO.setDateStart(LocalDate.now());
+        responsePersonDTO.setDateEnd(LocalDate.now());
+        responsePersonDTO.setEntryDate(LocalDate.now());
+
+        // Configuración del comportamiento de los mocks
+        when(personRepository.existsByEmail(responsePersonDTO.getEmail())).thenReturn(false);
+        when(personRepository.save(any(BeanPerson.class))).thenReturn(new BeanPerson());
+
+        // Llamar al método a probar
+        assertDoesNotThrow(() -> personService.registerPersonal(responsePersonDTO));
+
+        // Verificar que los métodos hayan sido llamados correctamente
+        verify(personRepository, times(1)).existsByEmail(responsePersonDTO.getEmail());
+        verify(personRepository, times(1)).save(any(BeanPerson.class));
+    }
+
+    @Test
+    void testRegisterPersonal_EmailAlreadyExists() {
+        // Configuración del DTO de entrada
+        ResponseRegisterPersonDTO responsePersonDTO = new ResponseRegisterPersonDTO();
+        responsePersonDTO.setEmail("john.doe@example.com");
+
+        // Configuración del mock para simular que el email ya existe
+        when(personRepository.existsByEmail(responsePersonDTO.getEmail())).thenReturn(true);
+
+        // Verificar que se lanza la excepción CustomException cuando el email ya existe
+        CustomException exception = assertThrows(CustomException.class, () -> personService.registerPersonal(responsePersonDTO));
+        assertEquals("email already exists", exception.getMessage());
+
+        // Verificar que el método save no fue llamado
+        verify(personRepository, never()).save(any(BeanPerson.class));
+    }
+
+    @Test
+    void testRegisterPersonal_SQLException() {
+        // Configuración del DTO de entrada
+        ResponseRegisterPersonDTO responsePersonDTO = new ResponseRegisterPersonDTO();
+        responsePersonDTO.setEmail("john.doe@example.com");
+
+        // Configuración del mock para simular una SQLException envuelta en RuntimeException
+        when(personRepository.existsByEmail(responsePersonDTO.getEmail())).thenReturn(false);
+        when(personRepository.save(any(BeanPerson.class))).thenThrow(new RuntimeException(new SQLException()));
+
+        // Verificar que se lanza una RuntimeException con causa SQLException
+        Exception exception = assertThrows(RuntimeException.class, () -> personService.registerPersonal(responsePersonDTO));
+        assertTrue(exception.getCause() instanceof SQLException);
     }
 }
