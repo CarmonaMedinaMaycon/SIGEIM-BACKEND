@@ -1,5 +1,7 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
@@ -105,5 +107,6 @@ public class BeanComputerEquipament {
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonBackReference
     private BeanPerson person;
 }
