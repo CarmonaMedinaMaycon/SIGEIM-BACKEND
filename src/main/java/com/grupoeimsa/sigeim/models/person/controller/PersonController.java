@@ -3,6 +3,7 @@ package com.grupoeimsa.sigeim.models.person.controller;
 import com.grupoeimsa.sigeim.models.person.controller.dto.RequestPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.service.PersonService;
 import jakarta.validation.Valid;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -72,6 +74,12 @@ public class PersonController {
                 "Person updated",
                 HttpStatus.OK
         );
+    }
+
+    // Endpoint para obtener lista de personas
+    @PostMapping("/select")
+    public List<ResponseResponsibleSelectDto> getPersonsForSelect() {
+        return personService.getAllPersonsForSelect();
     }
 
 }
