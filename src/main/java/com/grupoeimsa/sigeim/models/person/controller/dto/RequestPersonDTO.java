@@ -11,4 +11,5 @@ public class RequestPersonDTO {
     private String search;
     private int page;
     private int size;
+    private Boolean status;
 }

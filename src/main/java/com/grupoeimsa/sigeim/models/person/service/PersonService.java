@@ -1,5 +1,7 @@
 package com.grupoeimsa.sigeim.models.person.service;
 
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,17 +25,19 @@ import java.util.stream.Collectors;
 public class PersonService {
 
     public final IPerson personRepository;
+    public final IComputerEquipament computerEquipamentRepository;
 
-    public PersonService(IPerson personRepository) {
+    public PersonService(IPerson personRepository, IComputerEquipament computerEquipamentRepository) {
         this.personRepository = personRepository;
+        this.computerEquipamentRepository = computerEquipamentRepository;
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponsePersonDTO> findAll(String search, int page, int size) {
+    public Page<ResponsePersonDTO> findAll(String search, int page, int size, Boolean status) {
         Pageable pageable = PageRequest.of(page, size);
         Page<BeanPerson> person = personRepository.findAllBySearch(
                 search,
-                true,
+                status,
                 pageable
         );
         if (person.isEmpty()) {
@@ -71,12 +76,27 @@ public class PersonService {
     }
 
     @Transactional
-    public void enableDisable(Long id){
+    public void enableDisable(Long id) {
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
+
+        Optional<BeanComputerEquipament> computerEquipament = computerEquipamentRepository.findById(
+                person.getComputerEquipaments().get(0).getComputerEquipamentId()
+        );
+
+        if (computerEquipament.isPresent()) {
+            // En lugar de cambiar el ID, crea una nueva instancia de BeanPerson con el ID correcto
+            BeanPerson newPerson = personRepository.findById(2L)
+                    .orElseThrow(() -> new CustomException("Default person not found"));
+
+            computerEquipament.get().setPerson(newPerson);
+            computerEquipamentRepository.save(computerEquipament.get());
+        }
+
         person.setStatus(!person.getStatus());
         personRepository.save(person);
     }
+
 
     @Transactional
     public void update(ResponseUpdatePersonDTO updatePersonDTO) {
