@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.person.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
@@ -53,6 +54,7 @@ public class BeanPerson {
     @Column(name = "status")
     private Boolean status;
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private BeanUser user;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
@@ -60,6 +62,7 @@ public class BeanPerson {
     private BeanCellphone cellphone;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<BeanComputerEquipament> computerEquipaments;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
@@ -67,6 +70,7 @@ public class BeanPerson {
     private BeanLicense license;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private BeanAccessCard accessCard;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)

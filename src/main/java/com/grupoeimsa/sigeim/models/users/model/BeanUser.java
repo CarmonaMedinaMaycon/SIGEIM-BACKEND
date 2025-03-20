@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.users.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -40,5 +41,6 @@ public class BeanUser {
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonBackReference
     private BeanPerson person;
 }

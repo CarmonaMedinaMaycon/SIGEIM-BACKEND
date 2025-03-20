@@ -107,5 +107,6 @@ public class BeanComputerEquipament {
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
+    @JsonBackReference
     private BeanPerson person;
 }
