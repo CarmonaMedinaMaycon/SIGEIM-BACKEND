@@ -2,6 +2,7 @@ package com.grupoeimsa.sigeim.models.person.service;
 
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -90,6 +93,17 @@ public class PersonService {
         person.setComments(updatePersonDTO.getComments());
         person.setDateEnd(updatePersonDTO.getDateEnd());
         personRepository.save(person);
+    }
+
+    public List<ResponseResponsibleSelectDto> getAllPersonsForSelect() {
+        List<BeanPerson> persons = personRepository.findAll();
+
+        return persons.stream()
+                .map(person -> new ResponseResponsibleSelectDto(
+                        person.getPersonId(),
+                        person.getFullName()
+                ))
+                .collect(Collectors.toList());
     }
 
 }

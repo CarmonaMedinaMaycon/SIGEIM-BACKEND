@@ -1,10 +1,7 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto;
 
-import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -24,8 +21,8 @@ public class RequestRegisterComputingEquipmentDto {
     final String purchasingCompany;
     final Boolean hasInvoice;
     final String supplier;
-    final Long invoiceFolio;
-    final LocalDate purchaseDate;
+    final String invoiceFolio;
+    final String purchaseDate;
     final String assetNumber;
     final Double price;
     final String systemObservations;

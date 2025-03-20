@@ -79,5 +79,4 @@ public class BeanPerson {
     public String getFullName() {
         return name + " " + lastname + (surname != null ? " " + surname : "");
     }
-
 }
