@@ -25,8 +25,8 @@ public class ResponseSeeDetailsEquipmentDto {
     private String purchasingCompany;
     private Boolean hasInvoice;
     private String supplier;
-    private Long invoiceFolio;
-    private LocalDate purchaseDate;
+    private String invoiceFolio;
+    private String purchaseDate;
     private String assetNumber;
     private Double price;
     private String status;

@@ -26,8 +26,8 @@ public class RequestUpdateComputingEquipmentDto {
     private String purchasingCompany;
     private Boolean updateInvoice;
     private String supplier;
-    private Long invoiceFolio;
-    private LocalDate purchaseDate;
+    private String invoiceFolio;
+    private String purchaseDate;
     private String assetNumber;
     private Double price;
     private String systemObservations;

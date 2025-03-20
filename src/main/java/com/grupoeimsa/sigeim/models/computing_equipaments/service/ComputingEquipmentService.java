@@ -15,6 +15,8 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.HistoryEquipmentPhotosGroupDto;
+import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
+import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
@@ -47,11 +49,13 @@ public class ComputingEquipmentService {
     private final IComputerEquipament repository;
     private final IPerson personRepository;
     private final BeanHistoryPhotosEquipament beanHistoryPhotosEquipament;
+    private final InvoiceService invoiceService;
 
-    public ComputingEquipmentService(IComputerEquipament repository, IPerson personRepository, BeanHistoryPhotosEquipament beanHistoryPhotosEquipament) {
+    public ComputingEquipmentService(IComputerEquipament repository, IPerson personRepository, BeanHistoryPhotosEquipament beanHistoryPhotosEquipament, InvoiceService invoiceService) {
         this.repository = repository;
         this.personRepository = personRepository;
         this.beanHistoryPhotosEquipament = beanHistoryPhotosEquipament;
+        this.invoiceService = invoiceService;
     }
 
     @Transactional
@@ -59,24 +63,37 @@ public class ComputingEquipmentService {
         BeanComputerEquipament equipment = new BeanComputerEquipament();
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
+
         BeanPerson person = personRepository.findById(dto.getPersonId())
                 .orElseThrow(() -> new CustomException("Person not found with ID: " + dto.getPersonId()));
-        ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(), dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(), dto.getProcessor(), dto.getPurchasingCompany(), dto);
-        if (!Objects.equals(person.getName(), "Sistemas")){
+
+        ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(),
+                dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(),
+                dto.getProcessor(), dto.getPurchasingCompany(), dto);
+
+        if (!Objects.equals(person.getName(), "Sistemas")) {
             equipment.setStatus(CEStatus.OCUPADO);
-        }else{
+        } else {
             equipment.setStatus(CEStatus.DISPONIBLE);
         }
+
         equipment.setHasInvoice(dto.getHasInvoice());
         equipment.setSupplier(dto.getSupplier());
         equipment.setInvoiceFolio(dto.getInvoiceFolio());
         equipment.setPurchaseDate(dto.getPurchaseDate());
         equipment.setAssetNumber(dto.getAssetNumber());
         equipment.setPrice(dto.getPrice());
-        equipment.setCreationDate(LocalDate.now());
+        equipment.setCreationDate(java.time.LocalDate.now());
         equipment.setSystemObservations(dto.getSystemObservations());
+
+        // Si el equipo tiene factura, buscamos la factura y la asignamos
+        if (dto.getHasInvoice() != null && dto.getHasInvoice()) {
+            Optional<BeanInvoice> invoice = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
+            invoice.ifPresent(equipment::setInvoice);
+        }
+
         repository.save(equipment);
-        return "Equipo registrado con exito";
+        return "Equipo registrado con éxito";
     }
 
     private void ComputerData(BeanComputerEquipament equipment, BeanPerson person, String departament, String enterprise, String workModality, String type, String brand, String model, Long ramMemoryCapacity, Long memoryCapacity, String processor, String purchasingCompany, Object dto) {

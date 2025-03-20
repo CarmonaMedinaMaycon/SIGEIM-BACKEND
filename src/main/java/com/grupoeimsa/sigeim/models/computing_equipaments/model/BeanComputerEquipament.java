@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
@@ -73,13 +74,13 @@ public class BeanComputerEquipament {
     private Boolean hasInvoice;
 
     @Column(name = "invoice_folio", nullable = false)
-    private Long invoiceFolio;
+    private String invoiceFolio;
 
     @Column(name = "system_observations", nullable = false)
     private String systemObservations;
 
     @Column(name = "purchase_date", nullable = false)
-    private LocalDate purchaseDate;
+    private String purchaseDate;
 
     @Column(name = "creation_date", nullable = false)
     private LocalDate creationDate;
@@ -101,6 +102,7 @@ public class BeanComputerEquipament {
 
     @OneToOne
     @JoinColumn(name = "invoice_id")
+    @JsonManagedReference
     private BeanInvoice invoice;
 
     @ManyToOne
