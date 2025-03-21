@@ -33,10 +33,12 @@ public class PersonService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponsePersonDTO> findAll(String search, int page, int size, Boolean status) {
+    public Page<ResponsePersonDTO> findAll(String search, int page, int size, Boolean status, String enterprise, String departament) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BeanPerson> person = personRepository.findAllBySearch(
+        Page<BeanPerson> person = personRepository.findAllByFilters(
                 search,
+                departament,
+                enterprise,
                 status,
                 pageable
         );
