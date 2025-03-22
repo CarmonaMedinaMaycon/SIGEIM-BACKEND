@@ -77,22 +77,26 @@ public class PersonService {
 
     @Transactional
     public void enableDisable(Long id) {
+        // Buscar la persona por ID, lanzar excepción si no se encuentra
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
 
-        Optional<BeanComputerEquipament> computerEquipament = computerEquipamentRepository.findById(
-                person.getComputerEquipaments().get(0).getComputerEquipamentId()
-        );
+        // Validar si la persona tiene equipos asignados
+        if (!person.getComputerEquipaments().isEmpty()) {
+            // Obtener el primer equipo asignado (asumiendo que una persona puede tener varios)
+            BeanComputerEquipament computerEquipament = computerEquipamentRepository.findById(
+                    person.getComputerEquipaments().get(0).getComputerEquipamentId()
+            ).orElseThrow(() -> new CustomException("Computer equipment not found"));
 
-        if (computerEquipament.isPresent()) {
-            // En lugar de cambiar el ID, crea una nueva instancia de BeanPerson con el ID correcto
-            BeanPerson newPerson = personRepository.findById(2L)
+            // Asignar el equipo a otra persona (en este caso, una persona por defecto con ID 2)
+            BeanPerson defaultPerson = personRepository.findById(2L)
                     .orElseThrow(() -> new CustomException("Default person not found"));
 
-            computerEquipament.get().setPerson(newPerson);
-            computerEquipamentRepository.save(computerEquipament.get());
+            computerEquipament.setPerson(defaultPerson);
+            computerEquipamentRepository.save(computerEquipament);
         }
 
+        // Cambiar el estado de la persona
         person.setStatus(!person.getStatus());
         personRepository.save(person);
     }
