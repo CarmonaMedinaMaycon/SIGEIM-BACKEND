@@ -29,7 +29,7 @@ public class PersonController {
     @PostMapping("/")
 //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
     public ResponseEntity<Page<ResponsePersonDTO>> findAll(@Valid @RequestBody RequestPersonDTO requestPersonDTO){
-        Page<ResponsePersonDTO> person = personService.findAll(requestPersonDTO.getSearch(), requestPersonDTO.getPage(), requestPersonDTO.getSize(), requestPersonDTO.getStatus());
+        Page<ResponsePersonDTO> person = personService.findAll(requestPersonDTO.getSearch(), requestPersonDTO.getPage(), requestPersonDTO.getSize(), requestPersonDTO.getStatus(), requestPersonDTO.getEnterprise(), requestPersonDTO.getDepartament());
         return new ResponseEntity<>(
                 person,
                 HttpStatus.OK

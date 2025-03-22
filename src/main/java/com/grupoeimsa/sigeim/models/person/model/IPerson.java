@@ -13,15 +13,20 @@ public interface IPerson extends JpaRepository<BeanPerson, Long> {
 
         @Query("SELECT p FROM BeanPerson p WHERE " +
                 "(:search IS NULL OR " +
-                "p.name LIKE %:search% OR " +
-                "p.surname LIKE %:search% OR " +
-                "p.lastname LIKE %:search% OR " +
-                "p.email LIKE %:search%) AND " +
+                "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                "LOWER(p.surname) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                "LOWER(p.lastname) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                "LOWER(p.email) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+                "(:departament IS NULL OR LOWER(p.departament) LIKE LOWER(CONCAT('%', :departament, '%'))) AND " +
+                "(:enterprise IS NULL OR LOWER(p.enterprise) LIKE LOWER(CONCAT('%', :enterprise, '%'))) AND " +
                 "(:status IS NULL OR p.status = :status)")
-        Page<BeanPerson> findAllBySearch(
+        Page<BeanPerson> findAllByFilters(
                 @Param("search") String search,
+                @Param("departament") String departament,
+                @Param("enterprise") String enterprise,
                 @Param("status") Boolean status,
                 Pageable pageable
         );
+
 
 }
