@@ -26,7 +26,7 @@ public class LicenseController {
 
     @PostMapping("/")
     public ResponseEntity<Page<ResponseLicenseDTO>> findAll(@Valid @RequestBody RequestLicensesDTO requestLicensesDTO){
-        Page<ResponseLicenseDTO> licenses = licenseService.findAll(requestLicensesDTO.getSearch(), requestLicensesDTO.getPage(), requestLicensesDTO.getSize());
+        Page<ResponseLicenseDTO> licenses = licenseService.findAll(requestLicensesDTO.getSearch(), requestLicensesDTO.getPage(), requestLicensesDTO.getSize(), requestLicensesDTO.getStatus(), requestLicensesDTO.getEnterprise(), requestLicensesDTO.getDepartament());
         return new ResponseEntity<>(
                 licenses,
                 HttpStatus.OK

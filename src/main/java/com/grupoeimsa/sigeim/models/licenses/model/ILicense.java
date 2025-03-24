@@ -8,8 +8,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface ILicense extends JpaRepository<BeanLicense, Long> {
 
-    @Query("SELECT l FROM BeanLicense l WHERE " +
-            "(:search IS NULL OR " +
+    @Query("SELECT l FROM BeanLicense l " +
+            "JOIN l.person p " + // Unir con BeanPerson
+            "WHERE (:search IS NULL OR " +
             "l.accountOutlook LIKE %:search% OR " +
             "l.typeOutlook LIKE %:search% OR " +
             "l.alias LIKE %:search% OR " +
@@ -36,9 +37,18 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
             "l.userLinkedin LIKE %:search% OR " +
             "l.userYoutube LIKE %:search% OR " +
             "l.magentoUser LIKE %:search% OR " +
-            "l.userShopify LIKE %:search%)")
+            "l.userShopify LIKE %:search% OR " +
+            "p.name LIKE %:search% OR " + // Búsqueda por nombre en BeanPerson
+            "p.surname LIKE %:search% OR " + // Búsqueda por apellido paterno en BeanPerson
+            "p.lastname LIKE %:search%) AND " + // Búsqueda por apellido materno en BeanPerson
+            "(:departament IS NULL OR LOWER(p.departament) LIKE LOWER(CONCAT('%', :departament, '%'))) AND " +
+            "(:enterprise IS NULL OR LOWER(p.enterprise) LIKE LOWER(CONCAT('%', :enterprise, '%'))) AND " +
+            "(:status IS NULL OR p.status = :status)") // debe o no debe tener status?
     Page<BeanLicense> findAllBySearch(
             @Param("search") String search,
+            @Param("departament") String departament,
+            @Param("enterprise") String enterprise,
+            @Param("status") Boolean status,
             Pageable pageable
     );
 
