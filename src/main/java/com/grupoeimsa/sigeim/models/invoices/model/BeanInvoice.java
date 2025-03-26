@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,7 +25,7 @@ public class BeanInvoice {
     private int invoice_id;
 
     @Column(name = "price", nullable = false )
-    private double priceIva;
+    private Double priceIva;
 
     @Column(name = "supplier", nullable = false)
     private String supplier;
@@ -39,8 +40,8 @@ public class BeanInvoice {
     @Column(name = "invoice_file", columnDefinition = "LONGBLOB")
     private byte[] invoiceFile; // Se almacena el archivo PDF en formato binario
 
-    @OneToOne(mappedBy = "invoice", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "invoice", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     @JsonBackReference
-    private BeanComputerEquipament computerEquipament;
+    private List<BeanComputerEquipament> computerEquipament;
 
 }

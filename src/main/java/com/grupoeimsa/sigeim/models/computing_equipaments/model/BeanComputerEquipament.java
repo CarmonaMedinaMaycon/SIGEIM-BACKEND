@@ -101,8 +101,8 @@ public class BeanComputerEquipament {
     @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
     private List<BeanHistoryPhotosEquipament> historyPhotosEquipament;
 
-    @OneToOne
-    @JoinColumn(name = "invoice_id")
+    @ManyToOne
+    @JoinColumn(name = "invoice_id", nullable = false)
     @JsonManagedReference
     private BeanInvoice invoice;
 

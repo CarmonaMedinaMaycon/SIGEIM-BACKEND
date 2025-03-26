@@ -45,7 +45,7 @@ public class ComputingEquipmentController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerComputingEquipment(@RequestBody RequestRegisterComputingEquipmentDto dto) {
+    public ResponseEntity<String> registerComputingEquipment(@RequestBody RequestRegisterComputingEquipmentDto dto) throws IOException {
         String response = computingEquipmentService.createComputingEquipment(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

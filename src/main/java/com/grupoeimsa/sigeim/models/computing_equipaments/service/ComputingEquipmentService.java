@@ -15,6 +15,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.HistoryEquipmentPhotosGroupDto;
+import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDto;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
@@ -31,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -59,7 +61,9 @@ public class ComputingEquipmentService {
     }
 
     @Transactional
-    public String createComputingEquipment(RequestRegisterComputingEquipmentDto dto) {
+    public String createComputingEquipment(RequestRegisterComputingEquipmentDto dto) throws IOException {
+
+        // Crear equipo
         BeanComputerEquipament equipment = new BeanComputerEquipament();
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
@@ -71,11 +75,7 @@ public class ComputingEquipmentService {
                 dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(),
                 dto.getProcessor(), dto.getPurchasingCompany(), dto);
 
-        if (!Objects.equals(person.getName(), "Sistemas")) {
-            equipment.setStatus(CEStatus.OCUPADO);
-        } else {
-            equipment.setStatus(CEStatus.DISPONIBLE);
-        }
+        equipment.setStatus(Objects.equals(person.getName(), "Sistemas") ? CEStatus.DISPONIBLE : CEStatus.OCUPADO);
 
         equipment.setHasInvoice(dto.getHasInvoice());
         equipment.setSupplier(dto.getSupplier());
@@ -83,18 +83,39 @@ public class ComputingEquipmentService {
         equipment.setPurchaseDate(dto.getPurchaseDate());
         equipment.setAssetNumber(dto.getAssetNumber());
         equipment.setPrice(dto.getPrice());
-        equipment.setCreationDate(java.time.LocalDate.now());
+        equipment.setCreationDate(LocalDate.now());
         equipment.setSystemObservations(dto.getSystemObservations());
 
-        // Si el equipo tiene factura, buscamos la factura y la asignamos
-        if (dto.getHasInvoice() != null && dto.getHasInvoice()) {
-            Optional<BeanInvoice> invoice = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
-            invoice.ifPresent(equipment::setInvoice);
+        // Manejo de la factura solo si tiene factura
+        if (Boolean.TRUE.equals(dto.getHasInvoice())) {
+            Optional<BeanInvoice> existingInvoice = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
+
+            if (existingInvoice.isPresent()) {
+                // Si la factura existe, la asociamos
+                equipment.setInvoice(existingInvoice.get());
+            } else {
+                // Si no existe, la creamos
+                BeanInvoice newInvoice = new BeanInvoice();
+                newInvoice.setInvoiceFolio(dto.getInvoiceFolio());
+                newInvoice.setSupplier(dto.getSupplier());
+                newInvoice.setInvoiceDate(dto.getInvoiceDate());
+                newInvoice.setPriceIva(dto.getPriceIva());
+
+                // Guardar archivo si viene
+                if (dto.getFile() != null && !dto.getFile().isEmpty()) {
+                    newInvoice.setInvoiceFile(dto.getFile().getBytes());
+                }
+
+                // Guardar la nueva factura
+                BeanInvoice savedInvoice = invoiceService.saveInvoice(newInvoice);
+                equipment.setInvoice(savedInvoice);
+            }
         }
 
         repository.save(equipment);
         return "Equipo registrado con éxito";
     }
+
 
     private void ComputerData(BeanComputerEquipament equipment, BeanPerson person, String departament, String enterprise, String workModality, String type, String brand, String model, Long ramMemoryCapacity, Long memoryCapacity, String processor, String purchasingCompany, Object dto) {
         equipment.setPerson(person);
