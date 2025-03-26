@@ -24,6 +24,9 @@ public class BeanCellphone {
     @Column(name = "cellphone_id", updatable = false, nullable = false)
     private Long cellphoneId;
 
+    @Column(name = "equipament_name", nullable = false)
+    private String equipamentName;
+
     @Column(name = "legal_name", nullable = false)
     private String legalName;
 
@@ -45,7 +48,10 @@ public class BeanCellphone {
     @Column(name = "status")
     private Boolean status;
 
-    @OneToOne
+    @Column(name = "whatsapp_bussiness")
+    private Boolean whatsappBussiness;
+
+    @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference
     private BeanPerson person;

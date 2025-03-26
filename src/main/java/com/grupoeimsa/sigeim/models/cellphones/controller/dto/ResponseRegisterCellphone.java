@@ -14,6 +14,8 @@ import java.time.LocalDate;
 public class ResponseRegisterCellphone {
     private Long cellphoneId;
 
+    private String equipamentName;
+
     private String legalName;
 
     private String company;
@@ -27,6 +29,8 @@ public class ResponseRegisterCellphone {
     private String comments;
 
     private Boolean status;
+
+    private Boolean whatsappBussiness;
 
     private BeanPerson person;
 }

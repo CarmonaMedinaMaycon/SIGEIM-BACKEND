@@ -19,7 +19,9 @@ public class ResponseCellphoneDTO {
 
     private Long cellphoneId;
 
-    private String legalName;
+    private String equipamentName;
+
+    private String legalName; //razon social
 
     private String company;
 
@@ -32,6 +34,10 @@ public class ResponseCellphoneDTO {
     private String comments;
 
     private BeanPerson person;
+
+    private Boolean status;
+
+    private Boolean whatsappBussiness;
 
     private List<BeanResponsiveCellphone> responsiveCellphone;
 
