@@ -1,11 +1,17 @@
 package com.grupoeimsa.sigeim.models.person.service;
 
+import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
+import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
+import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,17 +30,25 @@ import java.util.stream.Collectors;
 public class PersonService {
 
     public final IPerson personRepository;
+    public final IComputerEquipament computerEquipamentRepository;
+    public final ICellphone cellphoneRepository;
+    public final IResponsiveEquipments responsiveEquipmentsRepository;
 
-    public PersonService(IPerson personRepository) {
+    public PersonService(IPerson personRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
         this.personRepository = personRepository;
+        this.computerEquipamentRepository = computerEquipamentRepository;
+        this.cellphoneRepository = cellphoneRepository;
+        this.responsiveEquipmentsRepository = responsiveEquipmentsRepository;
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponsePersonDTO> findAll(String search, int page, int size) {
+    public Page<ResponsePersonDTO> findAll(String search, int page, int size, Boolean status, String enterprise, String departament) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BeanPerson> person = personRepository.findAllBySearch(
+        Page<BeanPerson> person = personRepository.findAllByFilters(
                 search,
-                true,
+                departament,
+                enterprise,
+                status,
                 pageable
         );
         if (person.isEmpty()) {
@@ -54,6 +70,8 @@ public class PersonService {
         person.setName(responsePersonDTO.getName());
         person.setSurname(responsePersonDTO.getSurname());
         person.setLastname(responsePersonDTO.getLastname());
+        person.setWhoRegistered(responsePersonDTO.getWhoRegistered());
+        person.setEmailRegistered(responsePersonDTO.getEmailRegistered());
         person.setEmail(responsePersonDTO.getEmail());
         if (personRepository.existsByEmail(person.getEmail())) {
             throw new CustomException("email already exists");
@@ -63,6 +81,8 @@ public class PersonService {
         person.setEnterprise(responsePersonDTO.getEnterprise());
         person.setPosition(responsePersonDTO.getPosition());
         person.setComments(responsePersonDTO.getComments());
+        person.setCommentsHardwareSoftware(responsePersonDTO.getCommentsHardwareSoftware());
+        person.setCommentsEmail(responsePersonDTO.getCommentsEmail());
         person.setDateStart(responsePersonDTO.getDateStart());
         person.setDateEnd(responsePersonDTO.getDateEnd());
         person.setEntryDate(responsePersonDTO.getEntryDate());
@@ -71,12 +91,49 @@ public class PersonService {
     }
 
     @Transactional
-    public void enableDisable(Long id){
+    public void enableDisable(Long id) {
+        // Buscar la persona por ID, lanzar excepción si no se encuentra
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
+
+        person.setDateEnd(LocalDate.now());
+
+        // Obtener la persona por defecto con ID 1 (para evitar múltiples consultas)
+        BeanPerson defaultPerson = personRepository.findById(1L)
+                .orElseThrow(() -> new CustomException("Default person not found"));
+
+        // Validar si la persona tiene equipos asignados
+        if (!person.getComputerEquipaments().isEmpty()) {
+            // Iterar sobre todos los equipos y reasignarlos
+            for (BeanComputerEquipament equipament : person.getComputerEquipaments()) {
+                BeanComputerEquipament computerEquipament = computerEquipamentRepository.findById(
+                        equipament.getComputerEquipamentId()
+                ).orElseThrow(() -> new CustomException("Computer equipment not found"));
+
+                computerEquipament.setPerson(defaultPerson);
+                computerEquipamentRepository.save(computerEquipament);
+            }
+        }
+
+        // Validar si la persona tiene celulares asignados
+        if (!person.getCellphone().isEmpty()) {
+            // Iterar sobre todos los celulares y reasignarlos
+            for (BeanCellphone cell : person.getCellphone()) {
+                BeanCellphone cellphone = cellphoneRepository.findById(
+                        cell.getCellphoneId()
+                ).orElseThrow(() -> new CustomException("Cellphone not found"));
+
+                cellphone.setPerson(defaultPerson);
+                cellphoneRepository.save(cellphone);
+            }
+        }
+
+
+        // Cambiar el estado de la persona
         person.setStatus(!person.getStatus());
         personRepository.save(person);
     }
+
 
     @Transactional
     public void update(ResponseUpdatePersonDTO updatePersonDTO) {
@@ -91,7 +148,10 @@ public class PersonService {
         person.setEnterprise(updatePersonDTO.getEnterprise());
         person.setPosition(updatePersonDTO.getPosition());
         person.setComments(updatePersonDTO.getComments());
-        person.setDateEnd(updatePersonDTO.getDateEnd());
+        person.setEmailRegistered(updatePersonDTO.getEmailRegistered());
+        person.setWhoRegistered(updatePersonDTO.getWhoRegistered());
+        person.setCommentsHardwareSoftware(updatePersonDTO.getCommentsHardwareSoftware());
+        person.setCommentsEmail(updatePersonDTO.getCommentsEmail());
         personRepository.save(person);
     }
 

@@ -33,6 +33,10 @@ public class BeanPerson {
     private String surname;
     @Column(name = "lastname")
     private String lastname;
+    @Column(name = "who_registered")
+    private String whoRegistered;
+    @Column(name = "email_registered")
+    private String emailRegistered;
     @Column(name = "email")
     private String email;
     @Column(name = "phone_number", nullable = false)
@@ -47,6 +51,10 @@ public class BeanPerson {
     private String comments;
     @Column(name="dateStart", nullable=false)
     private LocalDate dateStart ;
+    @Column(name="comments_hardware_software", nullable=false)
+    private String commentsHardwareSoftware;
+    @Column(name="comments_email", nullable=false)
+    private String commentsEmail;
     @Column(name="dateEnd", nullable=false)
     private LocalDate dateEnd ;
     @Column(name="entry_date", nullable=false)
@@ -57,9 +65,9 @@ public class BeanPerson {
     @JsonManagedReference
     private BeanUser user;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
-    private BeanCellphone cellphone;
+    private List<BeanCellphone> cellphone;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference

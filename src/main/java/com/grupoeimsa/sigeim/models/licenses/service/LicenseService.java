@@ -28,10 +28,13 @@ public class LicenseService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponseLicenseDTO> findAll(String search, int page, int size){
+    public Page<ResponseLicenseDTO> findAll(String search, int page, int size, Boolean status, String enterprise, String departament){
         Pageable pageable = PageRequest.of(page, size);
         Page<BeanLicense> licenses = licensesRepository.findAllBySearch(
                 search,
+                departament,
+                enterprise,
+                status,
                 pageable
         );
         if (licenses.isEmpty()){

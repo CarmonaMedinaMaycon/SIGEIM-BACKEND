@@ -26,7 +26,7 @@ public class CellphoneController {
 
     @PostMapping("/")
     public ResponseEntity<Page<ResponseCellphoneDTO>> findAll(@Valid @RequestBody RequestCellphoneDTO requestCellphoneDTO){
-        Page<ResponseCellphoneDTO> cellphone = cellphoneService.findAll(requestCellphoneDTO.getSearch(), requestCellphoneDTO.getPage(), requestCellphoneDTO.getSize());
+        Page<ResponseCellphoneDTO> cellphone = cellphoneService.findAll(requestCellphoneDTO.getSearch(), requestCellphoneDTO.getPage(), requestCellphoneDTO.getSize(), requestCellphoneDTO.getStatus(), requestCellphoneDTO.getEnterprise(), requestCellphoneDTO.getDepartament());
         return new ResponseEntity<>(
                 cellphone,
                 HttpStatus.OK

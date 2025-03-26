@@ -16,6 +16,7 @@ public class ResponseUpdatePersonDTO {
     private String name;
     private String surname;
     private String lastname;
+    private String whoRegistered;
     private String email;
     private String phoneNumber;
     private String departament;
@@ -23,6 +24,9 @@ public class ResponseUpdatePersonDTO {
     private String position;
     private String comments;
     private LocalDate dateEnd ;
+    private String emailRegistered;
+    private String commentsHardwareSoftware;
+    private String commentsEmail;
 
     public ResponseUpdatePersonDTO(BeanPerson beanPerson) {
         this.personId = beanPerson.getPersonId();
@@ -36,5 +40,9 @@ public class ResponseUpdatePersonDTO {
         this.position = beanPerson.getPosition();
         this.comments = beanPerson.getComments();
         this.dateEnd = beanPerson.getDateEnd();
+        this.whoRegistered = beanPerson.getWhoRegistered();
+        this.emailRegistered = beanPerson.getEmailRegistered();
+        this.commentsHardwareSoftware = beanPerson.getCommentsHardwareSoftware();
+        this.commentsEmail = beanPerson.getCommentsEmail();
     }
 }

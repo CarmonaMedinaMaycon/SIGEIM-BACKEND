@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class RequestCellphoneDTO {
     private String search;
+    private String departament;
+    private String enterprise;
     private int page;
     private int size;
+    private Boolean status;
 }

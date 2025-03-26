@@ -25,10 +25,13 @@ public class AccessCardService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponseAccessCardDTO> findAll (String search, int page, int size) {
+    public Page<ResponseAccessCardDTO> findAll (String search, int page, int size,  Boolean status, String enterprise, String departament) {
         Pageable pageable = PageRequest.of(page, size);
         Page<BeanAccessCard> accessCards = accessCardRepository.findAllByPersonName(
                 search,
+                departament,
+                enterprise,
+                status,
                 pageable
         );
         if (accessCards.isEmpty()){
@@ -68,6 +71,11 @@ public class AccessCardService {
         accessCard.setPerson(responseRegisterAccessCardDTO.getPerson());
         accessCardRepository.save(accessCard);
 
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        accessCardRepository.deleteById(id);
     }
 
 }

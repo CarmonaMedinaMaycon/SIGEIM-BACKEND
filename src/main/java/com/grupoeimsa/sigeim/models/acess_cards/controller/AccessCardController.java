@@ -26,7 +26,7 @@ public class AccessCardController {
 
     @PostMapping("/")
     public ResponseEntity<Page<ResponseAccessCardDTO>> findAll(@Valid @RequestBody RequestAccessCardDTO requestAccessCardDTO){
-        Page<ResponseAccessCardDTO> accessCard = accessCardService.findAll(requestAccessCardDTO.getSearch(), requestAccessCardDTO.getPage(), requestAccessCardDTO.getSize());
+        Page<ResponseAccessCardDTO> accessCard = accessCardService.findAll(requestAccessCardDTO.getSearch(), requestAccessCardDTO.getPage(), requestAccessCardDTO.getSize(), requestAccessCardDTO.getStatus(),requestAccessCardDTO.getEnterprise(), requestAccessCardDTO.getDepartament());
         return new ResponseEntity<>(
                 accessCard,
                 HttpStatus.OK
@@ -56,6 +56,12 @@ public class AccessCardController {
                 "access card updated",
                 HttpStatus.OK
         );
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> delete(@RequestParam Long id) {
+        accessCardService.delete(id);
+        return new ResponseEntity<>("Access card deleted", HttpStatus.OK);
     }
 
 }
