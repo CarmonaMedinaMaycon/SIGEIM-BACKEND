@@ -33,11 +33,11 @@ public class BeanPerson {
     private String surname;
     @Column(name = "lastname")
     private String lastname;
-    @Column(name = "who_registered")
+    @Column(name = "who_registered", nullable = false)
     private String whoRegistered;
-    @Column(name = "email_registered")
+    @Column(name = "email_registered", nullable = false)
     private String emailRegistered;
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String email;
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
