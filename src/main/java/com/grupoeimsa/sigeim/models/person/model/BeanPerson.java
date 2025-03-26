@@ -61,9 +61,6 @@ public class BeanPerson {
     private LocalDate entryDate ;
     @Column(name = "status")
     private Boolean status;
-    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private BeanUser user;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference

@@ -38,9 +38,4 @@ public class BeanUser {
 
     @Column(name = "status", nullable = false)
     private boolean status;
-
-    @OneToOne
-    @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
-    private BeanPerson person;
 }

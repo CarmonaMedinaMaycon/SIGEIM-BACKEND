@@ -52,23 +52,6 @@ public class UserService {
             throw new CustomException("email already exists");
         }
 
-        BeanPerson newPerson = new BeanPerson();
-        newPerson.setName(request.getName());
-        newPerson.setSurname(request.getSurname());
-        newPerson.setLastname(request.getLastname());
-        newPerson.setEmail(request.getEmail());
-        newPerson.setPhoneNumber(request.getPhoneNumber());
-        newPerson.setDepartament(request.getDepartament());
-        newPerson.setEnterprise(request.getEnterprise());
-        newPerson.setPosition(request.getPosition());
-        newPerson.setComments("Sin comentarios");
-        newPerson.setDateStart(LocalDate.now());
-        newPerson.setDateEnd(LocalDate.of(9999, 12, 31));
-        newPerson.setEntryDate(LocalDate.now());
-        newPerson.setStatus(true);
-
-        BeanPerson savedPerson = personRepository.save(newPerson);
-
         BeanUser newUser = new BeanUser();
         newUser.setEmail(request.getEmail());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -89,7 +72,6 @@ public class UserService {
                 throw new CustomException("Role not supported");
         }
         newUser.setStatus(true);
-        newUser.setPerson(savedPerson);
 
         userRepository.save(newUser);
 

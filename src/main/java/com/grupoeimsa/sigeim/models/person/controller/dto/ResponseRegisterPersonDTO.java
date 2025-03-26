@@ -62,7 +62,6 @@ public class ResponseRegisterPersonDTO {
         this.dateEnd = beanPerson.getDateEnd();
         this.entryDate = beanPerson.getEntryDate();
         this.status = beanPerson.getStatus();
-        this.user = beanPerson.getUser();
         this.cellphone = beanPerson.getCellphone();
         this.computerEquipament = beanPerson.getComputerEquipaments();
         this.license = beanPerson.getLicense();
