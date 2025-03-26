@@ -1,7 +1,5 @@
 package com.grupoeimsa.sigeim.models.users.service;
 
-import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
-import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.users.controller.dto.RequestRegisterUserDto;
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import com.grupoeimsa.sigeim.models.users.model.IUser;
@@ -26,9 +24,6 @@ class UserServiceTest {
     private IUser userRepository;
 
     @Mock
-    private IPerson personRepository;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -42,20 +37,13 @@ class UserServiceTest {
         request = new RequestRegisterUserDto();
         request.setEmail("test@example.com");
         request.setPassword("password");
-        request.setName("John");
-        request.setSurname("Doe");
         request.setRole(1);  // Asumiendo que 1 es ADMIN
-        request.setPhoneNumber("123456789");
-        request.setDepartament("IT");
-        request.setEnterprise("Company");
-        request.setPosition("Manager");
     }
 
     @Test
     void testRegisterUser_Success() {
         // Configuración del comportamiento de los mocks
         when(userRepository.existsBeanUserByEmail(request.getEmail())).thenReturn(false);
-        when(personRepository.save(any())).thenReturn(new BeanPerson());
         when(userRepository.save(any())).thenReturn(new BeanUser());
         when(passwordEncoder.encode(request.getPassword())).thenReturn("encodedPassword");
 
@@ -64,7 +52,6 @@ class UserServiceTest {
 
         // Verificar que los métodos hayan sido llamados correctamente
         verify(userRepository, times(1)).existsBeanUserByEmail(request.getEmail());
-        verify(personRepository, times(1)).save(any(BeanPerson.class));
         verify(userRepository, times(1)).save(any(BeanUser.class));
 
         // Asegurarse de que la respuesta es la esperada

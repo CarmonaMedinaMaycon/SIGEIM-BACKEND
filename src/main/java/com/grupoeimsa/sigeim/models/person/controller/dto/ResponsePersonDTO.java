@@ -36,7 +36,6 @@ public class ResponsePersonDTO {
     private LocalDate dateEnd;
     private LocalDate entryDate;
     private Boolean status;
-    private BeanUser user;
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipaments; // Cambio aquí
     private BeanLicense license;
@@ -62,7 +61,6 @@ public class ResponsePersonDTO {
         this.dateEnd = beanPerson.getDateEnd();
         this.entryDate = beanPerson.getEntryDate();
         this.status = beanPerson.getStatus();
-        this.user = beanPerson.getUser();
         this.cellphone = beanPerson.getCellphone();
         this.computerEquipaments = beanPerson.getComputerEquipaments(); // Cambio aquí
         this.license = beanPerson.getLicense();
