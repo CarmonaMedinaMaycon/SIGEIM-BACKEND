@@ -40,7 +40,7 @@ public class ResponseRegisterPersonDTO {
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipament;
     private BeanLicense license;
-    private BeanAccessCard accessCard;
+    private List<BeanAccessCard> accessCard;
     private BeanAssets assets;
 
     public ResponseRegisterPersonDTO(BeanPerson beanPerson) {

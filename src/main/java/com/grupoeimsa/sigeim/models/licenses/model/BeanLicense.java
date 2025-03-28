@@ -39,14 +39,11 @@ public class BeanLicense {
     @Column(name = "comments_outlook", nullable = false)
     private String commentsOutlook;
 
-    @Column(name = "phoneNumber", nullable = false)
-    private String phoneNumber;
+    @Column(name = "phone_authenticator", nullable = false)
+    private String phoneAuthenticator;
 
     @Column(name = "two_factor_authentication_name", nullable = false)
     private String twoFactorAuthenticationName;
-
-    @Column(name = "departament", nullable = false)
-    private String departament;
 
     @Column(name = "crm", nullable = false)
     private boolean crm;
