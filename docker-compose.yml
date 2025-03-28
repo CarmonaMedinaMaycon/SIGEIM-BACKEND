@@ -28,3 +28,7 @@ services:
       - "8081:8081"
     depends_on:
       - mysql-db
+networks:
+  default:
+    name: sigeim-network
+    driver: bridge
