@@ -49,4 +49,6 @@ public interface IComputerEquipament extends JpaRepository<BeanComputerEquipamen
 
     Optional<BeanComputerEquipament> findById(Long id);
 
+    List<BeanComputerEquipament> findByInvoiceIsNull();
+
 }
