@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto;
 
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import lombok.Data;
 
 @Data
@@ -26,6 +27,7 @@ public class ResponseEditComputerEquipmentDto {
     private String assetNumber;
     private Double price;
     private String systemObservations;
+    private CEStatus status;
 
     private Long personId;
 

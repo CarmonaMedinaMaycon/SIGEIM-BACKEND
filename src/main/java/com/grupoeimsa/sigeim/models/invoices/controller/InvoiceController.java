@@ -8,10 +8,12 @@ import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/sigeim/invoice")
@@ -40,6 +43,17 @@ public class InvoiceController {
         }
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteInvoice(@RequestBody Map<String, Long> body) {
+        Long id = body.get("invoiceId");
+        if (id == null) {
+            throw new IllegalArgumentException("El ID de la factura es obligatorio.");
+        }
+
+        invoiceService.deleteInvoice(id);
+        return ResponseEntity.ok("Factura eliminada correctamente");
+    }
+
     @GetMapping("/all")
     public ResponseEntity<Page<RequestGetAllInvoicesDto>> getAllInvoices(
             @RequestParam(defaultValue = "0") int page,
@@ -50,6 +64,6 @@ public class InvoiceController {
 
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadInvoice(@PathVariable int id) {
-        return invoiceService.downloadInvoice(id);
+        return invoiceService.downloadInvoice((long) id);
     }
 }

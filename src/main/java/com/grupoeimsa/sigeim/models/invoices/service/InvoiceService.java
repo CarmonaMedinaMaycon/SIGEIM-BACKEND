@@ -1,9 +1,11 @@
 package com.grupoeimsa.sigeim.models.invoices.service;
 
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDto;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.RequestGetAllInvoicesDto;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.invoices.model.IInvoice;
+import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +19,9 @@ import java.util.Optional;
 @Service
 public class InvoiceService {
     private final IInvoice repository;
-    public InvoiceService(IInvoice repository) {
+    private final IComputerEquipament computingEquipmentRepository;
+    public InvoiceService(IInvoice repository , IComputerEquipament computingEquipmentRepository) {
+        this.computingEquipmentRepository = computingEquipmentRepository;
         this.repository = repository;
     }
 
@@ -39,15 +43,29 @@ public class InvoiceService {
     public Page<RequestGetAllInvoicesDto> getAllInvoices(PageRequest pageRequest) {
         return repository.findAll(pageRequest)
                 .map(invoice -> new RequestGetAllInvoicesDto(
-                        invoice.getInvoice_id(),
+                        invoice.getInvoiceId(),
                         invoice.getInvoiceFolio(),
                         invoice.getSupplier(),
                         invoice.getInvoiceDate(),
-                        invoice.getTotal_iva() // Aquí debe asignarse correctamente
+                        invoice.getTotal_iva(),
+                        invoice.getComputerEquipament() != null ? invoice.getComputerEquipament().size() : 0
                 ));
     }
 
-    public ResponseEntity<byte[]> downloadInvoice(int invoiceId) {
+    public void deleteInvoice(Long id) {
+        BeanInvoice invoice = repository.findById(id)
+                .orElseThrow(() -> new CustomException("Factura no encontrada con ID: " + id));
+
+        int relatedEquipments = computingEquipmentRepository.countByInvoice_InvoiceId(id);
+        if (relatedEquipments > 0) {
+            throw new CustomException("No se puede eliminar la factura porque está asociada a uno o más equipos.");
+        }
+
+        repository.delete(invoice);
+    }
+
+
+    public ResponseEntity<byte[]> downloadInvoice(Long invoiceId) {
         Optional<BeanInvoice> invoiceOpt = repository.findById(invoiceId);
 
         if (invoiceOpt.isPresent()) {

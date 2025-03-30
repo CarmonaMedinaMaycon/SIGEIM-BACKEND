@@ -22,7 +22,7 @@ public class BeanInvoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="invoice_id", updatable = false, nullable = false)
-    private int invoice_id;
+    private int invoiceId;
 
     @Column(name = "total_iva", nullable = false )
     private Double total_iva;

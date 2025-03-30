@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface IInvoice extends JpaRepository<BeanInvoice, Integer> {
+public interface IInvoice extends JpaRepository<BeanInvoice, Long> {
     Optional<BeanInvoice> findByInvoiceFolio(String invoiceFolio);
 
     @Query("SELECT i FROM BeanInvoice i WHERE " +

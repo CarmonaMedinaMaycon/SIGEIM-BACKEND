@@ -166,6 +166,7 @@ public class ComputingEquipmentService {
         dto.setPurchaseDate(equipment.getPurchaseDate());
         dto.setAssetNumber(equipment.getAssetNumber());
         dto.setPrice(equipment.getPrice());
+        dto.setStatus(equipment.getStatus());
         dto.setSystemObservations(equipment.getSystemObservations());
         if (equipment.getPerson() != null) {
             dto.setPersonId(equipment.getPerson().getPersonId());
