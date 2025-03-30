@@ -8,6 +8,9 @@ import org.springframework.lang.Nullable;
 @Data
 @AllArgsConstructor
 public class RequestRegisterComputingEquipmentDto {
+    @Nullable
+    private Long computerEquipamentId;
+
     private final String serialNumber;
     private final String idEsset;
     private final Long personId;
@@ -27,13 +30,14 @@ public class RequestRegisterComputingEquipmentDto {
     private final String purchaseDate;
     private final String assetNumber;
     private final Double price;
-    private final Double priceIva;
     private final String systemObservations;
 
-    // Campo de archivo opcional
+    @Nullable
+    private final Double totalIva;
     @Nullable
     private final MultipartFile file;
-
+    @Nullable
+    private final String supplierInvoice;
     @Nullable
     private final String invoiceDate;
 }

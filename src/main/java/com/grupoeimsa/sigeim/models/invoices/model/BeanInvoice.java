@@ -24,8 +24,8 @@ public class BeanInvoice {
     @Column(name="invoice_id", updatable = false, nullable = false)
     private int invoice_id;
 
-    @Column(name = "price", nullable = false )
-    private Double priceIva;
+    @Column(name = "total_iva", nullable = false )
+    private Double total_iva;
 
     @Column(name = "supplier", nullable = false)
     private String supplier;

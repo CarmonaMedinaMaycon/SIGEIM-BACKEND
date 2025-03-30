@@ -102,12 +102,12 @@ public class BeanComputerEquipament {
     private List<BeanHistoryPhotosEquipament> historyPhotosEquipament;
 
     @ManyToOne
-    @JoinColumn(name = "invoice_id", nullable = false)
+    @JoinColumn(name = "invoice_id")
     @JsonManagedReference
     private BeanInvoice invoice;
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference(value = "person-equipment")
     private BeanPerson person;
 }

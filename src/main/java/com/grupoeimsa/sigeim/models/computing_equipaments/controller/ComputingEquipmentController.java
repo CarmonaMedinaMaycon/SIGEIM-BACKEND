@@ -7,11 +7,14 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.Request
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEditComputerEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.SearchEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.service.ComputingEquipmentService;
+import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDto;
+import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import jakarta.validation.Valid;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -22,11 +25,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
@@ -39,28 +44,50 @@ import java.util.Map;
 @CrossOrigin(origins = {"*"})
 public class ComputingEquipmentController {
     private final ComputingEquipmentService computingEquipmentService;
+    private final InvoiceService invoiceService;
 
-    public ComputingEquipmentController(ComputingEquipmentService computingEquipmentService) {
+    public ComputingEquipmentController(ComputingEquipmentService computingEquipmentService
+            , InvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
         this.computingEquipmentService = computingEquipmentService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerComputingEquipment(@RequestBody RequestRegisterComputingEquipmentDto dto) throws IOException {
-        String response = computingEquipmentService.createComputingEquipment(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> registerComputingEquipment(
+            @ModelAttribute RequestRegisterComputingEquipmentDto dto
+    ) {
+        try {
+            String response = computingEquipmentService.createComputingEquipment(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
+        }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<String> updateComputingEquipment(@RequestBody RequestUpdateComputingEquipmentDto dto) {
-        String response = computingEquipmentService.updateComputingEquipment(dto);
-        return ResponseEntity.ok(response);
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getComputingEquipment(@PathVariable Long id) {
+        try {
+            ResponseEditComputerEquipmentDto dto = computingEquipmentService.getComputingEquipment(id);
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error al obtener la información");
+        }
     }
 
-    @PostMapping("/equipments")
-    public Page<ResponseSeeAllEquipmentsDto> getEquipments(@RequestBody RequestEquipmentsPaginationDto paginationDto) {
-        int page = paginationDto.getPage();
-        int size = paginationDto.getSize();
-        return computingEquipmentService.getAllEquipments(page, size);
+
+    @PostMapping(value = "/edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> editEquipment(
+            @ModelAttribute RequestRegisterComputingEquipmentDto dto
+    ) {
+        try {
+            String message = computingEquipmentService.editComputingEquipment(dto);
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error al editar el equipo: " + e.getMessage());
+        }
     }
 
     @PostMapping("/search-equipment")
@@ -78,10 +105,6 @@ public class ComputingEquipmentController {
         return computingEquipmentService.searchEquipmentsFiltering(filtros);
     }
 
-    @PostMapping("/see-details")
-    public ResponseSeeDetailsEquipmentDto verDetalles(@RequestBody RequestEquipmentDetailsDto requestDetails) {
-        return computingEquipmentService.getEquipamentDetails(requestDetails.getId());
-    }
 
     @PostMapping("/change-status")
     public ResponseEntity<String> changeStatus(@RequestBody RequestChangeStatusDto request) {

@@ -23,7 +23,7 @@ public class InvoiceService {
 
     public BeanInvoice saveInvoice(InvoiceDto invoiceDTO) throws IOException {
         BeanInvoice invoice = new BeanInvoice();
-        invoice.setPriceIva(invoiceDTO.getPriceIva());
+        invoice.setTotal_iva(invoiceDTO.getTotal_iva());
         invoice.setSupplier(invoiceDTO.getSupplier());
         invoice.setInvoiceDate(invoiceDTO.getInvoiceDate());
         invoice.setInvoiceFolio(invoiceDTO.getInvoiceFolio());
@@ -43,7 +43,7 @@ public class InvoiceService {
                         invoice.getInvoiceFolio(),
                         invoice.getSupplier(),
                         invoice.getInvoiceDate(),
-                        invoice.getPriceIva() // Aquí debe asignarse correctamente
+                        invoice.getTotal_iva() // Aquí debe asignarse correctamente
                 ));
     }
 
