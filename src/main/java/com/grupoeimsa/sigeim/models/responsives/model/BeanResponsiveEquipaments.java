@@ -19,9 +19,11 @@ public class BeanResponsiveEquipaments {
     @Column(name = "responsive_equipament_id", updatable = false, nullable = false)
     private Long responsiveEquipamentId;
 
+    @Column(name = "creation_date", nullable = false)
+    private LocalDate creationDate;
 
-    @Column(name = "date", nullable = false)
-    private LocalDate date;
+    @Column(name = "modification_date")
+    private LocalDate modificationDate;
 
     @Lob
     @Column(name = "equipaments", nullable = false, columnDefinition = "TEXT")
@@ -33,6 +35,10 @@ public class BeanResponsiveEquipaments {
     @Lob
     @Column(name = "generated_doc", nullable = false, columnDefinition = "LONGBLOB")
     private byte[] generatedDoc;
+
+    @Lob
+    @Column(name = "signed_doc", columnDefinition = "LONGBLOB")
+    private byte[] signedDoc;
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)

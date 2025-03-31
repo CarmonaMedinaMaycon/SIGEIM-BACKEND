@@ -5,6 +5,8 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEqui
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
@@ -31,6 +33,9 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHAnchor;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblOverlap;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STVAnchor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -61,7 +66,7 @@ public class ResponsiveService {
 
         System.out.println("Placeholders recibidos: " + dto.getPlaceholders());
 
-        BeanTemplateResponsive template = templateRepository.findById(dto.getTemplateId())
+        BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
                 .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
 
         BeanComputerEquipament computerEquipament = equipamentRepository.findById(dto.getEquipmentId())
@@ -85,7 +90,6 @@ public class ResponsiveService {
                 }
             }
         }
-
 
         // Llenar la tabla de equipos
         int tableIndex = 0; // Para rastrear el índice de la tabla
@@ -175,10 +179,10 @@ public class ResponsiveService {
         byte[] generatedBytes = outputStream.toByteArray();
 
         BeanResponsiveEquipaments responsive = new BeanResponsiveEquipaments();
-        responsive.setDate(LocalDate.now());
+        responsive.setCreationDate(LocalDate.now());
         responsive.setEquipaments(new ObjectMapper().writeValueAsString(dto.getEquipaments()));
         responsive.setGeneratedDoc(generatedBytes);
-        responsive.setStatus(EStatus.ACTIVA);
+        responsive.setStatus(EStatus.ACTIVA_POR_FIRMAR);
         responsive.setComputerEquipament(computerEquipament);
 
         responsiveEquipmentRepository.save(responsive);
@@ -186,6 +190,35 @@ public class ResponsiveService {
         document.close();
         inputStream.close();
         outputStream.close();
+    }
+
+    public Page<ResponseResponsiveEquipmentsDto> getResponsivesEquipments(RequestSearchResponsiveEquipmentsDto dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
+        EStatus statusEnum = null;
+
+        if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
+            statusEnum = switch (dto.getEstado()) {
+                case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
+                case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
+                case "Cancelada" -> EStatus.CANCELADA;
+                default -> null;
+            };
+        }
+
+        Page<BeanResponsiveEquipaments> responsives = responsiveEquipmentRepository.searchResponsives(
+                dto.getSearch(),
+                statusEnum,
+                dto.getSort(),
+                pageable
+        );
+
+        return responsives.map(r -> new ResponseResponsiveEquipmentsDto(
+                r.getCreationDate().toString(),
+                r.getComputerEquipament().getPerson().getFullName(),
+                r.getComputerEquipament().getSerialNumber(),
+                r.getStatus().name().replace("_", " "),
+                r.getModificationDate() != null ? r.getModificationDate().toString() : "-"
+        ));
     }
 
     private void replaceTextInParagraph(XWPFParagraph paragraph, Map<String, String> placeholders) {

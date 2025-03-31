@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Data
 public class GenerateResponsiveDto {
-    private Long templateId;
+    private String templateName;
     private Map<String, String> placeholders;
     private List<Map<String, String>> equipaments;
     private Long equipmentId;
