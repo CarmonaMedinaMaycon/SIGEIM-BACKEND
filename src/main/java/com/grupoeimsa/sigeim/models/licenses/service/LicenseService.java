@@ -58,9 +58,8 @@ public class LicenseService {
         license.setAlias(licenseDTO.getAlias());
         license.setMailbox(licenseDTO.getMailbox());
         license.setCommentsOutlook(licenseDTO.getCommentsOutlook());
-        license.setPhoneNumber(licenseDTO.getPhoneNumber());
+        license.setPhoneAuthenticator(licenseDTO.getPhoneAuthenticator());
         license.setTwoFactorAuthenticationName(licenseDTO.getTwoFactorAuthenticationName());
-        license.setDepartament(licenseDTO.getDepartament());
         license.setCrm(licenseDTO.isCrm());
         license.setUserCrm(licenseDTO.getUserCrm());
         license.setTypeCrm(licenseDTO.getTypeCrm());
@@ -116,9 +115,8 @@ public class LicenseService {
         license.setAlias(licenseDTO.getAlias());
         license.setMailbox(licenseDTO.getMailbox());
         license.setCommentsOutlook(licenseDTO.getCommentsOutlook());
-        license.setPhoneNumber(licenseDTO.getPhoneNumber());
+        license.setPhoneAuthenticator(licenseDTO.getPhoneAuthenticator());
         license.setTwoFactorAuthenticationName(licenseDTO.getTwoFactorAuthenticationName());
-        license.setDepartament(licenseDTO.getDepartament());
         license.setCrm(licenseDTO.isCrm());
         license.setUserCrm(licenseDTO.getUserCrm());
         license.setTypeCrm(licenseDTO.getTypeCrm());

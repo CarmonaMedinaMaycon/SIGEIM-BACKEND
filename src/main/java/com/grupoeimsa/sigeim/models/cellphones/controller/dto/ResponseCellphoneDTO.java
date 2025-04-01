@@ -46,12 +46,15 @@ public class ResponseCellphoneDTO {
     public ResponseCellphoneDTO(BeanCellphone cellphone) {
         this.cellphoneId = cellphone.getCellphoneId();
         this.legalName = cellphone.getLegalName();
+        this.equipamentName = cellphone.getEquipamentName();
         this.company = cellphone.getCompany();
         this.shortDialing = cellphone.getShortDialing();
         this.dateRenovation = cellphone.getDateRenovation();
         this.imei = cellphone.getImei();
         this.comments = cellphone.getComments();
         this.person = cellphone.getPerson();
+        this.status = cellphone.getStatus();
+        this.whatsappBussiness = cellphone.getWhatsappBussiness();
         this.responsiveCellphone = cellphone.getResponsiveCellphones();
         this.historyPhotosCellphone = cellphone.getHistoryPhotosCellphones();
     }

@@ -4,6 +4,10 @@ import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseAccessCar
 import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseRegisterAccessCardDTO;
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
+import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
+import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,16 +16,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 @Service
 @Transactional
 public class AccessCardService {
 
     public final IAcessCard accessCardRepository;
+    public final IPerson personRepository;
 
 
-    public AccessCardService(IAcessCard accessCardRepository) {
+    public AccessCardService(IAcessCard accessCardRepository, IPerson personRepository) {
         this.accessCardRepository = accessCardRepository;
+        this.personRepository = personRepository;
     }
 
     @Transactional(readOnly = true)
@@ -73,9 +80,20 @@ public class AccessCardService {
 
     }
 
+
     @Transactional
-    public void delete(Long id) {
-        accessCardRepository.deleteById(id);
+    public void enableDisable(Long id){
+        BeanAccessCard accessCard = accessCardRepository.findById(id).orElseThrow(() -> new CustomException("Access Card not found"));
+        BeanPerson defaultPerson = personRepository.findById(1L)
+                .orElseThrow(() -> new CustomException("Default person not found"));
+
+        accessCard.setPerson(defaultPerson);
+        accessCardRepository.save(accessCard);
+    }
+    @Transactional
+    public void delete(Long id){
+        BeanAccessCard accessCard = accessCardRepository.findById(id).orElseThrow(() -> new CustomException("Person not found"));
+        accessCardRepository.delete(accessCard);
     }
 
 }

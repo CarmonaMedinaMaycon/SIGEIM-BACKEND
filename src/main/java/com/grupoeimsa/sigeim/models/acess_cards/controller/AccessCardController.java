@@ -58,10 +58,19 @@ public class AccessCardController {
         );
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> delete(@RequestParam Long id) {
-        accessCardService.delete(id);
-        return new ResponseEntity<>("Access card deleted", HttpStatus.OK);
+    @PutMapping("/disable")
+    public ResponseEntity<String> enableDisable(@RequestBody Map<String, Object> requestBody){
+        String id = requestBody.get("id").toString();
+        accessCardService.enableDisable(Long.valueOf(id));
+        return new ResponseEntity<>("access card modified", HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> delete(@RequestBody Map<String, Object> requestBody){
+        String id = requestBody.get("id").toString();
+        accessCardService.delete(Long.valueOf(id));
+        return new ResponseEntity<>("access card deleted", HttpStatus.OK);
+    }
+
 
 }
