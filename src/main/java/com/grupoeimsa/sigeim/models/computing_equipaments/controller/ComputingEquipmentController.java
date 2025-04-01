@@ -8,6 +8,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.Request
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEditComputerEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEquipmentSelectDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.SearchEquipmentDto;
@@ -158,5 +159,10 @@ public class ComputingEquipmentController {
         return ResponseEntity.ok(equipmentDetails);
     }
 
+
+    @PostMapping("/select-responsive-equipment-list")
+    public List<ResponseEquipmentSelectDto> getEquipmentsForResponsive() {
+        return computingEquipmentService.getAllEquipmentsForResponsiveGeneration();
+    }
 
 }

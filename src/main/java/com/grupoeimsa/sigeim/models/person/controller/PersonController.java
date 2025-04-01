@@ -2,6 +2,7 @@ package com.grupoeimsa.sigeim.models.person.controller;
 
 import com.grupoeimsa.sigeim.models.person.controller.dto.RequestPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
@@ -80,6 +81,11 @@ public class PersonController {
     @PostMapping("/select")
     public List<ResponseResponsibleSelectDto> getPersonsForSelect() {
         return personService.getAllPersonsForSelect();
+    }
+
+    @PostMapping("/select-responsive-equipment")
+    public List<ResponsePersonSelectDto> getPersonsForResponsiveEquipment() {
+        return personService.getAllPersonsForResponsiveEquipmentGeneration();
     }
 
 }

@@ -9,6 +9,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.Request
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEditComputerEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEquipmentSelectDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
@@ -495,5 +496,25 @@ public class ComputingEquipmentService {
 
         return pngOutputStream.toByteArray();
     }
+
+
+    public List<ResponseEquipmentSelectDto> getAllEquipmentsForResponsiveGeneration() {
+        List<BeanComputerEquipament> equipmentList = repository.findAll();
+
+        return equipmentList.stream()
+                .filter(equipment ->
+                        "OCUPADO".equalsIgnoreCase(String.valueOf(equipment.getStatus())) ||
+                                "DISPONIBLE".equalsIgnoreCase(String.valueOf(equipment.getStatus())))
+                .map(equipment -> new ResponseEquipmentSelectDto(
+                        equipment.getComputerEquipamentId(),
+                        equipment.getSerialNumber(),
+                        equipment.getType(),
+                        equipment.getBrand(),
+                        equipment.getModel(),
+                        equipment.getAssetNumber()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
 }

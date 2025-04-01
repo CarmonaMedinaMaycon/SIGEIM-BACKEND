@@ -1,11 +1,15 @@
 package com.grupoeimsa.sigeim.models.responsives.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
@@ -43,8 +47,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,8 +69,6 @@ public class ResponsiveService {
 
 
     public void generateResponsive(GenerateResponsiveDto dto) throws Exception {
-
-        System.out.println("Placeholders recibidos: " + dto.getPlaceholders());
 
         BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
                 .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
@@ -185,6 +189,14 @@ public class ResponsiveService {
         responsive.setStatus(EStatus.ACTIVA_POR_FIRMAR);
         responsive.setComputerEquipament(computerEquipament);
 
+        responsive.setResponsibleName(dto.getPlaceholders().get("nombre"));
+        responsive.setResponsibleDepartament(dto.getPlaceholders().get("departamento"));
+        responsive.setResponsiblePosition(dto.getPlaceholders().get("puesto"));
+        responsive.setBranch(dto.getPlaceholders().get("sucursal"));
+        responsive.setDescription(dto.getPlaceholders().get("descripcion"));
+        responsive.setObservations(dto.getPlaceholders().get("observaciones"));
+        responsive.setWhoGives(dto.getPlaceholders().get("sistemas"));
+
         responsiveEquipmentRepository.save(responsive);
 
         document.close();
@@ -213,11 +225,11 @@ public class ResponsiveService {
         );
 
         return responsives.map(r -> new ResponseResponsiveEquipmentsDto(
+                r.getResponsiveEquipamentId(),
                 r.getCreationDate().toString(),
-                r.getComputerEquipament().getPerson().getFullName(),
+                r.getResponsibleName(),
                 r.getComputerEquipament().getSerialNumber(),
-                r.getStatus().name().replace("_", " "),
-                r.getModificationDate() != null ? r.getModificationDate().toString() : "-"
+                r.getStatus().name().replace("_", " ")
         ));
     }
 
@@ -281,5 +293,38 @@ public class ResponsiveService {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=documento.docx")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(documentBytes);
+    }
+
+    public ResponseEntity<ResponseEditResponsiveEquipmentDto> getEditResponsiveData(Long id) {
+        Optional<BeanResponsiveEquipaments> optional = responsiveEquipmentRepository.findById(id);
+
+        if (optional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        BeanResponsiveEquipaments responsive = optional.get();
+
+        // Convertir la cadena JSON de equipos a lista de mapas
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String, String>> equipos = new ArrayList<>();
+
+        try {
+            equipos = mapper.readValue(responsive.getEquipaments(), new TypeReference<>() {});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ResponseEditResponsiveEquipmentDto dto = new ResponseEditResponsiveEquipmentDto(
+                responsive.getResponsibleName(),
+                responsive.getResponsibleDepartament(),
+                responsive.getResponsiblePosition(),
+                responsive.getBranch(),
+                responsive.getDescription(),
+                responsive.getObservations(),
+                responsive.getWhoGives(),
+                equipos
+        );
+
+        return ResponseEntity.ok(dto);
     }
 }

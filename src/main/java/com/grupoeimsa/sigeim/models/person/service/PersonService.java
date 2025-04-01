@@ -5,6 +5,7 @@ import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
@@ -159,11 +160,28 @@ public class PersonService {
         List<BeanPerson> persons = personRepository.findAll();
 
         return persons.stream()
+                .filter(BeanPerson::getStatus)
                 .map(person -> new ResponseResponsibleSelectDto(
                         person.getPersonId(),
                         person.getFullName()
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<ResponsePersonSelectDto> getAllPersonsForResponsiveEquipmentGeneration() {
+        List<BeanPerson> persons = personRepository.findAll();
+
+        return persons.stream()
+                .filter(person -> !"Sistemas NA NA".equalsIgnoreCase(person.getFullName()))
+                .filter(BeanPerson::getStatus)
+                .map(person -> new ResponsePersonSelectDto(
+                        person.getPersonId(),
+                        person.getFullName(),
+                        person.getDepartament(),
+                        person.getPosition()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
 }
