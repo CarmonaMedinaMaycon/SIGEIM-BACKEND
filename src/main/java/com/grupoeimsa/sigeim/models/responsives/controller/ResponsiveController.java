@@ -120,4 +120,11 @@ public class ResponsiveController {
                 .body(file);
     }
 
+    @PostMapping("/equipments/cancel")
+    public ResponseEntity<Void> cancelResponsive(@RequestBody Map<String, Long> payload) {
+        Long responsiveId = payload.get("responsiveId");
+        responsiveService.cancelResponsive(responsiveId);
+        return ResponseEntity.ok().build();
+    }
+
 }

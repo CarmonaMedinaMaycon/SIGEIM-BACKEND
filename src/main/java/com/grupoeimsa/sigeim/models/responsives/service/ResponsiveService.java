@@ -279,6 +279,7 @@ public class ResponsiveService {
         responsive.setObservations(dto.getPlaceholders().get("observaciones"));
         responsive.setWhoGives(dto.getPlaceholders().get("sistemas"));
         responsive.setModificationDate(LocalDate.now());
+        responsive.setStatus(EStatus.ACTIVA_POR_FIRMAR);
 
         responsiveEquipmentRepository.save(responsive);
 
@@ -416,8 +417,26 @@ public class ResponsiveService {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
 
+        // Guardar el nuevo archivo firmado
         responsive.setSignedDoc(file.getBytes());
+
+        // Actualizar estatus a "ACTIVA_FIRMADA"
+        responsive.setStatus(EStatus.ACTIVA_FIRMADA);
+
+        // Registrar fecha de modificación
         responsive.setModificationDate(LocalDate.now());
+
+        // Guardar cambios
+        responsiveEquipmentRepository.save(responsive);
+    }
+
+    public void cancelResponsive(Long responsiveId) {
+        BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        responsive.setStatus(EStatus.CANCELADA);
+        responsive.setModificationDate(LocalDate.now());
+
         responsiveEquipmentRepository.save(responsive);
     }
 
