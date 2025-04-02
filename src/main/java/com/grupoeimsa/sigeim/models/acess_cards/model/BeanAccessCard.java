@@ -38,7 +38,7 @@ public class BeanAccessCard {
     @Column(name = "technical_service_warehouses", nullable = false)
     private boolean TechnicalServiceWarehouses;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference
     private BeanPerson person;

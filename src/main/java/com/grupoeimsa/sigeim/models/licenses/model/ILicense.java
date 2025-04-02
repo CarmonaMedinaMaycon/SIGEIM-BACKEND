@@ -16,9 +16,8 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
             "l.alias LIKE %:search% OR " +
             "l.mailbox LIKE %:search% OR " +
             "l.commentsOutlook LIKE %:search% OR " +
-            "l.phoneNumber LIKE %:search% OR " +
             "l.twoFactorAuthenticationName LIKE %:search% OR " +
-            "l.departament LIKE %:search% OR " +
+            "l.phoneAuthenticator LIKE %:search% OR " +
             "l.userCrm LIKE %:search% OR " +
             "l.typeCrm LIKE %:search% OR " +
             "l.commentsCrm LIKE %:search% OR " +

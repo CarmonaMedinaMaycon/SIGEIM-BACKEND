@@ -25,11 +25,9 @@ public class RegisterLicenseDTO {
 
     private String commentsOutlook;
 
-    private String phoneNumber;
+    private String phoneAuthenticator;
 
     private String twoFactorAuthenticationName;
-
-    private String departament;
 
     private boolean crm;
 
@@ -119,9 +117,8 @@ public class RegisterLicenseDTO {
         this.alias = beanLicense.getAlias();
         this.mailbox = beanLicense.getMailbox();
         this.commentsOutlook = beanLicense.getCommentsOutlook();
-        this.phoneNumber = beanLicense.getPhoneNumber();
+        this.phoneAuthenticator = beanLicense.getPhoneAuthenticator();
         this.twoFactorAuthenticationName = beanLicense.getTwoFactorAuthenticationName();
-        this.departament = beanLicense.getDepartament();
         this.crm = beanLicense.isCrm();
         this.userCrm = beanLicense.getUserCrm();
         this.typeCrm = beanLicense.getTypeCrm();

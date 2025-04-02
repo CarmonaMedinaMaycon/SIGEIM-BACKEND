@@ -78,7 +78,10 @@ public class CellphoneService {
 
     @Transactional
     public void update(ResponseRegisterCellphone registerCellphone) {
-        BeanCellphone cellphone = cellphoneRepository.findById(registerCellphone.getCellphoneId()).orElseThrow(() -> new CustomException("The cellphone was not found"));
+        BeanCellphone cellphone = cellphoneRepository.findById(registerCellphone.getCellphoneId())
+                .orElseThrow(() -> new CustomException("The cellphone was not found"));
+
+        // Actualiza los campos directos
         cellphone.setLegalName(registerCellphone.getLegalName());
         cellphone.setEquipamentName(registerCellphone.getEquipamentName());
         cellphone.setCompany(registerCellphone.getCompany());
@@ -88,6 +91,14 @@ public class CellphoneService {
         cellphone.setComments(registerCellphone.getComments());
         cellphone.setStatus(true);
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
+
+        // Para actualizar la persona, carga la entidad existente
+        if (registerCellphone.getPerson() != null && registerCellphone.getPerson().getPersonId() != null) {
+            BeanPerson person = personRepository.findById(registerCellphone.getPerson().getPersonId())
+                    .orElseThrow(() -> new CustomException("Person not found"));
+            cellphone.setPerson(person);
+        }
+
         cellphoneRepository.save(cellphone);
     }
 

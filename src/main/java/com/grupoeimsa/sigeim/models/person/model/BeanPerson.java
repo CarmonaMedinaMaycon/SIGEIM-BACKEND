@@ -33,11 +33,11 @@ public class BeanPerson {
     private String surname;
     @Column(name = "lastname")
     private String lastname;
-    @Column(name = "who_registered")
+    @Column(name = "who_registered", nullable = false)
     private String whoRegistered;
-    @Column(name = "email_registered")
+    @Column(name = "email_registered", nullable = false)
     private String emailRegistered;
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String email;
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
@@ -74,9 +74,9 @@ public class BeanPerson {
     @JsonManagedReference
     private BeanLicense license;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
-    private BeanAccessCard accessCard;
+    private List<BeanAccessCard> accessCard;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     private BeanAssets assets;
