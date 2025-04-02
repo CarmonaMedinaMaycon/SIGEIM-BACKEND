@@ -11,4 +11,5 @@ public class ResponseResponsiveEquipmentsDto {
     private String nombreEmpleado;
     private String numeroSerie;
     private String estado;
+    private Boolean hasSignedDocument;
 }

@@ -11,6 +11,7 @@ import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiv
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
@@ -44,6 +45,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -204,6 +206,87 @@ public class ResponsiveService {
         outputStream.close();
     }
 
+    public void updateResponsive(UpdateResponsiveDto dto) throws Exception {
+        BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(dto.getResponsiveId())
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
+                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
+        XWPFDocument document = new XWPFDocument(inputStream);
+
+        // Reemplazo de texto
+        for (XWPFParagraph paragraph : document.getParagraphs()) {
+            replaceTextInParagraph(paragraph, dto.getPlaceholders());
+        }
+
+        for (XWPFTable table : document.getTables()) {
+            for (XWPFTableRow row : table.getRows()) {
+                for (XWPFTableCell cell : row.getTableCells()) {
+                    for (XWPFParagraph paragraph : cell.getParagraphs()) {
+                        replaceTextInParagraph(paragraph, dto.getPlaceholders());
+                    }
+                }
+            }
+        }
+
+        // Reemplazo de tabla de equipos (segunda tabla)
+        int tableIndex = 0;
+        for (XWPFTable table : document.getTables()) {
+            if (tableIndex == 1) {
+                List<XWPFTableRow> rows = table.getRows();
+                int rowIndex = 1;
+
+                for (Map<String, String> equip : dto.getEquipaments()) {
+                    XWPFTableRow row = (rowIndex < rows.size()) ? rows.get(rowIndex) : table.createRow();
+                    int cellIndex = 0;
+
+                    for (String header : new String[]{"Tipo", "Marca", "Modelo", "No. Serie", "No. Inventario", "Fecha"}) {
+                        XWPFTableCell cell = (cellIndex < row.getTableCells().size()) ? row.getCell(cellIndex) : row.createCell();
+                        for (int i = cell.getParagraphs().size() - 1; i >= 0; i--) {
+                            cell.removeParagraph(i);
+                        }
+                        XWPFParagraph paragraph = cell.addParagraph();
+                        paragraph.setAlignment(ParagraphAlignment.CENTER);
+                        XWPFRun run = paragraph.createRun();
+                        run.setText(equip.get(header));
+                        cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+                        cellIndex++;
+                    }
+
+                    rowIndex++;
+                }
+
+                tableIndex++;
+                break;
+            }
+            tableIndex++;
+        }
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        document.write(outputStream);
+        byte[] generatedBytes = outputStream.toByteArray();
+
+        // Actualiza campos de la responsiva
+        responsive.setEquipaments(new ObjectMapper().writeValueAsString(dto.getEquipaments()));
+        responsive.setGeneratedDoc(generatedBytes);
+        responsive.setResponsibleName(dto.getPlaceholders().get("nombre"));
+        responsive.setResponsibleDepartament(dto.getPlaceholders().get("departamento"));
+        responsive.setResponsiblePosition(dto.getPlaceholders().get("puesto"));
+        responsive.setBranch(dto.getPlaceholders().get("sucursal"));
+        responsive.setDescription(dto.getPlaceholders().get("descripcion"));
+        responsive.setObservations(dto.getPlaceholders().get("observaciones"));
+        responsive.setWhoGives(dto.getPlaceholders().get("sistemas"));
+        responsive.setModificationDate(LocalDate.now());
+
+        responsiveEquipmentRepository.save(responsive);
+
+        document.close();
+        inputStream.close();
+        outputStream.close();
+    }
+
     public Page<ResponseResponsiveEquipmentsDto> getResponsivesEquipments(RequestSearchResponsiveEquipmentsDto dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
         EStatus statusEnum = null;
@@ -229,7 +312,8 @@ public class ResponsiveService {
                 r.getCreationDate().toString(),
                 r.getResponsibleName(),
                 r.getComputerEquipament().getSerialNumber(),
-                r.getStatus().name().replace("_", " ")
+                r.getStatus().name().replace("_", " "),
+                r.getSignedDoc() != null
         ));
     }
 
@@ -327,4 +411,14 @@ public class ResponsiveService {
 
         return ResponseEntity.ok(dto);
     }
+
+    public void uploadSignedDoc(Long id, MultipartFile file) throws IOException {
+        BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        responsive.setSignedDoc(file.getBytes());
+        responsive.setModificationDate(LocalDate.now());
+        responsiveEquipmentRepository.save(responsive);
+    }
+
 }
