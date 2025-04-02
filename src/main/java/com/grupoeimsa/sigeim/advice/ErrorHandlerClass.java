@@ -28,7 +28,6 @@ public class ErrorHandlerClass extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
-    @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             HttpHeaders headers,

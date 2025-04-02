@@ -2,8 +2,10 @@ package com.grupoeimsa.sigeim.models.person.controller;
 
 import com.grupoeimsa.sigeim.models.person.controller.dto.RequestPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseTablePeopleDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.service.PersonService;
 import jakarta.validation.Valid;
@@ -34,6 +36,19 @@ public class PersonController {
                 person,
                 HttpStatus.OK
         );
+    }
+
+    @PostMapping("/table-data")
+    public ResponseEntity<Page<ResponseTablePeopleDto>> getPeopleTableData(@RequestBody RequestPersonDTO request) {
+        Page<ResponseTablePeopleDto> page = personService.getPeopleForTable(
+                request.getSearch(),
+                request.getDepartament(),
+                request.getEnterprise(),
+                request.getStatus(),
+                request.getPage(),
+                request.getSize()
+        );
+        return ResponseEntity.ok(page);
     }
 
     @PostMapping("/one")
@@ -80,6 +95,11 @@ public class PersonController {
     @PostMapping("/select")
     public List<ResponseResponsibleSelectDto> getPersonsForSelect() {
         return personService.getAllPersonsForSelect();
+    }
+
+    @PostMapping("/select-responsive-equipment")
+    public List<ResponsePersonSelectDto> getPersonsForResponsiveEquipment() {
+        return personService.getAllPersonsForResponsiveEquipmentGeneration();
     }
 
 }

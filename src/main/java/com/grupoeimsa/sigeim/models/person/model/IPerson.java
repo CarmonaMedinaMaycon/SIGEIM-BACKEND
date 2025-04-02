@@ -28,5 +28,21 @@ public interface IPerson extends JpaRepository<BeanPerson, Long> {
                 Pageable pageable
         );
 
+        @Query("""
+    SELECT p FROM BeanPerson p
+    WHERE\s
+        (:search IS NULL OR CONCAT(p.name, ' ', p.surname, ' ', p.lastname) LIKE %:search%)
+        AND (:departament = '' OR p.departament = :departament)
+        AND (:enterprise = '' OR p.enterprise = :enterprise)
+        AND (:status IS NULL OR p.status = :status)
+""")
+        Page<BeanPerson> findCustomFiltered(
+                @Param("search") String search,
+                @Param("departament") String departament,
+                @Param("enterprise") String enterprise,
+                @Param("status") Boolean status,
+                Pageable pageable
+        );
+
 
 }

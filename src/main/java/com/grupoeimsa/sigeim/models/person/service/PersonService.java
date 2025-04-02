@@ -5,8 +5,10 @@ import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonSelectDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
+import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseTablePeopleDto;
 import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
@@ -14,8 +16,10 @@ import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -159,11 +163,60 @@ public class PersonService {
         List<BeanPerson> persons = personRepository.findAll();
 
         return persons.stream()
+                .filter(BeanPerson::getStatus)
                 .map(person -> new ResponseResponsibleSelectDto(
                         person.getPersonId(),
                         person.getFullName()
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<ResponsePersonSelectDto> getAllPersonsForResponsiveEquipmentGeneration() {
+        List<BeanPerson> persons = personRepository.findAll();
+
+        return persons.stream()
+                .filter(person -> !"Sistemas NA NA".equalsIgnoreCase(person.getFullName()))
+                .filter(BeanPerson::getStatus)
+                .map(person -> new ResponsePersonSelectDto(
+                        person.getPersonId(),
+                        person.getFullName(),
+                        person.getDepartament(),
+                        person.getPosition()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public Page<ResponseTablePeopleDto> getPeopleForTable(String search, String departament, String enterprise, Boolean status, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+
+        Page<BeanPerson> persons = personRepository.findCustomFiltered(
+                search != null ? search : "",
+                departament != null ? departament : "",
+                enterprise != null ? enterprise : "",
+                status,
+                pageable
+        );
+
+        List<ResponseTablePeopleDto> resultList = persons.getContent().stream().map(person -> {
+            List<String> serials = person.getComputerEquipaments() != null
+                    ? person.getComputerEquipaments().stream()
+                    .map(BeanComputerEquipament::getSerialNumber)
+                    .collect(Collectors.toList())
+                    : List.of();
+
+            return new ResponseTablePeopleDto(
+                    person.getPersonId(),
+                    person.getName() + " " + person.getSurname() + " " + person.getLastname(),
+                    person.getEnterprise(),
+                    person.getDepartament(),
+                    person.getPhoneNumber(),
+                    person.getStatus(),
+                    serials
+            );
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(resultList, pageable, persons.getTotalElements());
+    }
+
 
 }
