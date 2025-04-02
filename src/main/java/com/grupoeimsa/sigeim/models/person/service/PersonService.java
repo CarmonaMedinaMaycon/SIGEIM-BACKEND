@@ -4,12 +4,7 @@ import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonSelectDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseTablePeopleDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
@@ -170,6 +165,21 @@ public class PersonService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<ResponseLicencesPersonSelectDto> getAllPersonsForSelectInLicenses() {
+        List<BeanPerson> persons = personRepository.findAll();
+
+        return persons.stream()
+                .filter(BeanPerson::getStatus)
+                .map(person -> new ResponseLicencesPersonSelectDto(
+                        person.getPersonId(),
+                        person.getFullName(),
+                        person.getLicense() != null
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 
     public List<ResponsePersonSelectDto> getAllPersonsForResponsiveEquipmentGeneration() {
         List<BeanPerson> persons = personRepository.findAll();

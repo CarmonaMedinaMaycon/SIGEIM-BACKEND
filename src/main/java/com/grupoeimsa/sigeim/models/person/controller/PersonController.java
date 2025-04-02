@@ -1,12 +1,6 @@
 package com.grupoeimsa.sigeim.models.person.controller;
 
-import com.grupoeimsa.sigeim.models.person.controller.dto.RequestPersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonSelectDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseTablePeopleDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.service.PersonService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -96,6 +90,13 @@ public class PersonController {
     public List<ResponseResponsibleSelectDto> getPersonsForSelect() {
         return personService.getAllPersonsForSelect();
     }
+
+
+    @PostMapping("/select-for-licences")
+    public List<ResponseLicencesPersonSelectDto> getPersonsForSelectInLicences() {
+        return personService.getAllPersonsForSelectInLicenses();
+    }
+
 
     @PostMapping("/select-responsive-equipment")
     public List<ResponsePersonSelectDto> getPersonsForResponsiveEquipment() {
