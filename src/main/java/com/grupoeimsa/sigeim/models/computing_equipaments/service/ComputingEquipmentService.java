@@ -8,6 +8,8 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestRegisterComputingEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestSearchByFilteringEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.RequestUpdateComputingEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEditComputerEquipmentDto;
+import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseEquipmentSelectDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeAllEquipmentsDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.controller.dto.ResponseSeeDetailsEquipmentDto;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
@@ -15,6 +17,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.HistoryEquipmentPhotosGroupDto;
+import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDto;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
@@ -31,7 +34,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -59,7 +62,9 @@ public class ComputingEquipmentService {
     }
 
     @Transactional
-    public String createComputingEquipment(RequestRegisterComputingEquipmentDto dto) {
+    public String createComputingEquipment(RequestRegisterComputingEquipmentDto dto) throws IOException {
+
+        // Crear equipo
         BeanComputerEquipament equipment = new BeanComputerEquipament();
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
@@ -67,15 +72,12 @@ public class ComputingEquipmentService {
         BeanPerson person = personRepository.findById(dto.getPersonId())
                 .orElseThrow(() -> new CustomException("Person not found with ID: " + dto.getPersonId()));
 
+        // Asignar datos generales
         ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(),
                 dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(),
                 dto.getProcessor(), dto.getPurchasingCompany(), dto);
 
-        if (!Objects.equals(person.getName(), "Sistemas")) {
-            equipment.setStatus(CEStatus.OCUPADO);
-        } else {
-            equipment.setStatus(CEStatus.DISPONIBLE);
-        }
+        equipment.setStatus(Objects.equals(person.getName(), "Sistemas") ? CEStatus.DISPONIBLE : CEStatus.OCUPADO);
 
         equipment.setHasInvoice(dto.getHasInvoice());
         equipment.setSupplier(dto.getSupplier());
@@ -83,17 +85,107 @@ public class ComputingEquipmentService {
         equipment.setPurchaseDate(dto.getPurchaseDate());
         equipment.setAssetNumber(dto.getAssetNumber());
         equipment.setPrice(dto.getPrice());
-        equipment.setCreationDate(java.time.LocalDate.now());
+        equipment.setCreationDate(LocalDate.now());
         equipment.setSystemObservations(dto.getSystemObservations());
 
-        // Si el equipo tiene factura, buscamos la factura y la asignamos
-        if (dto.getHasInvoice() != null && dto.getHasInvoice()) {
-            Optional<BeanInvoice> invoice = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
-            invoice.ifPresent(equipment::setInvoice);
+        // Si tiene factura, verificamos si ya existe o la creamos
+        if (Boolean.TRUE.equals(dto.getHasInvoice())) {
+            BeanInvoice invoice = findOrCreateInvoice(dto);
+            equipment.setInvoice(invoice);
         }
 
         repository.save(equipment);
         return "Equipo registrado con éxito";
+    }
+
+    private BeanInvoice findOrCreateInvoice(RequestRegisterComputingEquipmentDto dto) throws IOException {
+        Optional<BeanInvoice> existingInvoice = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
+        if (existingInvoice.isPresent()) {
+            return existingInvoice.get();
+        }
+        BeanInvoice newInvoice = new BeanInvoice();
+        newInvoice.setSupplier(dto.getSupplierInvoice());
+        newInvoice.setInvoiceFolio(dto.getInvoiceFolio());
+
+        Optional.ofNullable(dto.getInvoiceDate()).ifPresent(newInvoice::setInvoiceDate);
+        Optional.ofNullable(dto.getTotalIva()).ifPresent(newInvoice::setTotal_iva);
+
+        Optional.ofNullable(dto.getFile())
+                .filter(file -> !file.isEmpty())
+                .ifPresent(file -> {
+                    try {
+                        newInvoice.setInvoiceFile(file.getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error al guardar el archivo de la factura", e);
+                    }
+                });
+
+        InvoiceDto invoiceDto = mapToDto(newInvoice);
+
+        return invoiceService.saveInvoice(invoiceDto);
+    }
+
+    private InvoiceDto mapToDto(BeanInvoice invoice) {
+        MultipartFile file = new ByteArrayMultipartFile(
+                invoice.getInvoiceFile(),
+                "invoice.pdf",
+                "application/pdf"
+        );
+
+        return new InvoiceDto(
+                invoice.getTotal_iva(),
+                invoice.getSupplier(),
+                invoice.getInvoiceDate(),
+                invoice.getInvoiceFolio(),
+                file
+        );
+    }
+
+    public ResponseEditComputerEquipmentDto getComputingEquipment(Long id) throws Exception {
+        Optional<BeanComputerEquipament> equipmentOpt = repository.findById(id);
+        if (!equipmentOpt.isPresent()) {
+            throw new Exception("Equipo no encontrado");
+        }
+        BeanComputerEquipament equipment = equipmentOpt.get();
+        ResponseEditComputerEquipmentDto dto = new ResponseEditComputerEquipmentDto();
+        dto.setComputerEquipamentId(equipment.getComputerEquipamentId());
+        dto.setSerialNumber(equipment.getSerialNumber());
+        dto.setIdEsset(equipment.getIdEsset());
+        dto.setDepartament(equipment.getDepartament());
+        dto.setEnterprise(equipment.getEnterprise());
+        dto.setWorkModality(equipment.getWorkModality());
+        dto.setType(equipment.getType());
+        dto.setBrand(equipment.getBrand());
+        dto.setModel(equipment.getModel());
+        dto.setRamMemoryCapacity(equipment.getRamMemoryCapacity());
+        dto.setMemoryCapacity(equipment.getMemoryCapacity());
+        dto.setProcessor(equipment.getProcessor());
+        dto.setPurchasingCompany(equipment.getPurchasingCompany());
+        dto.setSupplier(equipment.getSupplier());
+        dto.setHasInvoice(equipment.getHasInvoice());
+        dto.setInvoiceFolio(equipment.getInvoiceFolio());
+        dto.setPurchaseDate(equipment.getPurchaseDate());
+        dto.setAssetNumber(equipment.getAssetNumber());
+        dto.setPrice(equipment.getPrice());
+        dto.setStatus(equipment.getStatus());
+        dto.setSystemObservations(equipment.getSystemObservations());
+        if (equipment.getPerson() != null) {
+            dto.setPersonId(equipment.getPerson().getPersonId());
+        }
+
+        if (equipment.getInvoice() != null) {
+            dto.setTotalIva(equipment.getInvoice().getTotal_iva());
+            dto.setSupplierInvoice(equipment.getInvoice().getSupplier());
+            dto.setInvoiceDate(equipment.getInvoice().getInvoiceDate());
+            dto.setInvoiceFolioInvoice(equipment.getInvoice().getInvoiceFolio());
+
+            if (equipment.getInvoice().getInvoiceFile() != null) {
+                String base64File = Base64.getEncoder().encodeToString(equipment.getInvoice().getInvoiceFile());
+                dto.setInvoiceFileBase64(base64File);
+            }
+        }
+
+        return dto;
     }
 
     private void ComputerData(BeanComputerEquipament equipment, BeanPerson person, String departament, String enterprise, String workModality, String type, String brand, String model, Long ramMemoryCapacity, Long memoryCapacity, String processor, String purchasingCompany, Object dto) {
@@ -116,48 +208,67 @@ public class ComputingEquipmentService {
         }
     }
 
-
     @Transactional
-    public String updateComputingEquipment(RequestUpdateComputingEquipmentDto dto) {
-        BeanComputerEquipament equipment = repository.findById(dto.getId())
-                .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + dto.getId()));
+    public String editComputingEquipment(RequestRegisterComputingEquipmentDto dto) throws IOException {
+        BeanComputerEquipament equipment = repository.findById(dto.getComputerEquipamentId())
+                .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + dto.getComputerEquipamentId()));
 
         BeanPerson person = personRepository.findById(dto.getPersonId())
-                .orElseThrow(() -> new CustomException("Responsable no encontrado con ID: " + dto.getPersonId()));
+                .orElseThrow(() -> new CustomException("Persona no encontrada con ID: " + dto.getPersonId()));
 
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
-        ComputerData(equipment, person, dto.getDepartament(), dto.getEnterprise(), dto.getWorkModality(), dto.getType(), dto.getBrand(), dto.getModel(), dto.getRamMemoryCapacity(), dto.getMemoryCapacity(), dto.getProcessor(), dto.getPurchasingCompany(), dto);
+        equipment.setPerson(person);
+        equipment.setDepartament(dto.getDepartament());
+        equipment.setEnterprise(dto.getEnterprise());
+        equipment.setWorkModality(dto.getWorkModality());
+        equipment.setType(dto.getType());
+        equipment.setBrand(dto.getBrand());
+        equipment.setModel(dto.getModel());
+        equipment.setRamMemoryCapacity(dto.getRamMemoryCapacity());
+        equipment.setMemoryCapacity(dto.getMemoryCapacity());
+        equipment.setProcessor(dto.getProcessor());
+        equipment.setPurchasingCompany(dto.getPurchasingCompany());
+        equipment.setHasInvoice(dto.getHasInvoice());
         equipment.setSupplier(dto.getSupplier());
         equipment.setInvoiceFolio(dto.getInvoiceFolio());
         equipment.setPurchaseDate(dto.getPurchaseDate());
         equipment.setAssetNumber(dto.getAssetNumber());
         equipment.setPrice(dto.getPrice());
         equipment.setSystemObservations(dto.getSystemObservations());
+        equipment.setStatus("Sistemas".equalsIgnoreCase(person.getName()) ? CEStatus.DISPONIBLE : CEStatus.OCUPADO);
 
-        equipment.setLastUpdateDate(LocalDate.now());
+        if (Boolean.TRUE.equals(dto.getHasInvoice())) {
+            BeanInvoice invoice = findOrUpdateInvoice(dto);
+            equipment.setInvoice(invoice);
+        } else {
+            equipment.setInvoice(null);
+        }
 
         repository.save(equipment);
-        return "Equipo actualizado con éxito";
+        return "Equipo actualizado correctamente";
     }
 
-    public Page<ResponseSeeAllEquipmentsDto> getAllEquipments(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    private BeanInvoice findOrUpdateInvoice(RequestRegisterComputingEquipmentDto dto) throws IOException {
+        Optional<BeanInvoice> existingInvoiceOpt = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
 
-        Page<BeanComputerEquipament> equipmentPage = repository.findAll(pageable);
+        if (existingInvoiceOpt.isPresent()) {
+            return existingInvoiceOpt.get();
+        }
 
-        return equipmentPage.map(equipment -> {
-            ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
-            dto.setSerialNumber(equipment.getSerialNumber());
-            dto.setIdEsset(equipment.getIdEsset());
-            dto.setResponsibleName(equipment.getPerson().getName() + " " + equipment.getPerson().getSurname());
-            dto.setDepartament(equipment.getDepartament());
-            dto.setType(equipment.getType());
-            dto.setBrand(equipment.getBrand());
-            dto.setEquipmentStatus(equipment.getStatus().toString());
-            return dto;
-        });
+        BeanInvoice newInvoice = new BeanInvoice();
+        newInvoice.setSupplier(dto.getSupplierInvoice());
+        newInvoice.setInvoiceFolio(dto.getInvoiceFolio());
+        newInvoice.setInvoiceDate(dto.getInvoiceDate());
+        newInvoice.setTotal_iva(dto.getTotalIva());
+
+        if (dto.getFile() != null && !dto.getFile().isEmpty()) {
+            newInvoice.setInvoiceFile(dto.getFile().getBytes());
+        }
+
+        return invoiceService.saveInvoice(mapToDto(newInvoice));
     }
+
 
     public List<ResponseSeeAllEquipmentsDto> searchEquipments(String searchQuery) {
         return repository.findBySearchQuery(searchQuery)
@@ -169,6 +280,7 @@ public class ComputingEquipmentService {
 
     private ResponseSeeAllEquipmentsDto getResponseSeeAllEquipmentsDto(BeanComputerEquipament equipo) {
         ResponseSeeAllEquipmentsDto dto = new ResponseSeeAllEquipmentsDto();
+        dto.setEquipmentId(equipo.getComputerEquipamentId());
         dto.setSerialNumber(equipo.getSerialNumber());
         dto.setIdEsset(equipo.getIdEsset());
         dto.setResponsibleName(equipo.getPerson() != null ? equipo.getPerson().getName() + " " + equipo.getPerson().getLastname() + " " + equipo.getPerson().getSurname() : "");
@@ -384,5 +496,25 @@ public class ComputingEquipmentService {
 
         return pngOutputStream.toByteArray();
     }
+
+
+    public List<ResponseEquipmentSelectDto> getAllEquipmentsForResponsiveGeneration() {
+        List<BeanComputerEquipament> equipmentList = repository.findAll();
+
+        return equipmentList.stream()
+                .filter(equipment ->
+                        "OCUPADO".equalsIgnoreCase(String.valueOf(equipment.getStatus())) ||
+                                "DISPONIBLE".equalsIgnoreCase(String.valueOf(equipment.getStatus())))
+                .map(equipment -> new ResponseEquipmentSelectDto(
+                        equipment.getComputerEquipamentId(),
+                        equipment.getSerialNumber(),
+                        equipment.getType(),
+                        equipment.getBrand(),
+                        equipment.getModel(),
+                        equipment.getAssetNumber()
+                ))
+                .collect(Collectors.toList());
+    }
+
 
 }

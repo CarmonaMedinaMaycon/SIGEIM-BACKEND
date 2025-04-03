@@ -4,14 +4,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestGetAllInvoicesDto {
+public class InvoiceDetailsDto {
     private int invoiceId;
     private String invoiceFolio;
     private String supplier;
     private String invoiceDate;
-    private double totalIva;
-    private int equipmentCount;
+    private Double totalIva;
+    private List<EquipmentDTO> equipments;
+    @Data
+    public static class EquipmentDTO {
+        private Long equipmentId;
+        private String brand;
+        private String serialNumber;
+    }
 }

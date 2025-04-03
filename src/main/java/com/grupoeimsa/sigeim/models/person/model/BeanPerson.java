@@ -67,7 +67,7 @@ public class BeanPerson {
     private List<BeanCellphone> cellphone;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference(value = "person-equipment")
     private List<BeanComputerEquipament> computerEquipaments;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)

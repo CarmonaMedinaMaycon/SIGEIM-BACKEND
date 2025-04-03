@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InvoiceDto {
-    private double priceIva;
+    private Double total_iva;
     private String supplier;
     private String invoiceDate;
     private String invoiceFolio;
