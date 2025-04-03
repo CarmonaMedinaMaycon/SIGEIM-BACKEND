@@ -174,10 +174,62 @@ public class PersonService {
                 .map(person -> new ResponseLicencesPersonSelectDto(
                         person.getPersonId(),
                         person.getFullName(),
-                        person.getLicense() != null
+                        person.getLicense() != null,
+                        person.getDepartament(),
+                        person.getPhoneNumber()
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<ReponsePersonWithPhoneDetailsDto> findAllWithDetails(RequestPersonDTO request) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Page<BeanPerson> personasPage = personRepository.findCustomFiltered(
+                request.getSearch(),
+                request.getDepartament(),
+                request.getEnterprise(),
+                request.getStatus(),
+                pageable
+        );
+
+        List<BeanPerson> personas = personasPage.getContent();
+
+        return personas.stream().map(p -> new ReponsePersonWithPhoneDetailsDto(
+                p.getPersonId(),
+                p.getFullName(),
+                p.getDepartament(),
+                p.getEnterprise(),
+                p.getLicense() != null,
+                p.getCellphone() != null && !p.getCellphone().isEmpty()
+        )).toList();
+    }
+
+    public List<ResponsePersonWithoutAccessCardDto> findAllWithoutAccessCard(RequestPersonDTO request) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+
+        Page<BeanPerson> personasPage = personRepository.findCustomFiltered(
+                request.getSearch(),
+                request.getDepartament(),
+                request.getEnterprise(),
+                request.getStatus(),
+                pageable
+        );
+
+        List<BeanPerson> personas = personasPage.getContent();
+
+        return personas.stream()
+                .filter(p -> p.getAccessCard() == null)
+                .map(p -> new ResponsePersonWithoutAccessCardDto(
+                        p.getPersonId(),
+                        p.getFullName(),
+                        p.getDepartament(),
+                        p.getEnterprise(),
+                        false // No tiene tarjeta
+                ))
+                .toList();
+    }
+
+
+
 
 
 

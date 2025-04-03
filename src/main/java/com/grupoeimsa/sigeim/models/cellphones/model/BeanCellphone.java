@@ -53,7 +53,7 @@ public class BeanCellphone {
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("person-cellphone")
     private BeanPerson person;
 
     @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)

@@ -40,6 +40,6 @@ public class BeanAccessCard {
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("person-accesscard")
     private BeanPerson person;
 }

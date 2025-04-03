@@ -63,7 +63,7 @@ public class BeanPerson {
     private Boolean status;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("person-cellphone")
     private List<BeanCellphone> cellphone;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -71,11 +71,11 @@ public class BeanPerson {
     private List<BeanComputerEquipament> computerEquipaments;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("person-license")
     private BeanLicense license;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("person-accesscard")
     private BeanAccessCard accessCard;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)

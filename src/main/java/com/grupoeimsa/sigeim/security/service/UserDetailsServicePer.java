@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -151,30 +152,35 @@ public class UserDetailsServicePer implements UserDetailsService {
         if (userDetails == null)
             throw new CustomException("Email or password incorrect");
 
-        BeanUser user2 = userRepository.findBeanUserByEmail(authRequest.username()).get();
+        BeanUser user = userRepository.findBeanUserByEmail(authRequest.username()).orElseThrow(
+                () -> new CustomException("User not found")
+        );
 
         // if user account is locked
-        if (!user2.isStatus()){
+        if (!user.isStatus()) {
             throw new CustomException("Account locked");
         }
 
         // validate password
         if (!passwordEncoder.matches(authRequest.password(), userDetails.getPassword())) {
-            user2.setAttempts(user2.getAttempts()+1);
-            System.out.println(user2.getAttempts());
+            int newAttempts = user.getAttempts() + 1;
+            user.setAttempts(newAttempts);
+            user.setLastTry(LocalTime.now());
 
-            if (user2.getAttempts() == 3){
-                user2.setStatus(false);
-                user2.setLastTry(java.time.LocalTime.now());
+            if (newAttempts >= 3) {
+                user.setStatus(false); // lock account
+                System.out.println("Cuenta bloqueada por intentos fallidos.");
             }
 
-            user2.setLastTry(java.time.LocalTime.now());
-
-            userRepository.save(user2);
-            throw new CustomException("User or password incorrect");
+            userRepository.save(user);
+            throw new CustomException("Email or password incorrect");
         }
 
+        // 🟢 Login exitoso → reiniciar intentos
+        user.setAttempts(0);
+        userRepository.save(user);
 
+        // Crear token
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails.getUsername(),
                 userDetails.getPassword(),
@@ -189,9 +195,8 @@ public class UserDetailsServicePer implements UserDetailsService {
         response.setToken(accessToken);
         response.setRole(userDetails.getAuthorities().toArray()[0].toString().split("_")[1]);
 
-        BeanUser user = userRepository.findBeanUserByEmail(authRequest.username()).get();
-
         return response;
     }
+
 
 }

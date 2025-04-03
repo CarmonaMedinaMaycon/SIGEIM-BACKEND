@@ -167,7 +167,7 @@ public class BeanLicense {
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("person-license")
     private BeanPerson person;
 
     @OneToOne(mappedBy = "license", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
