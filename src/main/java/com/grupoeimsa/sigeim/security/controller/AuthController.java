@@ -47,7 +47,7 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> sendVerificationCode(@RequestBody RequestVerificationCodeDto request) {
         userDetailsServicePer.sendVerificationCode(request.getEmail());
-        return ResponseEntity.ok("Verification code sent to email");
+        return ResponseEntity.ok("Verification code sent to email" + request.getEmail());
     }
 
     @PostMapping("/change-password-with-code")

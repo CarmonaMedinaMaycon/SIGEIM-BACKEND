@@ -64,6 +64,7 @@ public class AccessCardController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> delete(@RequestBody DeleteAccessCardDto dto) {
+        System.out.println(dto.getId());
         if (dto.getId() == null) {
             throw new CustomException("ID cannot be null");
         }

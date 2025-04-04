@@ -93,7 +93,14 @@ public class AccessCardService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponseAccessCardTableDto> getAccessCardSummaries(String search, int page, int size, Boolean status, String enterprise, String departament) {
+    public Page<ResponseAccessCardTableDto> getAccessCardSummaries(
+            String search,
+            int page,
+            int size,
+            Boolean status,
+            String enterprise,
+            String departament) {
+
         Pageable pageable = PageRequest.of(page, size);
         Page<BeanAccessCard> accessCards = accessCardRepository.findAllByPersonName(
                 search,
@@ -103,10 +110,7 @@ public class AccessCardService {
                 pageable
         );
 
-        if (accessCards.isEmpty()) {
-            throw new CustomException("No access cards found");
-        }
-
+        // ❌ NO lances error si no hay resultados
         return accessCards.map(card -> new ResponseAccessCardTableDto(
                 card.getAccessCardId(),
                 card.getPerson().getPersonId(),
@@ -121,9 +125,15 @@ public class AccessCardService {
     }
 
 
+
     @Transactional
     public void delete(Long id) {
-        accessCardRepository.deleteById(id);
-    }
+        BeanAccessCard accessCard = accessCardRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Tarjeta de acceso no encontrada"));
 
+        BeanPerson person = accessCard.getPerson();
+        person.setAccessCard(null); // desvinculamos primero
+
+        accessCardRepository.delete(accessCard);
+    }
 }

@@ -150,15 +150,15 @@ public class UserDetailsServicePer implements UserDetailsService {
 
         // if user not found
         if (userDetails == null)
-            throw new CustomException("Email or password incorrect");
+            throw new CustomException("Correo o contraseña incorrectos");
 
         BeanUser user = userRepository.findBeanUserByEmail(authRequest.username()).orElseThrow(
-                () -> new CustomException("User not found")
+                () -> new CustomException("Usuario no encontrado")
         );
 
         // if user account is locked
         if (!user.isStatus()) {
-            throw new CustomException("Account locked");
+            throw new CustomException("Cuenta bloqueada");
         }
 
         // validate password
@@ -173,7 +173,7 @@ public class UserDetailsServicePer implements UserDetailsService {
             }
 
             userRepository.save(user);
-            throw new CustomException("Email or password incorrect");
+            throw new CustomException("Correo o contraseña incorrectos");
         }
 
         // 🟢 Login exitoso → reiniciar intentos
