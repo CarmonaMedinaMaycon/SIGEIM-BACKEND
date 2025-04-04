@@ -2,11 +2,14 @@ package com.grupoeimsa.sigeim.models.cellphones.controller;
 
 
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.AvailablePersonCellphoneDto;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneEditDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.RequestCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
+import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.service.CellphoneService;
+import com.grupoeimsa.sigeim.utils.CustomException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -81,5 +84,12 @@ public class CellphoneController {
                 filter.getDepartament()
         );
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/edit-dto")
+    public ResponseEntity<CellphoneEditDto> getCellphoneForEdit(@RequestBody Map<String, String> payload) {
+        Long id = Long.valueOf(payload.get("id"));
+        CellphoneEditDto dto = cellphoneService.getCellphoneEditDtoById(id);
+        return ResponseEntity.ok(dto);
     }
 }

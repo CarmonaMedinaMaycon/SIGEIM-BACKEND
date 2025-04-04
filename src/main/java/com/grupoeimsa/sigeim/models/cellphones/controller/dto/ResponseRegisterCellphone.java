@@ -32,5 +32,5 @@ public class ResponseRegisterCellphone {
 
     private Boolean whatsappBussiness;
 
-    private BeanPerson person;
+    private Long personId;
 }

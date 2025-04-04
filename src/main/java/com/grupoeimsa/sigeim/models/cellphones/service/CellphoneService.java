@@ -2,6 +2,7 @@ package com.grupoeimsa.sigeim.models.cellphones.service;
 
 
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.AvailablePersonCellphoneDto;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneEditDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
@@ -65,7 +66,8 @@ public class CellphoneService {
         cellphone.setComments(registerCellphone.getComments());
         cellphone.setStatus(true);
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
-        cellphone.setPerson(registerCellphone.getPerson());
+        cellphone.setPerson(personRepository.findById(registerCellphone.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario asignado no fue encontrado")));
         cellphoneRepository.save(cellphone);
     }
 
@@ -82,7 +84,9 @@ public class CellphoneService {
 
     @Transactional
     public void update(ResponseRegisterCellphone registerCellphone) {
-        BeanCellphone cellphone = cellphoneRepository.findById(registerCellphone.getCellphoneId()).orElseThrow(() -> new CustomException("The cellphone was not found"));
+        BeanCellphone cellphone = cellphoneRepository.findById(registerCellphone.getCellphoneId())
+                .orElseThrow(() -> new CustomException("The cellphone was not found"));
+
         cellphone.setLegalName(registerCellphone.getLegalName());
         cellphone.setEquipamentName(registerCellphone.getEquipamentName());
         cellphone.setCompany(registerCellphone.getCompany());
@@ -90,10 +94,18 @@ public class CellphoneService {
         cellphone.setDateRenovation(registerCellphone.getDateRenovation());
         cellphone.setImei(registerCellphone.getImei());
         cellphone.setComments(registerCellphone.getComments());
-        cellphone.setStatus(true);
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
+        cellphone.setStatus(true);
+
+        System.out.println("Usuario asignado" + registerCellphone.getPersonId());
+
+        // 🔥 Aquí actualizas la persona asignada
+        cellphone.setPerson(personRepository.findById(registerCellphone.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario asignado no fue encontrado")));
+
         cellphoneRepository.save(cellphone);
     }
+
 
 
     public List<AvailablePersonCellphoneDto> getAvailablePersonsForCellphone(Long currentPersonId) {
@@ -135,9 +147,35 @@ public class CellphoneService {
                 c.getPerson() != null
                         ? c.getPerson().getName() + " " + c.getPerson().getSurname() + " " + c.getPerson().getLastname()
                         : "Sin asignar",
-                c.getDateRenovation()
+                c.getDateRenovation(),
+                c.getComments(),
+                c.getPerson() != null
+                        ? c.getPerson().getName() + " " + c.getPerson().getSurname() + " " + c.getPerson().getLastname()
+                        : "No ha sido asignado",
+                c.getStatus()
         ));
     }
+
+    @Transactional(readOnly = true)
+    public CellphoneEditDto getCellphoneEditDtoById(Long id) {
+        BeanCellphone cellphone = cellphoneRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Cellphone not found"));
+
+        return new CellphoneEditDto(
+                cellphone.getCellphoneId(),
+                cellphone.getEquipamentName(),
+                cellphone.getLegalName(),
+                cellphone.getCompany(),
+                cellphone.getShortDialing(),
+                cellphone.getImei(),
+                cellphone.getWhatsappBussiness(),
+                cellphone.getDateRenovation(),
+                cellphone.getComments(),
+                cellphone.getPerson() != null ? cellphone.getPerson().getPersonId() : null
+        );
+    }
+
+
 
 
 

@@ -18,4 +18,7 @@ public class CellphoneTableDto {
     private String legalName;
     private String assignedTo;
     private LocalDate dateRenovation;
+    private String comments;
+    private String userFullName;
+    private Boolean status;
 }
