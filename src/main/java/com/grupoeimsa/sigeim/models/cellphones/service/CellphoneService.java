@@ -1,6 +1,8 @@
 package com.grupoeimsa.sigeim.models.cellphones.service;
 
 
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.AvailablePersonCellphoneDto;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -90,6 +94,51 @@ public class CellphoneService {
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
         cellphoneRepository.save(cellphone);
     }
+
+
+    public List<AvailablePersonCellphoneDto> getAvailablePersonsForCellphone(Long currentPersonId) {
+        List<BeanPerson> persons = personRepository.findAllActivePersons(); // sin filtrar por celular
+
+        return persons.stream()
+                .map(p -> new AvailablePersonCellphoneDto(
+                        p.getPersonId(),
+                        p.getName() + " " + p.getSurname() + " " + p.getLastname(),
+                        p.getDepartament(),
+                        p.getCellphone() != null && !p.getCellphone().isEmpty()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CellphoneTableDto> getAllCellphonesForTable(String search, int page, int size, Boolean status, String enterprise, String departament) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BeanCellphone> cellphones = cellphoneRepository.findAllBySearch(
+                search,
+                departament,
+                enterprise,
+                status,
+                pageable
+        );
+
+        if (cellphones.isEmpty()) {
+            throw new CustomException("No cellphones were found");
+        }
+
+        // Mapeo al DTO ligero
+        return cellphones.map(c -> new CellphoneTableDto(
+                c.getCellphoneId(),
+                c.getEquipamentName(),
+                c.getCompany(),
+                c.getImei(),
+                c.getShortDialing(),
+                c.getLegalName(),
+                c.getPerson() != null
+                        ? c.getPerson().getName() + " " + c.getPerson().getSurname() + " " + c.getPerson().getLastname()
+                        : "Sin asignar",
+                c.getDateRenovation()
+        ));
+    }
+
 
 
 }

@@ -1,6 +1,8 @@
 package com.grupoeimsa.sigeim.models.cellphones.controller;
 
 
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.AvailablePersonCellphoneDto;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.RequestCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -58,5 +61,25 @@ public class CellphoneController {
     public ResponseEntity<String> updateCellphone(@RequestBody ResponseRegisterCellphone registerCellphone){
         cellphoneService.update(registerCellphone);
         return new ResponseEntity<>("Cellphone updated", HttpStatus.OK);
+    }
+
+    @PostMapping("/available-for-cellphone")
+    public ResponseEntity<List<AvailablePersonCellphoneDto>> getAvailablePersonsForCellphone(@RequestBody Map<String, Long> payload) {
+        Long currentPersonId = payload.get("currentPersonId"); // puede ser null si no hay persona asignada
+        List<AvailablePersonCellphoneDto> availablePersons = cellphoneService.getAvailablePersonsForCellphone(currentPersonId);
+        return ResponseEntity.ok(availablePersons);
+    }
+
+    @PostMapping("/table")
+    public ResponseEntity<Page<CellphoneTableDto>> getCellphonesTable(@RequestBody RequestCellphoneDTO filter) {
+        Page<CellphoneTableDto> result = cellphoneService.getAllCellphonesForTable(
+                filter.getSearch(),
+                filter.getPage(),
+                filter.getSize(),
+                filter.getStatus(),
+                filter.getEnterprise(),
+                filter.getDepartament()
+        );
+        return ResponseEntity.ok(result);
     }
 }
