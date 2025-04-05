@@ -4,16 +4,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
+import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveDto;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCellphone;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
+import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveCellphone;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.models.template_responsives.model.BeanTemplateResponsive;
 import com.grupoeimsa.sigeim.models.template_responsives.model.ITemplate;
@@ -62,11 +68,15 @@ public class ResponsiveService {
     private final ITemplate templateRepository;
     private final IResponsiveEquipments responsiveEquipmentRepository;
     private final IComputerEquipament equipamentRepository;
+    private final ICellphone cellphoneRepository;
+    private final IResponsiveCellphone responsiveCellphoneRepository;
 
-    public ResponsiveService(ITemplate templateRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository) {
+    public ResponsiveService(ITemplate templateRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository) {
         this.templateRepository = templateRepository;
         this.responsiveEquipmentRepository = responsiveEquipmentRepository;
         this.equipamentRepository = equipamentRepository;
+        this.cellphoneRepository = cellphoneRepository;
+        this.responsiveCellphoneRepository = responsiveCellphoneRepository;
     }
 
 
@@ -206,6 +216,60 @@ public class ResponsiveService {
         outputStream.close();
     }
 
+    public void generateResponsiveCellphone(GenerateResponsiveCellphoneDto dto) throws Exception {
+        BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
+                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
+
+        BeanCellphone cellphone = cellphoneRepository.findById(dto.getCellphoneId())
+                .orElseThrow(() -> new RuntimeException("Celular no encontrado"));
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
+        XWPFDocument document = new XWPFDocument(inputStream);
+
+        // Reemplazo de textos en párrafos
+        for (XWPFParagraph paragraph : document.getParagraphs()) {
+            replaceTextInParagraph(paragraph, dto.getPlaceholders());
+        }
+
+        // Reemplazo de textos en tablas
+        for (XWPFTable table : document.getTables()) {
+            for (XWPFTableRow row : table.getRows()) {
+                for (XWPFTableCell cell : row.getTableCells()) {
+                    for (XWPFParagraph paragraph : cell.getParagraphs()) {
+                        replaceTextInParagraph(paragraph, dto.getPlaceholders());
+                    }
+                }
+            }
+        }
+
+        // Guardar documento generado
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        document.write(outputStream);
+        byte[] generatedBytes = outputStream.toByteArray();
+
+        BeanResponsiveCellphone responsive = new BeanResponsiveCellphone();
+        responsive.setCreationDate(LocalDate.now());
+        responsive.setModificationDate(null);
+        responsive.setResponsibleName(dto.getPlaceholders().get("nombre"));
+        responsive.setResponsiblePosition(dto.getPlaceholders().get("puesto"));
+        responsive.setWhatsGiven(dto.getPlaceholders().get("entregables"));
+        responsive.setBrand(dto.getPlaceholders().get("marca"));
+        responsive.setColor(dto.getPlaceholders().get("color"));
+        responsive.setNumber(dto.getPlaceholders().get("numero"));
+        responsive.setImei(dto.getPlaceholders().get("imei"));
+        responsive.setPhoneState(dto.getPlaceholders().get("estado"));
+        responsive.setStatus(EStatus.ACTIVA_POR_FIRMAR);
+        responsive.setUploadedDoc(generatedBytes);
+        responsive.setSignedDoc(null);
+        responsive.setCellphone(cellphone);
+
+        responsiveCellphoneRepository.save(responsive);
+
+        document.close();
+        inputStream.close();
+        outputStream.close();
+    }
+
     public void updateResponsive(UpdateResponsiveDto dto) throws Exception {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(dto.getResponsiveId())
                 .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
@@ -318,6 +382,37 @@ public class ResponsiveService {
         ));
     }
 
+    public Page<ResponseResponsiveCellphonesDto> getResponsivesCellphones(RequestSearchResponsiveEquipmentsDto dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
+        EStatus statusEnum = null;
+
+        if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
+            statusEnum = switch (dto.getEstado()) {
+                case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
+                case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
+                case "Cancelada" -> EStatus.CANCELADA;
+                default -> null;
+            };
+        }
+
+        Page<BeanResponsiveCellphone> responsives = responsiveCellphoneRepository.searchResponsives(
+                dto.getSearch(),
+                statusEnum,
+                dto.getSort(),
+                pageable
+        );
+
+        return responsives.map(r -> new ResponseResponsiveCellphonesDto(
+                r.getResponsiveCellphoneId(),
+                r.getCreationDate().toString(),
+                r.getResponsibleName(),
+                r.getImei(),
+                r.getStatus().name().replace("_", " "),
+                r.getSignedDoc() != null
+        ));
+    }
+
+
     private void replaceTextInParagraph(XWPFParagraph paragraph, Map<String, String> placeholders) {
         StringBuilder fullText = new StringBuilder();
         List<XWPFRun> runs = paragraph.getRuns();
@@ -379,6 +474,22 @@ public class ResponsiveService {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(documentBytes);
     }
+
+    public ResponseEntity<byte[]> downloadResponsiveCellphone(DownloadResponsiveDto dto) {
+        Optional<BeanResponsiveCellphone> responsive = responsiveCellphoneRepository.findById(dto.getResponsiveId());
+
+        if (responsive.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        byte[] documentBytes = responsive.get().getUploadedDoc();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=documento_responsiva_celular.docx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(documentBytes);
+    }
+
 
     public ResponseEntity<ResponseEditResponsiveEquipmentDto> getEditResponsiveData(Long id) {
         Optional<BeanResponsiveEquipaments> optional = responsiveEquipmentRepository.findById(id);

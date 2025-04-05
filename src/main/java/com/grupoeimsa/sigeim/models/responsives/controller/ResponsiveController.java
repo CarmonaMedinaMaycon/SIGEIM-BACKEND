@@ -3,9 +3,11 @@ package com.grupoeimsa.sigeim.models.responsives.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
@@ -53,6 +55,16 @@ public class ResponsiveController {
         }
     }
 
+    @PostMapping("/generate-cellphone-responsive")
+    public ResponseEntity<String> generateResponsiveCellphone(@RequestBody GenerateResponsiveCellphoneDto dto) {
+        try {
+            responsiveService.generateResponsiveCellphone(dto);
+            return ResponseEntity.ok("Responsiva de celular generada exitosamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al generar la responsiva: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/equipments")
     public ResponseEntity<Page<ResponseResponsiveEquipmentsDto>> getResponsivesEquipments(
             @RequestBody RequestSearchResponsiveEquipmentsDto dto) {
@@ -60,9 +72,21 @@ public class ResponsiveController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/cellphones")
+    public ResponseEntity<Page<ResponseResponsiveCellphonesDto>> getResponsivesCellphones(
+            @RequestBody RequestSearchResponsiveEquipmentsDto dto) {
+        Page<ResponseResponsiveCellphonesDto> result = responsiveService.getResponsivesCellphones(dto);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/equipments/download")
     public ResponseEntity<byte[]> downloadResponsive(@RequestBody DownloadResponsiveDto dto) {
         return responsiveService.downloadResponsive(dto);
+    }
+
+    @PostMapping("/cellphones/download")
+    public ResponseEntity<byte[]> downloadResponsiveCellphone(@RequestBody DownloadResponsiveDto dto) {
+        return responsiveService.downloadResponsiveCellphone(dto);
     }
 
     @GetMapping("/get-edit-data/{id}")
