@@ -22,13 +22,18 @@ public class BeanResponsiveLicenses {
     private Long responsiveCellphoneId;
 
     @Column(name = "date", nullable = false)
-    private LocalDate date;
+    private LocalDate creationDate;
 
     @Column(name = "status", nullable = false)
     private EStatus status;
 
-    @Column(name = "generated_doc", nullable = false)
-    private String generatedDoc;
+    @Lob
+    @Column(name = "generated_doc", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] generatedDoc;
+
+    @Lob
+    @Column(name = "signed_doc", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] signedDoc;
 
     @OneToOne
     @JoinColumn(name = "licenses_id", nullable = false)

@@ -7,6 +7,7 @@ import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.RequestCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseToGenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.service.CellphoneService;
 import com.grupoeimsa.sigeim.utils.CustomException;
@@ -91,5 +92,10 @@ public class CellphoneController {
         Long id = Long.valueOf(payload.get("id"));
         CellphoneEditDto dto = cellphoneService.getCellphoneEditDtoById(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/select-responsive-cellphone")
+    public ResponseEntity<List<ResponseToGenerateResponsiveDto>> getAvailableCellphones() {
+        return ResponseEntity.ok(cellphoneService.getCellphonesForResponsive());
     }
 }

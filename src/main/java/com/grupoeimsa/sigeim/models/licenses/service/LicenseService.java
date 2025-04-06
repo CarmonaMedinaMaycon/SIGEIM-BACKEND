@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.service;
 
 
+import com.grupoeimsa.sigeim.models.licenses.controller.dto.EditLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RegisterLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.ResponseLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
@@ -55,20 +56,23 @@ public class LicenseService {
         license.setOutlook(licenseDTO.isOutlook());
         license.setAccountOutlook(licenseDTO.getAccountOutlook());
         license.setTypeOutlook(licenseDTO.getTypeOutlook());
-        license.setAlias(licenseDTO.getAlias());
-        license.setMailbox(licenseDTO.getMailbox());
+        license.setSupplierOutlook(licenseDTO.getSupplierOutlook());
+        license.setAliasOutlook(licenseDTO.getAliasOutlook());
+        license.setMailboxOutlook(licenseDTO.getMailboxOutlook());
         license.setCommentsOutlook(licenseDTO.getCommentsOutlook());
-        license.setPhoneNumber(licenseDTO.getPhoneNumber());
-        license.setTwoFactorAuthenticationName(licenseDTO.getTwoFactorAuthenticationName());
-        license.setDepartament(licenseDTO.getDepartament());
+        license.setAuthPhoneNumber(licenseDTO.getAuthPhoneNumber());
+        license.setAuthTwoFactorAuthenticationName(licenseDTO.getAuthTwoFactorAuthenticationName());
+        license.setAuthDepartament(licenseDTO.getAuthDepartament());
         license.setCrm(licenseDTO.isCrm());
         license.setUserCrm(licenseDTO.getUserCrm());
         license.setTypeCrm(licenseDTO.getTypeCrm());
+        license.setSupplierCrm(licenseDTO.getSupplierCrm());
         license.setCommentsCrm(licenseDTO.getCommentsCrm());
         license.setBc(licenseDTO.isBc());
         license.setUserBc(licenseDTO.getUserBc());
         license.setIdUserBc(licenseDTO.getIdUserBc());
         license.setTypeBc(licenseDTO.getTypeBc());
+        license.setSupplierBc(licenseDTO.getSupplierBc());
         license.setEnterpriseBc(licenseDTO.getEnterpriseBc());
         license.setPurecloud(licenseDTO.isPurecloud());
         license.setUserPureCloud(licenseDTO.getUserPureCloud());
@@ -100,33 +104,37 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
-        license.setPerson(licenseDTO.getPerson());
-        licensesRepository.save(license);
+        BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
+        license.setPerson(person);        licensesRepository.save(license);
     }
 
 
     @Transactional
-    public void editAssignLicense(RegisterLicenseDTO licenseDTO) {
+    public void editAssignLicense(EditLicenseDTO licenseDTO) {
         BeanLicense license = licensesRepository.findById(licenseDTO.getLicenseId())
                 .orElseThrow(() -> new CustomException("License not found"));
 
         license.setOutlook(licenseDTO.isOutlook());
         license.setAccountOutlook(licenseDTO.getAccountOutlook());
         license.setTypeOutlook(licenseDTO.getTypeOutlook());
-        license.setAlias(licenseDTO.getAlias());
-        license.setMailbox(licenseDTO.getMailbox());
+        license.setSupplierOutlook(licenseDTO.getSupplierOutlook());
+        license.setAliasOutlook(licenseDTO.getAliasOutlook());
+        license.setMailboxOutlook(licenseDTO.getMailboxOutlook());
         license.setCommentsOutlook(licenseDTO.getCommentsOutlook());
-        license.setPhoneNumber(licenseDTO.getPhoneNumber());
-        license.setTwoFactorAuthenticationName(licenseDTO.getTwoFactorAuthenticationName());
-        license.setDepartament(licenseDTO.getDepartament());
+        license.setAuthPhoneNumber(licenseDTO.getAuthPhoneNumber());
+        license.setAuthTwoFactorAuthenticationName(licenseDTO.getAuthTwoFactorAuthenticationName());
+        license.setAuthDepartament(licenseDTO.getAuthDepartament());
         license.setCrm(licenseDTO.isCrm());
         license.setUserCrm(licenseDTO.getUserCrm());
         license.setTypeCrm(licenseDTO.getTypeCrm());
+        license.setSupplierCrm(licenseDTO.getSupplierCrm());
         license.setCommentsCrm(licenseDTO.getCommentsCrm());
         license.setBc(licenseDTO.isBc());
         license.setUserBc(licenseDTO.getUserBc());
         license.setIdUserBc(licenseDTO.getIdUserBc());
         license.setTypeBc(licenseDTO.getTypeBc());
+        license.setSupplierBc(licenseDTO.getSupplierBc());
         license.setEnterpriseBc(licenseDTO.getEnterpriseBc());
         license.setPurecloud(licenseDTO.isPurecloud());
         license.setUserPureCloud(licenseDTO.getUserPureCloud());

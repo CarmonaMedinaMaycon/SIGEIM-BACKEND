@@ -30,23 +30,26 @@ public class BeanLicense {
     @Column(name = "type_outlook", nullable = false)
     private String typeOutlook;
 
+    @Column(name = "supplier_outlook", nullable = false)
+    private String supplierOutlook;
+
     @Column(name = "alias", nullable = false)
-    private String alias;
+    private String aliasOutlook;
 
     @Column(name = "mailbox", nullable = false)
-    private String mailbox;
+    private String mailboxOutlook;
 
     @Column(name = "comments_outlook", nullable = false)
     private String commentsOutlook;
 
     @Column(name = "phoneNumber", nullable = false)
-    private String phoneNumber;
+    private String authPhoneNumber;
 
     @Column(name = "two_factor_authentication_name", nullable = false)
-    private String twoFactorAuthenticationName;
+    private String authTwoFactorAuthenticationName;
 
     @Column(name = "departament", nullable = false)
-    private String departament;
+    private String authDepartament;
 
     @Column(name = "crm", nullable = false)
     private boolean crm;
@@ -56,6 +59,9 @@ public class BeanLicense {
 
     @Column(name = "type_crm", nullable = false)
     private String typeCrm;
+
+    @Column(name = "supplier_crm", nullable = false)
+    private String supplierCrm;
 
     @Column(name = "comments_crm", nullable = false)
     private String commentsCrm;
@@ -71,6 +77,9 @@ public class BeanLicense {
 
     @Column(name = "type_bc", nullable = false)
     private String typeBc;
+
+    @Column(name = "supplier_bc", nullable = false)
+    private String supplierBc;
 
     @Column(name = "enterprise_bc", nullable = false)
     private String enterpriseBc;
@@ -95,6 +104,12 @@ public class BeanLicense {
 
     @Column(name = "enterprise_rpa", nullable = false)
     private String enterpriseRpa;
+
+    @Column(name = "powerbi", nullable = false)
+    private boolean powerbi;
+
+    @Column(name = "copilot", nullable = false)
+    private boolean copilot;
 
     @Column(name = "tactical", nullable = false)
     private boolean tactical;

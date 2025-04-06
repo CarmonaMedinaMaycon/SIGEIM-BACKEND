@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface ILicense extends JpaRepository<BeanLicense, Long> {
 
     @Query("SELECT l FROM BeanLicense l " +
@@ -13,12 +16,13 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
             "WHERE (:search IS NULL OR " +
             "l.accountOutlook LIKE %:search% OR " +
             "l.typeOutlook LIKE %:search% OR " +
-            "l.alias LIKE %:search% OR " +
-            "l.mailbox LIKE %:search% OR " +
+            "l.supplierOutlook LIKE %:search% OR " +
+            "l.aliasOutlook LIKE %:search% OR " +
+            "l.mailboxOutlook LIKE %:search% OR " +
             "l.commentsOutlook LIKE %:search% OR " +
-            "l.phoneNumber LIKE %:search% OR " +
-            "l.twoFactorAuthenticationName LIKE %:search% OR " +
-            "l.departament LIKE %:search% OR " +
+            "l.authPhoneNumber LIKE %:search% OR " +
+            "l.authTwoFactorAuthenticationName LIKE %:search% OR " +
+            "l.authDepartament LIKE %:search% OR " +
             "l.userCrm LIKE %:search% OR " +
             "l.typeCrm LIKE %:search% OR " +
             "l.commentsCrm LIKE %:search% OR " +
@@ -51,5 +55,18 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
             @Param("status") Boolean status,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT l FROM BeanLicense l 
+    WHERE l.person.personId NOT IN (
+        SELECT rl.license.person.personId 
+        FROM BeanResponsiveLicenses rl 
+        WHERE rl.status <> com.grupoeimsa.sigeim.models.responsives.model.EStatus.CANCELADA
+    )
+""")
+    List<BeanLicense> findAvailableForAccessResponsive();
+
+    Optional<BeanLicense> findByPersonPersonId(Long personId);
+
 
 }

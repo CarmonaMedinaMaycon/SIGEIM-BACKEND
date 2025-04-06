@@ -1,16 +1,15 @@
 package com.grupoeimsa.sigeim.models.licenses.controller.dto;
 
-
-import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
-import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
-public class RegisterLicenseDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+public class EditLicenseDTO {
+    private Long licenseId;
+
     private boolean outlook;
 
     private String accountOutlook;

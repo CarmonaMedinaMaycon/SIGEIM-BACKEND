@@ -6,6 +6,7 @@ import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneEditDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseToGenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
@@ -173,6 +174,17 @@ public class CellphoneService {
                 cellphone.getComments(),
                 cellphone.getPerson() != null ? cellphone.getPerson().getPersonId() : null
         );
+    }
+
+    public List<ResponseToGenerateResponsiveDto> getCellphonesForResponsive() {
+        return cellphoneRepository.findAvailableForResponsiva()
+                .stream()
+                .map(c -> new ResponseToGenerateResponsiveDto(
+                        c.getCellphoneId(),
+                        c.getImei(),
+                        c.getNumber()
+                ))
+                .toList();
     }
 
 

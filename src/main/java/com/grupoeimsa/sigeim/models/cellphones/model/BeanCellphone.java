@@ -48,6 +48,9 @@ public class BeanCellphone {
     @Column(name = "status")
     private Boolean status;
 
+    @Column(name = "number")
+    private String number;
+
     @Column(name = "whatsapp_bussiness")
     private Boolean whatsappBussiness;
 

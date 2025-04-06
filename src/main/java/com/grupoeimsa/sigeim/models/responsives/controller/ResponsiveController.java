@@ -5,10 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestGenerateAccessResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableAccessDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -124,6 +129,24 @@ public class ResponsiveController {
         }
     }
 
+    @PostMapping("/cellphones/upload-signed")
+    public ResponseEntity<?> uploadSignedDocCellphone(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("data") String jsonData) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(jsonData);
+            Long responsiveId = node.get("responsiveId").asLong();
+
+            responsiveService.uploadSignedDocCellphone(responsiveId, file);
+            return ResponseEntity.ok("Archivo firmado cargado exitosamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al subir archivo firmado: " + e.getMessage());
+        }
+    }
+
+
     @PostMapping("/equipments/download-signed")
     public ResponseEntity<byte[]> downloadSignedDoc(@RequestBody Map<String, Long> request) {
         Long id = request.get("responsiveId");
@@ -144,6 +167,35 @@ public class ResponsiveController {
                 .body(file);
     }
 
+    @PostMapping("/cellphones/download-signed")
+    public ResponseEntity<byte[]> downloadSignedDocCellphone(@RequestBody DownloadResponsiveDto dto) {
+        try {
+            byte[] file = responsiveService.getSignedDocCellphone(dto.getResponsiveId());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF); // o APPLICATION_OCTET_STREAM si prefieres
+            headers.setContentDisposition(ContentDisposition.builder("attachment")
+                    .filename("responsiva_celular_firmada.pdf")
+                    .build());
+
+            return new ResponseEntity<>(file, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PostMapping("/cellphones/cancel")
+    public ResponseEntity<String> cancelResponsiveCellphone(@RequestBody DownloadResponsiveDto dto) {
+        try {
+            responsiveService.cancelResponsiveCellphone(dto.getResponsiveId());
+            return ResponseEntity.ok("Responsiva cancelada correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al cancelar responsiva: " + e.getMessage());
+        }
+    }
+
+
     @PostMapping("/equipments/cancel")
     public ResponseEntity<Void> cancelResponsive(@RequestBody Map<String, Long> payload) {
         Long responsiveId = payload.get("responsiveId");
@@ -151,4 +203,34 @@ public class ResponsiveController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/cellphones/edit/get-data")
+    public ResponseEntity<ResponseEditResponsiveCellphoneDto> getResponsiveCellphoneData(@RequestBody DownloadResponsiveDto dto) {
+        return ResponseEntity.ok(responsiveService.getResponsiveCellphoneData(dto));
+    }
+
+    @PostMapping("/cellphones/edit")
+    public ResponseEntity<String> updateResponsiveCellphone(@RequestBody UpdateResponsiveCellphoneDto dto) {
+        try {
+            responsiveService.updateResponsiveCellphone(dto);
+            return ResponseEntity.ok("Responsiva de celular actualizada correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al actualizar la responsiva: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/available-users-for-responsive-license")
+    public ResponseEntity<List<ResponseAvailableAccessDto>> getAvailableUsers() {
+        return ResponseEntity.ok(responsiveService.getAvailableEmployeesForResponsive());
+    }
+
+    @PostMapping("/generate-access-responsive")
+    public ResponseEntity<Void> generateResponsive(@RequestBody RequestGenerateAccessResponsiveDto dto) {
+        try {
+            responsiveService.generateAccessResponsive(dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
