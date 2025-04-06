@@ -18,6 +18,7 @@ import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResp
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableAccessDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveAccessDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveCellphoneDto;
@@ -512,6 +513,21 @@ public class ResponsiveService {
                 .body(documentBytes);
     }
 
+    public ResponseEntity<byte[]> downloadResponsiveAccess(DownloadResponsiveDto dto) {
+        Optional<BeanResponsiveLicenses> responsive = responsiveLicensesRepository.findById(dto.getResponsiveId());
+
+        if (responsive.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        byte[] documentBytes = responsive.get().getGeneratedDoc();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=documento_responsiva_celular.docx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(documentBytes);
+    }
+
 
     public ResponseEntity<ResponseEditResponsiveEquipmentDto> getEditResponsiveData(Long id) {
         Optional<BeanResponsiveEquipaments> optional = responsiveEquipmentRepository.findById(id);
@@ -574,8 +590,29 @@ public class ResponsiveService {
         responsiveCellphoneRepository.save(responsive);
     }
 
+    public void uploadSignedDocAccess(Long responsiveId, MultipartFile file) throws IOException {
+        BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva de accesos no encontrada"));
+
+        responsive.setSignedDoc(file.getBytes());
+        responsive.setStatus(EStatus.ACTIVA_FIRMADA);
+
+        responsiveLicensesRepository.save(responsive);
+    }
+
     public byte[] getSignedDocCellphone(Long responsiveId) {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        if (responsive.getSignedDoc() == null) {
+            throw new RuntimeException("La responsiva no tiene documento firmado.");
+        }
+
+        return responsive.getSignedDoc();
+    }
+
+    public byte[] getSignedDocAccess(Long responsiveId) {
+        BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
                 .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
 
         if (responsive.getSignedDoc() == null) {
@@ -593,6 +630,15 @@ public class ResponsiveService {
         responsive.setModificationDate(LocalDate.now());
 
         responsiveCellphoneRepository.save(responsive);
+    }
+
+    public void cancelResponsiveAccess(Long responsiveId) {
+        BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        responsive.setStatus(EStatus.CANCELADA);
+
+        responsiveLicensesRepository.save(responsive);
     }
 
     public void cancelResponsive(Long responsiveId) {
@@ -755,17 +801,18 @@ public class ResponsiveService {
 
 
     private void fillAccessTable(XWPFDocument doc, BeanLicense license) {
-        List<String> alwaysVisible = List.of("Outlook", "CRM", "BC365", "Pure Cloud", "RPA");
-        Map<String, String> accessMap = new LinkedHashMap<>();
+        XWPFTable table = doc.getTables().get(0); // Usar la única tabla
 
-        // Top plataformas (obligatorias)
-        accessMap.put("Outlook", license.isOutlook() ? "Sí" : "NA");
-        accessMap.put("CRM", license.isCrm() ? "Sí" : "NA");
-        accessMap.put("BC365", license.isBc() ? "Sí" : "NA");
-        accessMap.put("Pure Cloud", license.isPurecloud() ? "Sí" : "NA");
-        accessMap.put("RPA", license.isRpa() ? "Sí" : "NA");
+        LinkedHashMap<String, String[]> platforms = new LinkedHashMap<>();
 
-        // Plataformas adicionales solo si están activas
+        // Plataformas obligatorias
+        platforms.put("Outlook", new String[]{license.isOutlook() ? "Sí" : "NA", emptyOrNA(license.getAccountOutlook())});
+        platforms.put("CRM", new String[]{license.isCrm() ? "Sí" : "NA", emptyOrNA(license.getUserCrm())});
+        platforms.put("BC365", new String[]{license.isBc() ? "Sí" : "NA", emptyOrNA(license.getUserBc())});
+        platforms.put("Pure Cloud", new String[]{license.isPurecloud() ? "Sí" : "NA", emptyOrNA(license.getUserPureCloud())});
+        platforms.put("RPA", new String[]{license.isRpa() ? "Sí" : "NA", emptyOrNA(license.getUserRpa())});
+
+        // Plataformas adicionales activas
         Map<String, Boolean> dynamic = Map.ofEntries(
                 Map.entry("Power BI", license.isPowerbi()),
                 Map.entry("Copilot", license.isCopilot()),
@@ -787,53 +834,85 @@ public class ResponsiveService {
                 Map.entry("Kuesky", license.isKuesky())
         );
 
-        dynamic.forEach((platform, enabled) -> {
-            if (enabled) accessMap.put(platform, "Sí");
-        });
-
-        // Segunda tabla
-        XWPFTable table;
-        try {
-            table = doc.getTables().get(1);
-        } catch (IndexOutOfBoundsException e) {
-            throw new CustomException("No se encontró la segunda tabla en la plantilla");
+        for (Map.Entry<String, Boolean> entry : dynamic.entrySet()) {
+            if (entry.getValue()) {
+                String platform = entry.getKey();
+                String user = switch (platform) {
+                    case "Instagram" -> emptyOrNA(license.getUserInstagram());
+                    case "Facebook" -> emptyOrNA(license.getUserFacebook());
+                    case "Tiktok" -> emptyOrNA(license.getUserTiktok());
+                    case "Linkedin" -> emptyOrNA(license.getUserLinkedin());
+                    case "YouTube" -> emptyOrNA(license.getUserYoutube());
+                    case "Magento" -> emptyOrNA(license.getMagentoUser());
+                    case "Shopify" -> emptyOrNA(license.getUserShopify());
+                    default -> "NA";
+                };
+                platforms.put(platform, new String[]{"Sí", user});
+            }
         }
 
-        for (Map.Entry<String, String> entry : accessMap.entrySet()) {
+        // Eliminar filas existentes después del header
+        while (table.getNumberOfRows() > 1) {
+            table.removeRow(1);
+        }
+
+        // Estilo para cada celda
+        for (Map.Entry<String, String[]> entry : platforms.entrySet()) {
             XWPFTableRow row = table.createRow();
 
-            // Asegurarse de que la fila tenga 3 celdas
-            while (row.getTableCells().size() < 3) {
-                row.createCell();
+            List<String> valores = List.of(entry.getKey(), entry.getValue()[0], entry.getValue()[1]);
+
+            for (int i = 0; i < 3; i++) {
+                XWPFTableCell cell = row.getCell(i);
+
+                // Limpiar párrafos anteriores
+                cell.removeParagraph(0);
+
+                XWPFParagraph paragraph = cell.addParagraph();
+                paragraph.setAlignment(ParagraphAlignment.CENTER);
+                cell.setVerticalAlignment(XWPFTableCell.XWPFVertAlign.CENTER);
+
+                XWPFRun run = paragraph.createRun();
+                run.setFontFamily("Arial");
+                run.setFontSize(12);
+                run.setText(valores.get(i));
             }
-
-            row.getCell(0).setText(entry.getKey()); // Plataforma
-            row.getCell(1).setText(entry.getValue()); // Acceso
-
-            String usuario = switch (entry.getKey()) {
-                case "Outlook" -> emptyOrNA(license.getAccountOutlook());
-                case "CRM" -> emptyOrNA(license.getUserCrm());
-                case "BC365" -> emptyOrNA(license.getUserBc());
-                case "Pure Cloud" -> emptyOrNA(license.getUserPureCloud());
-                case "RPA" -> emptyOrNA(license.getUserRpa());
-                case "Instagram" -> emptyOrNA(license.getUserInstagram());
-                case "Facebook" -> emptyOrNA(license.getUserFacebook());
-                case "Tiktok" -> emptyOrNA(license.getUserTiktok());
-                case "Linkedin" -> emptyOrNA(license.getUserLinkedin());
-                case "YouTube" -> emptyOrNA(license.getUserYoutube());
-                case "Magento" -> emptyOrNA(license.getMagentoUser());
-                case "Shopify" -> emptyOrNA(license.getUserShopify());
-                default -> "NA";
-            };
-
-            row.getCell(2).setText(usuario);
         }
     }
+
 
 
     private String emptyOrNA(String value) {
         return (value == null || value.trim().isEmpty() || value.equalsIgnoreCase("NA")) ? "NA" : value;
     }
 
+    public Page<ResponseResponsiveAccessDto> getResponsivesAccess(RequestSearchResponsiveEquipmentsDto dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
+        EStatus statusEnum = null;
+
+        if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
+            statusEnum = switch (dto.getEstado()) {
+                case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
+                case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
+                case "Cancelada" -> EStatus.CANCELADA;
+                default -> null;
+            };
+        }
+
+        Page<BeanResponsiveLicenses> responsives = responsiveLicensesRepository.searchResponsivesAccess(
+                dto.getSearch(),
+                statusEnum,
+                dto.getSort(),
+                pageable
+        );
+
+        return responsives.map(r -> new ResponseResponsiveAccessDto(
+                r.getResponsiveCellphoneId(),
+                r.getCreationDate().toString(),
+                r.getLicense().getPerson().getFullName(),
+                r.getStatus().name().replace("_", " "),
+                r.getSignedDoc() != null && r.getSignedDoc().length > 0
+        ));
+    }
 
 }

@@ -14,7 +14,8 @@ public class ResponseRegisterAccessCardDTO {
     private boolean mainDoor;
     private boolean accessTechnicalService;
     private boolean mainWarehouse;
-    private boolean WarehouseBasement;
-    private boolean TechnicalServiceWarehouses;
+    private boolean warehouseBasement;
+    private boolean technicalServiceWarehouses;
+    private boolean technicalServiceWarehousesTwo;
     private Long personId;
 }

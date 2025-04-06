@@ -17,8 +17,9 @@ public class ResponseAccessCardDTO {
     private boolean mainDoor;
     private boolean accessTechnicalService;
     private boolean mainWarehouse;
-    private boolean WarehouseBasement;
-    private boolean TechnicalServiceWarehouses;
+    private boolean warehouseBasement;
+    private boolean technicalServiceWarehouses;
+    private boolean technicalServiceWarehousesTwo;
     private BeanPerson person;
 
     public ResponseAccessCardDTO(BeanAccessCard beanAccessCard) {
@@ -27,8 +28,9 @@ public class ResponseAccessCardDTO {
         this.mainDoor = beanAccessCard.isMainDoor();
         this.accessTechnicalService = beanAccessCard.isAccessTechnicalService();
         this.mainWarehouse = beanAccessCard.isMainWarehouse();
-        this.WarehouseBasement = beanAccessCard.isWarehouseBasement();
-        this.TechnicalServiceWarehouses = beanAccessCard.isTechnicalServiceWarehouses();
+        this.warehouseBasement = beanAccessCard.isWarehouseBasement();
+        this.technicalServiceWarehouses = beanAccessCard.isTechnicalServiceWarehouses();
+        this.technicalServiceWarehousesTwo = beanAccessCard.isTechnicalServiceWarehousesTwo();
         this.person = beanAccessCard.getPerson();
     }
 

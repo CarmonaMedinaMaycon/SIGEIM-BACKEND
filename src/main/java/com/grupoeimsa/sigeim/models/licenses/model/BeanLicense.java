@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -185,8 +187,8 @@ public class BeanLicense {
     @JsonBackReference("person-license")
     private BeanPerson person;
 
-    @OneToOne(mappedBy = "license", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
-    private BeanResponsiveLicenses responsiveLicenses;
+    @OneToMany(mappedBy = "license", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BeanResponsiveLicenses> responsivesLicenses;
 
 
 }

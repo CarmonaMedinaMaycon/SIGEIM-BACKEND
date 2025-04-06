@@ -17,4 +17,5 @@ public class ResponseAccessCardTableDto {
     private boolean mainWarehouse;
     private boolean warehouseBasement;
     private boolean technicalServiceWarehouses;
+    private boolean technicalServiceWarehousesTwo;
 }

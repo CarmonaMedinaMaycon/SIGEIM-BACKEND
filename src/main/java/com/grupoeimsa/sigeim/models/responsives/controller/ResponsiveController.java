@@ -10,6 +10,7 @@ import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResp
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableAccessDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveAccessDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveCellphoneDto;
@@ -84,6 +85,13 @@ public class ResponsiveController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/access")
+    public ResponseEntity<Page<ResponseResponsiveAccessDto>> getResponsivesAccess(
+            @RequestBody RequestSearchResponsiveEquipmentsDto dto) {
+        Page<ResponseResponsiveAccessDto> result = responsiveService.getResponsivesAccess(dto);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/equipments/download")
     public ResponseEntity<byte[]> downloadResponsive(@RequestBody DownloadResponsiveDto dto) {
         return responsiveService.downloadResponsive(dto);
@@ -92,6 +100,11 @@ public class ResponsiveController {
     @PostMapping("/cellphones/download")
     public ResponseEntity<byte[]> downloadResponsiveCellphone(@RequestBody DownloadResponsiveDto dto) {
         return responsiveService.downloadResponsiveCellphone(dto);
+    }
+
+    @PostMapping("/access/download")
+    public ResponseEntity<byte[]> downloadResponsiveAccess(@RequestBody DownloadResponsiveDto dto) {
+        return responsiveService.downloadResponsiveAccess(dto);
     }
 
     @GetMapping("/get-edit-data/{id}")
@@ -146,6 +159,23 @@ public class ResponsiveController {
         }
     }
 
+    @PostMapping("/access/upload-signed")
+    public ResponseEntity<?> uploadSignedDocAccess(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("data") String jsonData) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(jsonData);
+            Long responsiveId = node.get("responsiveId").asLong();
+
+            responsiveService.uploadSignedDocAccess(responsiveId, file);
+            return ResponseEntity.ok("Archivo firmado cargado exitosamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al subir archivo firmado: " + e.getMessage());
+        }
+    }
+
 
     @PostMapping("/equipments/download-signed")
     public ResponseEntity<byte[]> downloadSignedDoc(@RequestBody Map<String, Long> request) {
@@ -184,10 +214,38 @@ public class ResponsiveController {
         }
     }
 
+    @PostMapping("/access/download-signed")
+    public ResponseEntity<byte[]> downloadSigedDocAccess(@RequestBody DownloadResponsiveDto dto) {
+        try {
+            byte[] file = responsiveService.getSignedDocAccess(dto.getResponsiveId());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF); // o APPLICATION_OCTET_STREAM si prefieres
+            headers.setContentDisposition(ContentDisposition.builder("attachment")
+                    .filename("responsiva_accesos_firmada.pdf")
+                    .build());
+
+            return new ResponseEntity<>(file, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
     @PostMapping("/cellphones/cancel")
     public ResponseEntity<String> cancelResponsiveCellphone(@RequestBody DownloadResponsiveDto dto) {
         try {
             responsiveService.cancelResponsiveCellphone(dto.getResponsiveId());
+            return ResponseEntity.ok("Responsiva cancelada correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al cancelar responsiva: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/access/cancel")
+    public ResponseEntity<String> cancelResponsiveAccess(@RequestBody DownloadResponsiveDto dto) {
+        try {
+            responsiveService.cancelResponsiveAccess(dto.getResponsiveId());
             return ResponseEntity.ok("Responsiva cancelada correctamente.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -217,7 +275,6 @@ public class ResponsiveController {
             return ResponseEntity.badRequest().body("Error al actualizar la responsiva: " + e.getMessage());
         }
     }
-
 
     @PostMapping("/available-users-for-responsive-license")
     public ResponseEntity<List<ResponseAvailableAccessDto>> getAvailableUsers() {

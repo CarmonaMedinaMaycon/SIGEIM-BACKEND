@@ -3,10 +3,13 @@ package com.grupoeimsa.sigeim.models.acess_cards.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCards;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,6 +40,12 @@ public class BeanAccessCard {
 
     @Column(name = "technical_service_warehouses", nullable = false)
     private boolean TechnicalServiceWarehouses;
+
+    @Column(name = "tecnical_service_warehouses_two", nullable = false)
+    private boolean TechnicalServiceWarehousesTwo;
+
+    @OneToMany(mappedBy = "accessCard", cascade = CascadeType.ALL)
+    private List<BeanResponsiveCards> responsives;
 
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)

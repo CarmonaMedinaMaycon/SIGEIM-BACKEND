@@ -4,9 +4,12 @@ package com.grupoeimsa.sigeim.models.licenses.controller.dto;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveLicenses;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Comparator;
 
 @Data
 @NoArgsConstructor
@@ -184,7 +187,10 @@ public class ResponseLicenseDTO {
         this.openPay = license.isOpenPay();
         this.kuesky = license.isKuesky();
         this.personId = license.getPerson() != null ? license.getPerson().getPersonId() : null;
-        this.responsiveLicenseId = license.getResponsiveLicenses() != null ? license.getResponsiveLicenses().getResponsiveCellphoneId() : null;
+        this.responsiveLicenseId =
+                license.getResponsivesLicenses() != null && !license.getResponsivesLicenses().isEmpty()
+                        ? license.getResponsivesLicenses().getFirst().getResponsiveCellphoneId()
+                        : null;
         this.fullName = license.getPerson().getName() + " " +
                 license.getPerson().getSurname() + " " +
                 license.getPerson().getLastname();

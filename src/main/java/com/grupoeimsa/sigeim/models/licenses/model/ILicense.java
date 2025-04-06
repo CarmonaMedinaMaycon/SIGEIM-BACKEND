@@ -57,10 +57,10 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
     );
 
     @Query("""
-    SELECT l FROM BeanLicense l 
+    SELECT l FROM BeanLicense l\s
     WHERE l.person.personId NOT IN (
-        SELECT rl.license.person.personId 
-        FROM BeanResponsiveLicenses rl 
+        SELECT rl.license.person.personId\s
+        FROM BeanResponsiveLicenses rl\s
         WHERE rl.status <> com.grupoeimsa.sigeim.models.responsives.model.EStatus.CANCELADA
     )
 """)

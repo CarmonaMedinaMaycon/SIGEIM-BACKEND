@@ -55,12 +55,13 @@ public class AccessCardService {
     public void registerAccessCard(ResponseRegisterAccessCardDTO dto) {
         BeanAccessCard accessCard = new BeanAccessCard();
 
-        accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
         accessCard.setAccessBetweenBuildings(dto.isAccessBetweenBuildings());
         accessCard.setMainDoor(dto.isMainDoor());
+        accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
         accessCard.setMainWarehouse(dto.isMainWarehouse());
-        accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
         accessCard.setWarehouseBasement(dto.isWarehouseBasement());
+        accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
+        accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
 
         // Buscar a la persona por ID y asignarla
         BeanPerson person = personRepository.findById(dto.getPersonId())
@@ -76,12 +77,13 @@ public class AccessCardService {
         BeanAccessCard accessCard = accessCardRepository.findById(dto.getAccessCardId())
                 .orElseThrow(() -> new CustomException("Access card not found"));
 
-        accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
         accessCard.setAccessBetweenBuildings(dto.isAccessBetweenBuildings());
         accessCard.setMainDoor(dto.isMainDoor());
+        accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
         accessCard.setMainWarehouse(dto.isMainWarehouse());
         accessCard.setWarehouseBasement(dto.isWarehouseBasement());
         accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
+        accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
 
         // 🔁 Asignar la persona por ID
         BeanPerson person = personRepository.findById(dto.getPersonId())
@@ -120,7 +122,8 @@ public class AccessCardService {
                 card.isAccessTechnicalService(),
                 card.isMainWarehouse(),
                 card.isWarehouseBasement(),
-                card.isTechnicalServiceWarehouses()
+                card.isTechnicalServiceWarehouses(),
+                card.isTechnicalServiceWarehousesTwo()
         ));
     }
 
