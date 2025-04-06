@@ -1,9 +1,12 @@
 package com.grupoeimsa.sigeim.models.acess_cards.service;
 
 import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseAccessCardDTO;
+import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseAccessCardTableDto;
 import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseRegisterAccessCardDTO;
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
+import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
+import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,10 +21,12 @@ import java.sql.SQLException;
 public class AccessCardService {
 
     public final IAcessCard accessCardRepository;
+    public final IPerson personRepository;
 
 
-    public AccessCardService(IAcessCard accessCardRepository) {
+    public AccessCardService(IAcessCard accessCardRepository, IPerson personRepository) {
         this.accessCardRepository = accessCardRepository;
+        this.personRepository = personRepository;
     }
 
     @Transactional(readOnly = true)
@@ -47,35 +52,91 @@ public class AccessCardService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public void registerAccessCard(ResponseRegisterAccessCardDTO responseRegisterAccessCardDTO){
+    public void registerAccessCard(ResponseRegisterAccessCardDTO dto) {
         BeanAccessCard accessCard = new BeanAccessCard();
-        accessCard.setAccessTechnicalService(responseRegisterAccessCardDTO.isAccessTechnicalService());
-        accessCard.setAccessBetweenBuildings(responseRegisterAccessCardDTO.isAccessBetweenBuildings());
-        accessCard.setMainDoor(responseRegisterAccessCardDTO.isMainDoor());
-        accessCard.setMainWarehouse(responseRegisterAccessCardDTO.isMainWarehouse());
-        accessCard.setTechnicalServiceWarehouses(responseRegisterAccessCardDTO.isTechnicalServiceWarehouses());
-        accessCard.setWarehouseBasement(responseRegisterAccessCardDTO.isWarehouseBasement());
-        accessCard.setPerson(responseRegisterAccessCardDTO.getPerson());
+
+        accessCard.setAccessBetweenBuildings(dto.isAccessBetweenBuildings());
+        accessCard.setMainDoor(dto.isMainDoor());
+        accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
+        accessCard.setMainWarehouse(dto.isMainWarehouse());
+        accessCard.setWarehouseBasement(dto.isWarehouseBasement());
+        accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
+        accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
+
+        // Buscar a la persona por ID y asignarla
+        BeanPerson person = personRepository.findById(dto.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario no fue encontrado"));
+
+        accessCard.setPerson(person);
+
         accessCardRepository.save(accessCard);
     }
 
     @Transactional
-    public void update(ResponseRegisterAccessCardDTO responseRegisterAccessCardDTO){
-        BeanAccessCard accessCard = accessCardRepository.findById(responseRegisterAccessCardDTO.getAccessCardId()).orElseThrow(() -> new CustomException("Person not found"));
-        accessCard.setAccessTechnicalService(responseRegisterAccessCardDTO.isAccessTechnicalService());
-        accessCard.setAccessBetweenBuildings(responseRegisterAccessCardDTO.isAccessBetweenBuildings());
-        accessCard.setMainDoor(responseRegisterAccessCardDTO.isMainDoor());
-        accessCard.setMainWarehouse(responseRegisterAccessCardDTO.isMainWarehouse());
-        accessCard.setWarehouseBasement(responseRegisterAccessCardDTO.isWarehouseBasement());
-        accessCard.setTechnicalServiceWarehouses(responseRegisterAccessCardDTO.isTechnicalServiceWarehouses());
-        accessCard.setPerson(responseRegisterAccessCardDTO.getPerson());
-        accessCardRepository.save(accessCard);
+    public void update(ResponseRegisterAccessCardDTO dto) {
+        BeanAccessCard accessCard = accessCardRepository.findById(dto.getAccessCardId())
+                .orElseThrow(() -> new CustomException("Access card not found"));
 
+        accessCard.setAccessBetweenBuildings(dto.isAccessBetweenBuildings());
+        accessCard.setMainDoor(dto.isMainDoor());
+        accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
+        accessCard.setMainWarehouse(dto.isMainWarehouse());
+        accessCard.setWarehouseBasement(dto.isWarehouseBasement());
+        accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
+        accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
+
+        // 🔁 Asignar la persona por ID
+        BeanPerson person = personRepository.findById(dto.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario no fue encontrado"));
+
+        accessCard.setPerson(person);
+
+        accessCardRepository.save(accessCard);
     }
+
+    @Transactional(readOnly = true)
+    public Page<ResponseAccessCardTableDto> getAccessCardSummaries(
+            String search,
+            int page,
+            int size,
+            Boolean status,
+            String enterprise,
+            String departament) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BeanAccessCard> accessCards = accessCardRepository.findAllByPersonName(
+                search,
+                departament,
+                enterprise,
+                status,
+                pageable
+        );
+
+        // ❌ NO lances error si no hay resultados
+        return accessCards.map(card -> new ResponseAccessCardTableDto(
+                card.getAccessCardId(),
+                card.getPerson().getPersonId(),
+                card.getPerson().getFullName(),
+                card.isAccessBetweenBuildings(),
+                card.isMainDoor(),
+                card.isAccessTechnicalService(),
+                card.isMainWarehouse(),
+                card.isWarehouseBasement(),
+                card.isTechnicalServiceWarehouses(),
+                card.isTechnicalServiceWarehousesTwo()
+        ));
+    }
+
+
 
     @Transactional
     public void delete(Long id) {
-        accessCardRepository.deleteById(id);
-    }
+        BeanAccessCard accessCard = accessCardRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Tarjeta de acceso no encontrada"));
 
+        BeanPerson person = accessCard.getPerson();
+        person.setAccessCard(null); // desvinculamos primero
+
+        accessCardRepository.delete(accessCard);
+    }
 }

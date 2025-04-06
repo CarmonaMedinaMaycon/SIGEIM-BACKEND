@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseLicencesPersonSelectDto {
+public class ResponsePersonWithoutAccessCardDto {
     private Long personId;
-    private String personName;
-    private Boolean hasLicence;
+    private String fullName;
     private String departament;
-    private String phoneNumber;
+    private String enterprise;
+    private Boolean hasAccessCard;
 }

@@ -103,4 +103,18 @@ public class PersonController {
         return personService.getAllPersonsForResponsiveEquipmentGeneration();
     }
 
+    @PostMapping("/with-cellphone-details")
+    public ResponseEntity<List<ReponsePersonWithPhoneDetailsDto>> getWithDetails(
+            @RequestBody RequestPersonDTO request) {
+        List<ReponsePersonWithPhoneDetailsDto> response = personService.findAllWithDetails(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/without-access-card")
+    public ResponseEntity<List<ResponsePersonWithoutAccessCardDto>> getPersonsWithoutAccessCard(@RequestBody RequestPersonDTO filters) {
+        List<ResponsePersonWithoutAccessCardDto> personas = personService.findAllWithoutAccessCard(filters);
+        return ResponseEntity.ok(personas);
+    }
+
+
 }

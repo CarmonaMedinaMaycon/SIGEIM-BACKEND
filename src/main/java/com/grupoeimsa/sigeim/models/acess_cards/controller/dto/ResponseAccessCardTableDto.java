@@ -4,12 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class ResponseRegisterAccessCardDTO {
-
+public class ResponseAccessCardTableDto {
     private Long accessCardId;
+    private Long personId;
+    private String fullName;
     private boolean accessBetweenBuildings;
     private boolean mainDoor;
     private boolean accessTechnicalService;
@@ -17,5 +18,4 @@ public class ResponseRegisterAccessCardDTO {
     private boolean warehouseBasement;
     private boolean technicalServiceWarehouses;
     private boolean technicalServiceWarehousesTwo;
-    private Long personId;
 }

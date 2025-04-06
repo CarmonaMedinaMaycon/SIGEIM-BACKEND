@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 
 public interface IPerson extends JpaRepository<BeanPerson, Long> {
         boolean existsByEmail(String email);
@@ -44,5 +46,9 @@ public interface IPerson extends JpaRepository<BeanPerson, Long> {
                 Pageable pageable
         );
 
+
+
+        @Query("SELECT p FROM BeanPerson p WHERE p.status = true")
+        List<BeanPerson> findAllActivePersons();
 
 }
