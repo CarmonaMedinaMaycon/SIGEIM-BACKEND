@@ -1,12 +1,10 @@
 package com.grupoeimsa.sigeim.models.person.controller.dto;
 
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
-import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
-import com.grupoeimsa.sigeim.models.users.model.BeanUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,22 +23,24 @@ public class ResponsePersonDTO {
     private String whoRegistered;
     private String emailRegistered;
     private String email;
+
     private String phoneNumber;
+    private String phoneNumberAssigned;
+
     private String departament;
     private String enterprise;
     private String position;
     private String comments;
     private String commentsHardwareSoftware;
     private String commentsEmail;
-    private LocalDate dateStart;
-    private LocalDate dateEnd;
+    private String dateStart;
+    private String dateEnd;
     private LocalDate entryDate;
     private Boolean status;
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipaments; // Cambio aquí
     private BeanLicense license;
     private BeanAccessCard accessCard;
-    private BeanAssets assets;
 
     public ResponsePersonDTO(BeanPerson beanPerson) {
         this.personId = beanPerson.getPersonId();
@@ -65,6 +65,5 @@ public class ResponsePersonDTO {
         this.computerEquipaments = beanPerson.getComputerEquipaments(); // Cambio aquí
         this.license = beanPerson.getLicense();
         this.accessCard = beanPerson.getAccessCard();
-        this.assets = beanPerson.getAssets();
     }
 }

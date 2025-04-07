@@ -19,14 +19,15 @@ public class ResponseUpdatePersonDTO {
     private String whoRegistered;
     private String email;
     private String phoneNumber;
+    private String phoneNumberAssigned;
     private String departament;
     private String enterprise;
     private String position;
     private String comments;
-    private LocalDate dateEnd ;
-    private String emailRegistered;
     private String commentsHardwareSoftware;
     private String commentsEmail;
+    private String emailRegistered;
+
 
     public ResponseUpdatePersonDTO(BeanPerson beanPerson) {
         this.personId = beanPerson.getPersonId();
@@ -35,11 +36,11 @@ public class ResponseUpdatePersonDTO {
         this.lastname = beanPerson.getLastname();
         this.email = beanPerson.getEmail();
         this.phoneNumber = beanPerson.getPhoneNumber();
+        this.phoneNumberAssigned = beanPerson.getPhoneNumberAssigned();
         this.departament = beanPerson.getDepartament();
         this.enterprise = beanPerson.getEnterprise();
         this.position = beanPerson.getPosition();
         this.comments = beanPerson.getComments();
-        this.dateEnd = beanPerson.getDateEnd();
         this.whoRegistered = beanPerson.getWhoRegistered();
         this.emailRegistered = beanPerson.getEmailRegistered();
         this.commentsHardwareSoftware = beanPerson.getCommentsHardwareSoftware();

@@ -76,6 +76,7 @@ public class PersonService {
             throw new CustomException("email already exists");
         }
         person.setPhoneNumber(responsePersonDTO.getPhoneNumber());
+        person.setPhoneNumberAssigned(responsePersonDTO.getPhoneNumberAssigned());
         person.setDepartament(responsePersonDTO.getDepartament());
         person.setEnterprise(responsePersonDTO.getEnterprise());
         person.setPosition(responsePersonDTO.getPosition());
@@ -94,8 +95,6 @@ public class PersonService {
         // Buscar la persona por ID, lanzar excepción si no se encuentra
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
-
-        person.setDateEnd(LocalDate.now());
 
         // Obtener la persona por defecto con ID 1 (para evitar múltiples consultas)
         BeanPerson defaultPerson = personRepository.findById(1L)
@@ -133,26 +132,56 @@ public class PersonService {
         personRepository.save(person);
     }
 
+    public ResponseEditPersonDto getSimplePersonById(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-    @Transactional
-    public void update(ResponseUpdatePersonDTO updatePersonDTO) {
-        BeanPerson person =  personRepository.findById(updatePersonDTO.getPersonId())
-                .orElseThrow(() -> new CustomException("Person not found"));
-        person.setName(updatePersonDTO.getName());
-        person.setSurname(updatePersonDTO.getSurname());
-        person.setLastname(updatePersonDTO.getLastname());
-        person.setEmail(updatePersonDTO.getEmail());
-        person.setPhoneNumber(updatePersonDTO.getPhoneNumber());
-        person.setDepartament(updatePersonDTO.getDepartament());
-        person.setEnterprise(updatePersonDTO.getEnterprise());
-        person.setPosition(updatePersonDTO.getPosition());
-        person.setComments(updatePersonDTO.getComments());
-        person.setEmailRegistered(updatePersonDTO.getEmailRegistered());
-        person.setWhoRegistered(updatePersonDTO.getWhoRegistered());
-        person.setCommentsHardwareSoftware(updatePersonDTO.getCommentsHardwareSoftware());
-        person.setCommentsEmail(updatePersonDTO.getCommentsEmail());
+        ResponseEditPersonDto dto = new ResponseEditPersonDto();
+        dto.setId(person.getPersonId());
+        dto.setName(person.getName());
+        dto.setSurname(person.getSurname());
+        dto.setLastname(person.getLastname());
+        dto.setEmail(person.getEmail());
+        dto.setPhoneNumber(person.getPhoneNumber());
+        dto.setPhoneNumberAssigned(person.getPhoneNumberAssigned());
+        dto.setDepartament(person.getDepartament());
+        dto.setWhoRegistered(person.getWhoRegistered());
+        dto.setEmailRegistered(person.getEmailRegistered());
+        dto.setEnterprise(person.getEnterprise());
+        dto.setPosition(person.getPosition());
+        dto.setComments(person.getComments());
+        dto.setCommentsHardwareSoftware(person.getCommentsHardwareSoftware());
+        dto.setCommentsEmail(person.getCommentsEmail());
+        dto.setEntryDate(person.getEntryDate());
+
+        return dto;
+    }
+
+
+
+    public void updatePerson(ResponseEditPersonDto dto) {
+        BeanPerson person = personRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        person.setName(dto.getName());
+        person.setSurname(dto.getSurname());
+        person.setLastname(dto.getLastname());
+        person.setWhoRegistered(dto.getWhoRegistered());
+        person.setEmailRegistered(dto.getEmailRegistered());
+        person.setEmail(dto.getEmail());
+        person.setPhoneNumber(dto.getPhoneNumber());
+        person.setPhoneNumberAssigned(dto.getPhoneNumberAssigned());
+        person.setDepartament(dto.getDepartament());
+        person.setEnterprise(dto.getEnterprise());
+        person.setPosition(dto.getPosition());
+        person.setComments(dto.getComments());
+        person.setCommentsHardwareSoftware(dto.getCommentsHardwareSoftware());
+        person.setCommentsEmail(dto.getCommentsEmail());
+        person.setEntryDate(dto.getEntryDate());
+
         personRepository.save(person);
     }
+
 
     public List<ResponseResponsibleSelectDto> getAllPersonsForSelect() {
         List<BeanPerson> persons = personRepository.findAll();
@@ -268,7 +297,7 @@ public class PersonService {
 
             return new ResponseTablePeopleDto(
                     person.getPersonId(),
-                    person.getName() + " " + person.getSurname() + " " + person.getLastname(),
+                    person.getName() + " " + person.getLastname() + " " + person.getSurname(),
                     person.getEnterprise(),
                     person.getDepartament(),
                     person.getPhoneNumber(),
