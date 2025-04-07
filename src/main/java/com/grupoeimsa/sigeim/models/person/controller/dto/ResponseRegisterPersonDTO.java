@@ -1,7 +1,6 @@
 package com.grupoeimsa.sigeim.models.person.controller.dto;
 
 import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
-import com.grupoeimsa.sigeim.models.assets.model.BeanAssets;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
@@ -26,22 +25,22 @@ public class ResponseRegisterPersonDTO {
     private String emailRegistered;
     private String email;
     private String phoneNumber;
+    private String phoneNumberAssigned;
     private String departament;
     private String enterprise;
     private String position;
     private String comments;
     private String commentsHardwareSoftware;
     private String commentsEmail;
-    private LocalDate dateStart ;
-    private LocalDate dateEnd ;
+    private String dateStart ;
+    private String dateEnd ;
     private LocalDate entryDate;
     private Boolean status;
     private BeanUser user;
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipament;
     private BeanLicense license;
-    private List<BeanAccessCard> accessCard;
-    private BeanAssets assets;
+    private BeanAccessCard accessCard;
 
     public ResponseRegisterPersonDTO(BeanPerson beanPerson) {
         this.personId = beanPerson.getPersonId();
@@ -52,6 +51,7 @@ public class ResponseRegisterPersonDTO {
         this.emailRegistered = beanPerson.getEmailRegistered();
         this.email = beanPerson.getEmail();
         this.phoneNumber = beanPerson.getPhoneNumber();
+        this.phoneNumberAssigned = beanPerson.getPhoneNumberAssigned();
         this.departament = beanPerson.getDepartament();
         this.enterprise = beanPerson.getEnterprise();
         this.position = beanPerson.getPosition();
@@ -66,7 +66,5 @@ public class ResponseRegisterPersonDTO {
         this.computerEquipament = beanPerson.getComputerEquipaments();
         this.license = beanPerson.getLicense();
         this.accessCard = beanPerson.getAccessCard();
-        this.assets = beanPerson.getAssets();
-
     }
 }

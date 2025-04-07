@@ -4,15 +4,22 @@ package com.grupoeimsa.sigeim.models.licenses.controller.dto;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveLicenses;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Comparator;
+
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 public class ResponseLicenseDTO {
     private Long licenseId;
+
+    private String fullName;
+
+    private String personDepartament;
 
     private boolean outlook;
 
@@ -20,21 +27,27 @@ public class ResponseLicenseDTO {
 
     private String typeOutlook;
 
-    private String alias;
+    private String supplierOutlook;
 
-    private String mailbox;
+    private String aliasOutlook;
+
+    private String mailboxOutlook;
 
     private String commentsOutlook;
 
-    private String phoneAuthenticator;
+    private String phoneNumber;
 
     private String twoFactorAuthenticationName;
+
+    private String departament;
 
     private boolean crm;
 
     private String userCrm;
 
     private String typeCrm;
+
+    private String supplierCrm;
 
     private String commentsCrm;
 
@@ -45,6 +58,8 @@ public class ResponseLicenseDTO {
     private String idUserBc;
 
     private String typeBc;
+
+    private String supplierBc;
 
     private String enterpriseBc;
 
@@ -61,6 +76,10 @@ public class ResponseLicenseDTO {
     private String moduleRpa;
 
     private String enterpriseRpa;
+
+    private boolean powerbi;
+
+    private boolean copilot;
 
     private boolean tactical;
 
@@ -108,9 +127,9 @@ public class ResponseLicenseDTO {
 
     private boolean kuesky;
 
-    private BeanPerson person;
+    private Long personId;
 
-    private BeanResponsiveLicenses responsiveLicenses;
+    private Long responsiveLicenseId;
 
     public ResponseLicenseDTO(BeanLicense beanLicense) {
         this.licenseId = beanLicense.getLicensesId();
@@ -120,8 +139,9 @@ public class ResponseLicenseDTO {
         this.alias = beanLicense.getAlias();
         this.mailbox = beanLicense.getMailbox();
         this.commentsOutlook = beanLicense.getCommentsOutlook();
-        this.phoneAuthenticator = beanLicense.getPhoneAuthenticator();
+        this.phoneNumber = beanLicense.getPhoneNumber();
         this.twoFactorAuthenticationName = beanLicense.getTwoFactorAuthenticationName();
+        this.departament = beanLicense.getDepartament();
         this.crm = beanLicense.isCrm();
         this.userCrm = beanLicense.getUserCrm();
         this.typeCrm = beanLicense.getTypeCrm();
@@ -164,4 +184,6 @@ public class ResponseLicenseDTO {
         this.person = beanLicense.getPerson();
         this.responsiveLicenses = beanLicense.getResponsiveLicenses();
     }
+
+
 }

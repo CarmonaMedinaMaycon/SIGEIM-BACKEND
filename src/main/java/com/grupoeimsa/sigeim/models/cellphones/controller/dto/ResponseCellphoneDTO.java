@@ -45,6 +45,7 @@ public class ResponseCellphoneDTO {
 
     public ResponseCellphoneDTO(BeanCellphone cellphone) {
         this.cellphoneId = cellphone.getCellphoneId();
+        this.equipamentName = cellphone.getEquipamentName();
         this.legalName = cellphone.getLegalName();
         this.equipamentName = cellphone.getEquipamentName();
         this.company = cellphone.getCompany();

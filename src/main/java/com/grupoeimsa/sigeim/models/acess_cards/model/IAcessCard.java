@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface IAcessCard extends JpaRepository<BeanAccessCard, Long> {
 
     @Query("SELECT a FROM BeanAccessCard a " +
@@ -25,5 +28,16 @@ public interface IAcessCard extends JpaRepository<BeanAccessCard, Long> {
     );
 
 
+    @Query("""
+    SELECT t FROM BeanAccessCard t
+    WHERE t.person.personId NOT IN (
+        SELECT rt.accessCard.person.personId
+        FROM BeanResponsiveCards rt
+        WHERE rt.status <> com.grupoeimsa.sigeim.models.responsives.model.EStatus.CANCELADA
+    )
+""")
+    List<BeanAccessCard> findAvailableForAccessCardResponsive();
+
+    Optional<BeanAccessCard> findByPersonPersonId(Long personId);
 
 }

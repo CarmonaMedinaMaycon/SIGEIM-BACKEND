@@ -45,6 +45,10 @@ public interface IComputerEquipament extends JpaRepository<BeanComputerEquipamen
             Pageable pageable
     );
 
+    int countByInvoice_InvoiceId(Long invoiceId);
+
     Optional<BeanComputerEquipament> findById(Long id);
+
+    List<BeanComputerEquipament> findByInvoiceIsNull();
 
 }

@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
@@ -101,14 +102,14 @@ public class BeanComputerEquipament {
     @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
     private List<BeanHistoryPhotosEquipament> historyPhotosEquipament;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "invoice_id")
-    @JsonManagedReference
+    @JsonIgnore
     private BeanInvoice invoice;
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference(value = "person-equipment")
     private BeanPerson person;
     
 }

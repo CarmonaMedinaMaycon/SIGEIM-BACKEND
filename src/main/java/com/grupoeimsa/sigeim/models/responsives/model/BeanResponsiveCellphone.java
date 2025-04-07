@@ -23,14 +23,45 @@ public class BeanResponsiveCellphone {
 
 
     @Column(name = "date", nullable = false)
-    private LocalDate date;
+    private LocalDate creationDate;
 
+    @Column(name = "modification_date")
+    private LocalDate modificationDate;
+
+    @Column(name = "responsible_name", nullable = false)
+    private String responsibleName;
+
+    @Column(name = "responsible_position", nullable = false)
+    private String responsiblePosition;
+
+    @Column(name = "whats_given", nullable = false)
+    private String whatsGiven;
+
+    @Column(name = "brand", nullable = false)
+    private String brand;
+
+    @Column(name = "color", nullable = false)
+    private String color;
+
+    @Column(name = "number", nullable = false)
+    private String number;
+
+    @Column(name = "imei", nullable = false)
+    private String imei;
+
+    @Column(name = "state", nullable = false)
+    private String phoneState;
 
     @Column(name = "status", nullable = false)
     private EStatus status;
 
-    @Column(name = "uploaded_doc", nullable = false)
-    private String uploadedDoc;
+    @Lob
+    @Column(name = "uploaded_doc", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] uploadedDoc;
+
+    @Lob
+    @Column(name = "signed_doc", columnDefinition = "LONGBLOB")
+    private byte[] signedDoc;
 
     //Many-to-one
     @ManyToOne(fetch = FetchType.LAZY)

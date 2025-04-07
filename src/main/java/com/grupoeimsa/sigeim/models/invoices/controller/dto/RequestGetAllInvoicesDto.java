@@ -12,5 +12,6 @@ public class RequestGetAllInvoicesDto {
     private String invoiceFolio;
     private String supplier;
     private String invoiceDate;
-    private double priceIva;
+    private double totalIva;
+    private int equipmentCount;
 }

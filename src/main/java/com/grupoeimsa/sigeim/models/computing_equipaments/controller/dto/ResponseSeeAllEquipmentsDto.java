@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseSeeAllEquipmentsDto {
+    private Long equipmentId;
     private String serialNumber;
     private String idEsset;
     private String responsibleName;

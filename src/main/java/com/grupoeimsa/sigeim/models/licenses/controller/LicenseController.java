@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.controller;
 
 
+import com.grupoeimsa.sigeim.models.licenses.controller.dto.EditLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RegisterLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RequestLicensesDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.ResponseLicenseDTO;
@@ -50,7 +51,7 @@ public class LicenseController {
     }
 
     @PutMapping("/update-assign")
-    public ResponseEntity<String> updateAssign(@Valid @RequestBody RegisterLicenseDTO responseUpdateLicenseDTO){
+    public ResponseEntity<String> updateAssign(@Valid @RequestBody EditLicenseDTO responseUpdateLicenseDTO){
         licenseService.editAssignLicense(responseUpdateLicenseDTO);
         return new ResponseEntity<>(
                 "Licenses updated",

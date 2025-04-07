@@ -1,10 +1,6 @@
 package com.grupoeimsa.sigeim.models.person.controller;
 
-import com.grupoeimsa.sigeim.models.person.controller.dto.RequestPersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponsePersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseRegisterPersonDTO;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseResponsibleSelectDto;
-import com.grupoeimsa.sigeim.models.person.controller.dto.ResponseUpdatePersonDTO;
+import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.service.PersonService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -36,6 +32,19 @@ public class PersonController {
         );
     }
 
+    @PostMapping("/table-data")
+    public ResponseEntity<Page<ResponseTablePeopleDto>> getPeopleTableData(@RequestBody RequestPersonDTO request) {
+        Page<ResponseTablePeopleDto> page = personService.getPeopleForTable(
+                request.getSearch(),
+                request.getDepartament(),
+                request.getEnterprise(),
+                request.getStatus(),
+                request.getPage(),
+                request.getSize()
+        );
+        return ResponseEntity.ok(page);
+    }
+
     @PostMapping("/one")
 //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
     public ResponseEntity<ResponsePersonDTO> findOne(@Valid @RequestBody Map<String, String> requestBody){
@@ -43,6 +52,14 @@ public class PersonController {
         ResponsePersonDTO person = personService.findById(Long.valueOf(id));
         return new ResponseEntity<>(person, HttpStatus.OK);
     }
+
+    @PostMapping("/one-light")
+    public ResponseEntity<ResponseEditPersonDto> getSimpleEmployeeData(@Valid @RequestBody Map<String, String> requestBody) {
+        String id = requestBody.get("id");
+        ResponseEditPersonDto dto = personService.getSimplePersonById(Long.valueOf(id));
+        return new ResponseEntity<>(dto, HttpStatus.OK);
+    }
+
 
     @PostMapping("/register")
     //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
@@ -68,8 +85,8 @@ public class PersonController {
 
     @PutMapping("/update-person")
     //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
-    public ResponseEntity<String> updatePerson(@Valid @RequestBody ResponseUpdatePersonDTO responseUpdatePersonDTO){
-        personService.update(responseUpdatePersonDTO);
+    public ResponseEntity<String> updatePerson(@Valid @RequestBody ResponseEditPersonDto responseUpdatePersonDTO){
+        personService.updatePerson(responseUpdatePersonDTO);
         return new ResponseEntity<>(
                 "Person updated",
                 HttpStatus.OK
@@ -81,5 +98,57 @@ public class PersonController {
     public List<ResponseResponsibleSelectDto> getPersonsForSelect() {
         return personService.getAllPersonsForSelect();
     }
+
+
+    @PostMapping("/select-for-licences")
+    public List<ResponseLicencesPersonSelectDto> getPersonsForSelectInLicences() {
+        return personService.getAllPersonsForSelectInLicenses();
+    }
+
+
+    @PostMapping("/select-responsive-equipment")
+    public List<ResponsePersonSelectDto> getPersonsForResponsiveEquipment() {
+        return personService.getAllPersonsForResponsiveEquipmentGeneration();
+    }
+
+    @PostMapping("/with-cellphone-details")
+    public ResponseEntity<List<ReponsePersonWithPhoneDetailsDto>> getWithDetails(
+            @RequestBody RequestPersonDTO request) {
+        List<ReponsePersonWithPhoneDetailsDto> response = personService.findAllWithDetails(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/without-access-card")
+    public ResponseEntity<List<ResponsePersonWithoutAccessCardDto>> getPersonsWithoutAccessCard(@RequestBody RequestPersonDTO filters) {
+        List<ResponsePersonWithoutAccessCardDto> personas = personService.findAllWithoutAccessCard(filters);
+        return ResponseEntity.ok(personas);
+    }
+
+
+    @PostMapping("/personal-info")
+    public ResponseEntity<ResponsePersonalInfoDto> getPersonalInfo(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getPersonalInfo(dto.getId()));
+    }
+
+    @PostMapping("/equipment")
+    public ResponseEntity<List<ResponseComputerEquipmentDto>> getEquipment(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getEquipmentsByPersonId(dto.getId()));
+    }
+
+    @PostMapping("/cellphone")
+    public ResponseEntity<ResponseCellphoneDto> getCellphone(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getCellphoneByPersonId(dto.getId()));
+    }
+
+    @PostMapping("/license")
+    public ResponseEntity<ResponseLicenseDto> getLicenses(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getLicensesByPersonId(dto.getId()));
+    }
+
+    @PostMapping("/access-card")
+    public ResponseEntity<ResponseAccessCardDto> getAccessCard(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getAccessCardByPersonId(dto.getId()));
+    }
+
 
 }

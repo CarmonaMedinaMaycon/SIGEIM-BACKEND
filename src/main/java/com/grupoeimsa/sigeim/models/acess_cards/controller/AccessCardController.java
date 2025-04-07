@@ -1,16 +1,20 @@
 package com.grupoeimsa.sigeim.models.acess_cards.controller;
 
 
+import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.DeleteAccessCardDto;
 import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.RequestAccessCardDTO;
 import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseAccessCardDTO;
+import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseAccessCardTableDto;
 import com.grupoeimsa.sigeim.models.acess_cards.controller.dto.ResponseRegisterAccessCardDTO;
 import com.grupoeimsa.sigeim.models.acess_cards.service.AccessCardService;
+import com.grupoeimsa.sigeim.utils.CustomException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -58,19 +62,29 @@ public class AccessCardController {
         );
     }
 
-    @PutMapping("/disable")
-    public ResponseEntity<String> enableDisable(@RequestBody Map<String, Object> requestBody){
-        String id = requestBody.get("id").toString();
-        accessCardService.enableDisable(Long.valueOf(id));
-        return new ResponseEntity<>("access card modified", HttpStatus.OK);
-    }
-
     @DeleteMapping("/delete")
-    public ResponseEntity<String> delete(@RequestBody Map<String, Object> requestBody){
-        String id = requestBody.get("id").toString();
-        accessCardService.delete(Long.valueOf(id));
-        return new ResponseEntity<>("access card deleted", HttpStatus.OK);
+    public ResponseEntity<String> delete(@RequestBody DeleteAccessCardDto dto) {
+        System.out.println(dto.getId());
+        if (dto.getId() == null) {
+            throw new CustomException("ID cannot be null");
+        }
+
+        accessCardService.delete(dto.getId());
+        return ResponseEntity.ok("Access card deleted");
     }
 
 
+
+    @PostMapping("/summary")
+    public ResponseEntity<Page<ResponseAccessCardTableDto>> getAccessCardSummaries(@RequestBody RequestAccessCardDTO request) {
+        Page<ResponseAccessCardTableDto> summaries = accessCardService.getAccessCardSummaries(
+                request.getSearch(),
+                request.getPage(),
+                request.getSize(),
+                request.getStatus(),
+                request.getEnterprise(),
+                request.getDepartament()
+        );
+        return ResponseEntity.ok(summaries);
+    }
 }

@@ -1,8 +1,12 @@
 package com.grupoeimsa.sigeim.models.cellphones.service;
 
 
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.AvailablePersonCellphoneDto;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneEditDto;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.CellphoneTableDto;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseCellphoneDTO;
 import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseRegisterCellphone;
+import com.grupoeimsa.sigeim.models.cellphones.controller.dto.ResponseToGenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
@@ -15,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -61,7 +67,8 @@ public class CellphoneService {
         cellphone.setComments(registerCellphone.getComments());
         cellphone.setStatus(true);
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
-        cellphone.setPerson(registerCellphone.getPerson());
+        cellphone.setPerson(personRepository.findById(registerCellphone.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario asignado no fue encontrado")));
         cellphoneRepository.save(cellphone);
     }
 
@@ -81,7 +88,6 @@ public class CellphoneService {
         BeanCellphone cellphone = cellphoneRepository.findById(registerCellphone.getCellphoneId())
                 .orElseThrow(() -> new CustomException("The cellphone was not found"));
 
-        // Actualiza los campos directos
         cellphone.setLegalName(registerCellphone.getLegalName());
         cellphone.setEquipamentName(registerCellphone.getEquipamentName());
         cellphone.setCompany(registerCellphone.getCompany());
@@ -89,18 +95,100 @@ public class CellphoneService {
         cellphone.setDateRenovation(registerCellphone.getDateRenovation());
         cellphone.setImei(registerCellphone.getImei());
         cellphone.setComments(registerCellphone.getComments());
-        cellphone.setStatus(true);
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
+        cellphone.setStatus(true);
 
-        // Para actualizar la persona, carga la entidad existente
-        if (registerCellphone.getPerson() != null && registerCellphone.getPerson().getPersonId() != null) {
-            BeanPerson person = personRepository.findById(registerCellphone.getPerson().getPersonId())
-                    .orElseThrow(() -> new CustomException("Person not found"));
-            cellphone.setPerson(person);
-        }
+        System.out.println("Usuario asignado" + registerCellphone.getPersonId());
+
+        // 🔥 Aquí actualizas la persona asignada
+        cellphone.setPerson(personRepository.findById(registerCellphone.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario asignado no fue encontrado")));
 
         cellphoneRepository.save(cellphone);
     }
+
+
+
+    public List<AvailablePersonCellphoneDto> getAvailablePersonsForCellphone(Long currentPersonId) {
+        List<BeanPerson> persons = personRepository.findAllActivePersons(); // sin filtrar por celular
+
+        return persons.stream()
+                .map(p -> new AvailablePersonCellphoneDto(
+                        p.getPersonId(),
+                        p.getName() + " " + p.getLastname() + " " + p.getSurname(),
+                        p.getDepartament(),
+                        p.getCellphone() != null && !p.getCellphone().isEmpty()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CellphoneTableDto> getAllCellphonesForTable(String search, int page, int size, Boolean status, String enterprise, String departament) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BeanCellphone> cellphones = cellphoneRepository.findAllBySearch(
+                search,
+                departament,
+                enterprise,
+                status,
+                pageable
+        );
+
+        if (cellphones.isEmpty()) {
+            throw new CustomException("No cellphones were found");
+        }
+
+        // Mapeo al DTO ligero
+        return cellphones.map(c -> new CellphoneTableDto(
+                c.getCellphoneId(),
+                c.getEquipamentName(),
+                c.getCompany(),
+                c.getImei(),
+                c.getShortDialing(),
+                c.getLegalName(),
+                c.getPerson() != null
+                        ? c.getPerson().getName() + " " + c.getPerson().getLastname() + " " + c.getPerson().getSurname()
+                        : "Sin asignar",
+                c.getDateRenovation(),
+                c.getComments(),
+                c.getPerson() != null
+                        ? c.getPerson().getName() + " " + c.getPerson().getLastname() + " " + c.getPerson().getSurname()
+                        : "No ha sido asignado",
+                c.getStatus()
+        ));
+    }
+
+    @Transactional(readOnly = true)
+    public CellphoneEditDto getCellphoneEditDtoById(Long id) {
+        BeanCellphone cellphone = cellphoneRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Cellphone not found"));
+
+        return new CellphoneEditDto(
+                cellphone.getCellphoneId(),
+                cellphone.getEquipamentName(),
+                cellphone.getLegalName(),
+                cellphone.getCompany(),
+                cellphone.getShortDialing(),
+                cellphone.getImei(),
+                cellphone.getWhatsappBussiness(),
+                cellphone.getDateRenovation(),
+                cellphone.getComments(),
+                cellphone.getPerson() != null ? cellphone.getPerson().getPersonId() : null
+        );
+    }
+
+    public List<ResponseToGenerateResponsiveDto> getCellphonesForResponsive() {
+        return cellphoneRepository.findAvailableForResponsiva()
+                .stream()
+                .map(c -> new ResponseToGenerateResponsiveDto(
+                        c.getCellphoneId(),
+                        c.getImei(),
+                        c.getNumber()
+                ))
+                .toList();
+    }
+
+
+
 
 
 }

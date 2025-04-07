@@ -11,29 +11,33 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class RegisterLicenseDTO {
-    private Long licenseId;
-
     private boolean outlook;
 
     private String accountOutlook;
 
     private String typeOutlook;
 
-    private String alias;
+    private String supplierOutlook;
 
-    private String mailbox;
+    private String aliasOutlook;
+
+    private String mailboxOutlook;
 
     private String commentsOutlook;
 
-    private String phoneAuthenticator;
+    private String phoneNumber;
 
     private String twoFactorAuthenticationName;
+
+    private String departament;
 
     private boolean crm;
 
     private String userCrm;
 
     private String typeCrm;
+
+    private String supplierCrm;
 
     private String commentsCrm;
 
@@ -44,6 +48,8 @@ public class RegisterLicenseDTO {
     private String idUserBc;
 
     private String typeBc;
+
+    private String supplierBc;
 
     private String enterpriseBc;
 
@@ -60,6 +66,10 @@ public class RegisterLicenseDTO {
     private String moduleRpa;
 
     private String enterpriseRpa;
+
+    private boolean powerbi;
+
+    private boolean copilot;
 
     private boolean tactical;
 
@@ -117,8 +127,9 @@ public class RegisterLicenseDTO {
         this.alias = beanLicense.getAlias();
         this.mailbox = beanLicense.getMailbox();
         this.commentsOutlook = beanLicense.getCommentsOutlook();
-        this.phoneAuthenticator = beanLicense.getPhoneAuthenticator();
+        this.phoneNumber = beanLicense.getPhoneNumber();
         this.twoFactorAuthenticationName = beanLicense.getTwoFactorAuthenticationName();
+        this.departament = beanLicense.getDepartament();
         this.crm = beanLicense.isCrm();
         this.userCrm = beanLicense.getUserCrm();
         this.typeCrm = beanLicense.getTypeCrm();

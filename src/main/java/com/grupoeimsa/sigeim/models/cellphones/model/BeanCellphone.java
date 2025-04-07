@@ -47,12 +47,15 @@ public class BeanCellphone {
     @Column(name = "status")
     private Boolean status;
 
+    @Column(name = "number")
+    private String number;
+
     @Column(name = "whatsapp_bussiness")
     private Boolean whatsappBussiness;
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("person-cellphone")
     private BeanPerson person;
 
     @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)
