@@ -115,7 +115,7 @@ public class CellphoneService {
         return persons.stream()
                 .map(p -> new AvailablePersonCellphoneDto(
                         p.getPersonId(),
-                        p.getName() + " " + p.getSurname() + " " + p.getLastname(),
+                        p.getName() + " " + p.getLastname() + " " + p.getSurname(),
                         p.getDepartament(),
                         p.getCellphone() != null && !p.getCellphone().isEmpty()
                 ))
@@ -146,12 +146,12 @@ public class CellphoneService {
                 c.getShortDialing(),
                 c.getLegalName(),
                 c.getPerson() != null
-                        ? c.getPerson().getName() + " " + c.getPerson().getSurname() + " " + c.getPerson().getLastname()
+                        ? c.getPerson().getName() + " " + c.getPerson().getLastname() + " " + c.getPerson().getSurname()
                         : "Sin asignar",
                 c.getDateRenovation(),
                 c.getComments(),
                 c.getPerson() != null
-                        ? c.getPerson().getName() + " " + c.getPerson().getSurname() + " " + c.getPerson().getLastname()
+                        ? c.getPerson().getName() + " " + c.getPerson().getLastname() + " " + c.getPerson().getSurname()
                         : "No ha sido asignado",
                 c.getStatus()
         ));

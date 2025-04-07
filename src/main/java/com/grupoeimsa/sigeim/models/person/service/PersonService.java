@@ -1,9 +1,13 @@
 package com.grupoeimsa.sigeim.models.person.service;
 
+import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
+import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
+import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
+import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
@@ -32,12 +36,16 @@ public class PersonService {
     public final IComputerEquipament computerEquipamentRepository;
     public final ICellphone cellphoneRepository;
     public final IResponsiveEquipments responsiveEquipmentsRepository;
+    public final ILicense licenseRepository;
+    public final IAcessCard acessCardRepository;
 
-    public PersonService(IPerson personRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
+    public PersonService(IPerson personRepository, IAcessCard acessCardRepository, ILicense licenseRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
         this.personRepository = personRepository;
         this.computerEquipamentRepository = computerEquipamentRepository;
         this.cellphoneRepository = cellphoneRepository;
         this.responsiveEquipmentsRepository = responsiveEquipmentsRepository;
+        this.licenseRepository = licenseRepository;
+        this.acessCardRepository = acessCardRepository;
     }
 
     @Transactional(readOnly = true)
@@ -76,6 +84,7 @@ public class PersonService {
             throw new CustomException("email already exists");
         }
         person.setPhoneNumber(responsePersonDTO.getPhoneNumber());
+        person.setPhoneNumberAssigned(responsePersonDTO.getPhoneNumberAssigned());
         person.setDepartament(responsePersonDTO.getDepartament());
         person.setEnterprise(responsePersonDTO.getEnterprise());
         person.setPosition(responsePersonDTO.getPosition());
@@ -94,8 +103,6 @@ public class PersonService {
         // Buscar la persona por ID, lanzar excepción si no se encuentra
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
-
-        person.setDateEnd(LocalDate.now());
 
         // Obtener la persona por defecto con ID 1 (para evitar múltiples consultas)
         BeanPerson defaultPerson = personRepository.findById(1L)
@@ -133,26 +140,56 @@ public class PersonService {
         personRepository.save(person);
     }
 
+    public ResponseEditPersonDto getSimplePersonById(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
 
-    @Transactional
-    public void update(ResponseUpdatePersonDTO updatePersonDTO) {
-        BeanPerson person =  personRepository.findById(updatePersonDTO.getPersonId())
-                .orElseThrow(() -> new CustomException("Person not found"));
-        person.setName(updatePersonDTO.getName());
-        person.setSurname(updatePersonDTO.getSurname());
-        person.setLastname(updatePersonDTO.getLastname());
-        person.setEmail(updatePersonDTO.getEmail());
-        person.setPhoneNumber(updatePersonDTO.getPhoneNumber());
-        person.setDepartament(updatePersonDTO.getDepartament());
-        person.setEnterprise(updatePersonDTO.getEnterprise());
-        person.setPosition(updatePersonDTO.getPosition());
-        person.setComments(updatePersonDTO.getComments());
-        person.setEmailRegistered(updatePersonDTO.getEmailRegistered());
-        person.setWhoRegistered(updatePersonDTO.getWhoRegistered());
-        person.setCommentsHardwareSoftware(updatePersonDTO.getCommentsHardwareSoftware());
-        person.setCommentsEmail(updatePersonDTO.getCommentsEmail());
+        ResponseEditPersonDto dto = new ResponseEditPersonDto();
+        dto.setId(person.getPersonId());
+        dto.setName(person.getName());
+        dto.setSurname(person.getSurname());
+        dto.setLastname(person.getLastname());
+        dto.setEmail(person.getEmail());
+        dto.setPhoneNumber(person.getPhoneNumber());
+        dto.setPhoneNumberAssigned(person.getPhoneNumberAssigned());
+        dto.setDepartament(person.getDepartament());
+        dto.setWhoRegistered(person.getWhoRegistered());
+        dto.setEmailRegistered(person.getEmailRegistered());
+        dto.setEnterprise(person.getEnterprise());
+        dto.setPosition(person.getPosition());
+        dto.setComments(person.getComments());
+        dto.setCommentsHardwareSoftware(person.getCommentsHardwareSoftware());
+        dto.setCommentsEmail(person.getCommentsEmail());
+        dto.setEntryDate(person.getEntryDate());
+
+        return dto;
+    }
+
+
+
+    public void updatePerson(ResponseEditPersonDto dto) {
+        BeanPerson person = personRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado"));
+
+        person.setName(dto.getName());
+        person.setSurname(dto.getSurname());
+        person.setLastname(dto.getLastname());
+        person.setWhoRegistered(dto.getWhoRegistered());
+        person.setEmailRegistered(dto.getEmailRegistered());
+        person.setEmail(dto.getEmail());
+        person.setPhoneNumber(dto.getPhoneNumber());
+        person.setPhoneNumberAssigned(dto.getPhoneNumberAssigned());
+        person.setDepartament(dto.getDepartament());
+        person.setEnterprise(dto.getEnterprise());
+        person.setPosition(dto.getPosition());
+        person.setComments(dto.getComments());
+        person.setCommentsHardwareSoftware(dto.getCommentsHardwareSoftware());
+        person.setCommentsEmail(dto.getCommentsEmail());
+        person.setEntryDate(dto.getEntryDate());
+
         personRepository.save(person);
     }
+
 
     public List<ResponseResponsibleSelectDto> getAllPersonsForSelect() {
         List<BeanPerson> persons = personRepository.findAll();
@@ -268,7 +305,7 @@ public class PersonService {
 
             return new ResponseTablePeopleDto(
                     person.getPersonId(),
-                    person.getName() + " " + person.getSurname() + " " + person.getLastname(),
+                    person.getName() + " " + person.getLastname() + " " + person.getSurname(),
                     person.getEnterprise(),
                     person.getDepartament(),
                     person.getPhoneNumber(),
@@ -278,6 +315,159 @@ public class PersonService {
         }).collect(Collectors.toList());
 
         return new PageImpl<>(resultList, pageable, persons.getTotalElements());
+    }
+
+
+    public ResponsePersonalInfoDto getPersonalInfo(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Empleado no encontrado"));
+
+        return new ResponsePersonalInfoDto(
+                person.getPersonId(),
+                person.getName(),
+                person.getSurname(),
+                person.getLastname(),
+                person.getEnterprise(),
+                person.getDepartament(),
+                person.getPosition(),
+                person.getEntryDate(),
+                person.getPhoneNumber(),
+                person.getEmail()
+        );
+    }
+
+    public List<ResponseComputerEquipmentDto> getEquipmentsByPersonId(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Empleado no encontrado"));
+
+        return person.getComputerEquipaments().stream().map(e -> new ResponseComputerEquipmentDto(
+                e.getComputerEquipamentId(),
+                e.getSerialNumber(),
+                e.getIdEsset(),
+                e.getBrand(),
+                e.getModel(),
+                e.getType(),
+                e.getStatus().toString()
+        )).collect(Collectors.toList());
+    }
+
+    public ResponseCellphoneDto getCellphoneByPersonId(Long id) {
+        BeanCellphone cellphone = cellphoneRepository.findByPersonPersonId(id)
+                .orElse(null); // No lanzamos excepción
+
+        if (cellphone == null) {
+            return null;
+        }
+
+        return new ResponseCellphoneDto(
+                cellphone.getImei(),
+                cellphone.getCompany(),
+                Integer.toString(cellphone.getShortDialing()),
+                cellphone.getDateRenovation().toString()
+        );
+    }
+
+    public ResponseLicenseDto getLicensesByPersonId(Long id) {
+        BeanLicense license = licenseRepository.findByPersonPersonId(id)
+                .orElse(null);
+
+        if (license == null) {
+            return null;
+        }
+
+        ResponseLicenseDto dto = new ResponseLicenseDto();
+
+        // Office
+        dto.setOutlook(license.isOutlook());
+        dto.setAccountOutlook(license.getAccountOutlook());
+        dto.setTypeOutlook(license.getTypeOutlook());
+        dto.setAlias(license.getAliasOutlook());
+        dto.setMailbox(license.getMailboxOutlook());
+        dto.setCommentsOutlook(license.getCommentsOutlook());
+        dto.setPhoneNumber(license.getAuthPhoneNumber());
+        dto.setTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+
+        // CRM
+        dto.setCrm(license.isCrm());
+        dto.setUserCrm(license.getUserCrm());
+        dto.setTypeCrm(license.getTypeCrm());
+        dto.setCommentsCrm(license.getCommentsCrm());
+
+        // Business Central
+        dto.setBc(license.isBc());
+        dto.setUserBc(license.getUserBc());
+        dto.setIdUserBc(license.getIdUserBc());
+        dto.setTypeBc(license.getTypeBc());
+        dto.setEnterpriseBc(license.getEnterpriseBc());
+
+        // PureCloud
+        dto.setPurecloud(license.isPurecloud());
+        dto.setUserPureCloud(license.getUserPureCloud());
+        dto.setIdUserPureCloud(license.getIdUserPureCloud());
+
+        // RPA
+        dto.setRpa(license.isRpa());
+        dto.setUserRpa(license.getUserRpa());
+        dto.setModuleRpa(license.getModuleRpa());
+        dto.setEnterpriseRpa(license.getEnterpriseRpa());
+
+        // Herramientas adicionales
+        dto.setTactical(license.isTactical());
+
+        // Redes Sociales
+        dto.setInstagram(license.isInstagram());
+        dto.setUserInstagram(license.getUserInstagram());
+        dto.setFacebook(license.isFacebook());
+        dto.setUserFacebook(license.getUserFacebook());
+        dto.setTiktok(license.isTiktok());
+        dto.setUserTiktok(license.getUserTiktok());
+        dto.setLinkedin(license.isLinkedin());
+        dto.setUserLinkedin(license.getUserLinkedin());
+        dto.setYoutube(license.isYoutube());
+        dto.setUserYoutube(license.getUserYoutube());
+
+        // Herramientas digitales
+        dto.setAdobe(license.isAdobe());
+        dto.setMailchimp(license.isMailchimp());
+        dto.setLinktree(license.isLinktree());
+
+        // E-commerce
+        dto.setMagento(license.isMagento());
+        dto.setMagentoUser(license.getMagentoUser());
+        dto.setShopify(license.isShopify());
+        dto.setUserShopify(license.getUserShopify());
+        dto.setMercadoLibre(license.isMercadoLibre());
+        dto.setAmazon(license.isAmazon());
+        dto.setConekta(license.isConekta());
+        dto.setOpenPay(license.isOpenPay());
+        dto.setKuesky(license.isKuesky());
+
+        // Autenticación extra
+        dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
+        dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+        dto.setAuthDepartament(license.getAuthDepartament());
+
+        return dto;
+    }
+
+
+    public ResponseAccessCardDto getAccessCardByPersonId(Long id) {
+        BeanAccessCard accessCard = acessCardRepository.findByPersonPersonId(id)
+                .orElse(null);
+
+        if (accessCard == null) {
+            return null;
+        }
+
+        return new ResponseAccessCardDto(
+                accessCard.isAccessBetweenBuildings(),
+                accessCard.isMainDoor(),
+                accessCard.isAccessTechnicalService(),
+                accessCard.isMainWarehouse(),
+                accessCard.isWarehouseBasement(),
+                accessCard.isTechnicalServiceWarehouses(),
+                accessCard.isTechnicalServiceWarehousesTwo()
+        );
     }
 
 

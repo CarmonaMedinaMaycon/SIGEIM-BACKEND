@@ -8,9 +8,11 @@ import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiv
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestGenerateAccessResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableAccessDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableUsersTarjetasDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveAccessDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCardsDTO;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveCellphoneDto;
@@ -107,6 +109,11 @@ public class ResponsiveController {
         return responsiveService.downloadResponsiveAccess(dto);
     }
 
+    @PostMapping("/cards/download")
+    public ResponseEntity<byte[]> downloadResponsiveCard(@RequestBody DownloadResponsiveDto dto) {
+        return responsiveService.downloadResponsiveCard(dto);
+    }
+
     @GetMapping("/get-edit-data/{id}")
     public ResponseEntity<ResponseEditResponsiveEquipmentDto> getEditResponsive(@PathVariable Long id) {
         return responsiveService.getEditResponsiveData(id);
@@ -135,6 +142,24 @@ public class ResponsiveController {
             Long responsiveId = node.get("responsiveId").asLong();
 
             responsiveService.uploadSignedDoc(responsiveId, file);
+            return ResponseEntity.ok("Archivo firmado cargado exitosamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al subir archivo firmado: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/cards/upload-signed")
+    public ResponseEntity<?> uploadSignedCDocCard(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("data") String jsonData) {
+        try {
+            // Parseamos el JSON que contiene el ID
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(jsonData);
+            Long responsiveId = node.get("responsiveId").asLong();
+
+            responsiveService.uploadSignedDocCard(responsiveId, file);
             return ResponseEntity.ok("Archivo firmado cargado exitosamente.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -214,6 +239,23 @@ public class ResponsiveController {
         }
     }
 
+    @PostMapping("/cards/download-signed")
+    public ResponseEntity<byte[]> downloadSignedDocCard(@RequestBody DownloadResponsiveDto dto) {
+        try {
+            byte[] file = responsiveService.getSignedDocCard(dto.getResponsiveId());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF); // o APPLICATION_OCTET_STREAM si prefieres
+            headers.setContentDisposition(ContentDisposition.builder("attachment")
+                    .filename("responsiva_tarjeta_firmada.pdf")
+                    .build());
+
+            return new ResponseEntity<>(file, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
     @PostMapping("/access/download-signed")
     public ResponseEntity<byte[]> downloadSigedDocAccess(@RequestBody DownloadResponsiveDto dto) {
         try {
@@ -235,6 +277,17 @@ public class ResponsiveController {
     public ResponseEntity<String> cancelResponsiveCellphone(@RequestBody DownloadResponsiveDto dto) {
         try {
             responsiveService.cancelResponsiveCellphone(dto.getResponsiveId());
+            return ResponseEntity.ok("Responsiva cancelada correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al cancelar responsiva: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/cards/cancel")
+    public ResponseEntity<String> cancelResponsiveCard(@RequestBody DownloadResponsiveDto dto) {
+        try {
+            responsiveService.cancelResponsiveCard(dto.getResponsiveId());
             return ResponseEntity.ok("Responsiva cancelada correctamente.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -281,6 +334,13 @@ public class ResponsiveController {
         return ResponseEntity.ok(responsiveService.getAvailableEmployeesForResponsive());
     }
 
+    @PostMapping("/available-users-for-responsive-tarjetas")
+    public ResponseEntity<List<ResponseAvailableUsersTarjetasDto>> getAvailableUsersForCards() {
+        List<ResponseAvailableUsersTarjetasDto> users = responsiveService.getAvailableUsersForTarjetas();
+        return ResponseEntity.ok(users);
+    }
+
+
     @PostMapping("/generate-access-responsive")
     public ResponseEntity<Void> generateResponsive(@RequestBody RequestGenerateAccessResponsiveDto dto) {
         try {
@@ -290,4 +350,21 @@ public class ResponsiveController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @PostMapping("/generate-tarjetas-responsive")
+    public ResponseEntity<Void> generateCardResponsive(@RequestBody RequestGenerateAccessResponsiveDto dto) {
+        try {
+            responsiveService.generateCardResponsive(dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/cards")
+    public ResponseEntity<Page<ResponseResponsiveCardsDTO>> getResponsiveCards(@RequestBody RequestSearchResponsiveEquipmentsDto dto) {
+        return ResponseEntity.ok(responsiveService.getResponsiveCards(dto));
+    }
+
+
 }

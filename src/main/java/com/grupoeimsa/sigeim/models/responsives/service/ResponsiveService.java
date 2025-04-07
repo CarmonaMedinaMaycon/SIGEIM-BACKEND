@@ -4,35 +4,44 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
+import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
+import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestGenerateAccessResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.RequestSearchResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableAccessDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseAvailableUsersTarjetasDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseEditResponsiveEquipmentDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveAccessDto;
+import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCardsDTO;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveCellphonesDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.ResponseResponsiveEquipmentsDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveDto;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCards;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCellphone;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveLicenses;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
+import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveCards;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveCellphone;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveLicenses;
 import com.grupoeimsa.sigeim.models.template_responsives.model.BeanTemplateResponsive;
 import com.grupoeimsa.sigeim.models.template_responsives.model.ITemplate;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -57,6 +66,8 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STVAnchor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +86,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class ResponsiveService {
@@ -85,8 +97,10 @@ public class ResponsiveService {
     private final IResponsiveCellphone responsiveCellphoneRepository;
     private final ILicense licenseRepository;
     private final IResponsiveLicenses responsiveLicensesRepository;
+    private final IResponsiveCards responsiveCardsRepository;
+    private final IAcessCard acessCardRepository;
 
-    public ResponsiveService(ITemplate templateRepository, IResponsiveLicenses responsiveLicensesRepository, ILicense licenseRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository) {
+    public ResponsiveService(ITemplate templateRepository, IAcessCard acessCardRepository, IResponsiveLicenses responsiveLicensesRepository, ILicense licenseRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository, IResponsiveCards responsiveCardsRepository) {
         this.templateRepository = templateRepository;
         this.responsiveEquipmentRepository = responsiveEquipmentRepository;
         this.equipamentRepository = equipamentRepository;
@@ -94,6 +108,8 @@ public class ResponsiveService {
         this.responsiveCellphoneRepository = responsiveCellphoneRepository;
         this.licenseRepository = licenseRepository;
         this.responsiveLicensesRepository = responsiveLicensesRepository;
+        this.responsiveCardsRepository = responsiveCardsRepository;
+        this.acessCardRepository = acessCardRepository;
     }
 
 
@@ -513,6 +529,21 @@ public class ResponsiveService {
                 .body(documentBytes);
     }
 
+    public ResponseEntity<byte[]> downloadResponsiveCard(DownloadResponsiveDto dto) {
+        Optional<BeanResponsiveCards> responsive = responsiveCardsRepository.findById(dto.getResponsiveId());
+
+        if (responsive.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        byte[] documentBytes = responsive.get().getGeneratedDoc();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=documento_responsiva_celular.docx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(documentBytes);
+    }
+
     public ResponseEntity<byte[]> downloadResponsiveAccess(DownloadResponsiveDto dto) {
         Optional<BeanResponsiveLicenses> responsive = responsiveLicensesRepository.findById(dto.getResponsiveId());
 
@@ -590,6 +621,16 @@ public class ResponsiveService {
         responsiveCellphoneRepository.save(responsive);
     }
 
+    public void uploadSignedDocCard(Long responsiveId, MultipartFile file) throws IOException {
+        BeanResponsiveCards responsive = responsiveCardsRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva de celular no encontrada"));
+
+        responsive.setSignedDoc(file.getBytes());
+        responsive.setStatus(EStatus.ACTIVA_FIRMADA);
+
+        responsiveCardsRepository.save(responsive);
+    }
+
     public void uploadSignedDocAccess(Long responsiveId, MultipartFile file) throws IOException {
         BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
                 .orElseThrow(() -> new RuntimeException("Responsiva de accesos no encontrada"));
@@ -599,6 +640,8 @@ public class ResponsiveService {
 
         responsiveLicensesRepository.save(responsive);
     }
+
+
 
     public byte[] getSignedDocCellphone(Long responsiveId) {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(responsiveId)
@@ -622,6 +665,17 @@ public class ResponsiveService {
         return responsive.getSignedDoc();
     }
 
+    public byte[] getSignedDocCard(Long responsiveId) {
+        BeanResponsiveCards responsive = responsiveCardsRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        if (responsive.getSignedDoc() == null) {
+            throw new RuntimeException("La responsiva no tiene documento firmado.");
+        }
+
+        return responsive.getSignedDoc();
+    }
+
     public void cancelResponsiveCellphone(Long responsiveId) {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(responsiveId)
                 .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
@@ -630,6 +684,15 @@ public class ResponsiveService {
         responsive.setModificationDate(LocalDate.now());
 
         responsiveCellphoneRepository.save(responsive);
+    }
+
+    public void cancelResponsiveCard(Long responsiveId) {
+        BeanResponsiveCards responsive = responsiveCardsRepository.findById(responsiveId)
+                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+
+        responsive.setStatus(EStatus.CANCELADA);
+
+        responsiveCardsRepository.save(responsive);
     }
 
     public void cancelResponsiveAccess(Long responsiveId) {
@@ -734,6 +797,10 @@ public class ResponsiveService {
                     dto.setFullName(license.getPerson().getFullName());
                     return dto;
                 }).toList();
+    }
+
+    public List<ResponseAvailableUsersTarjetasDto> getAvailableUsersForTarjetas() {
+        return responsiveCardsRepository.findAvailableUsersForTarjetas();
     }
 
     public void generateAccessResponsive(RequestGenerateAccessResponsiveDto dto) throws Exception {
@@ -880,8 +947,6 @@ public class ResponsiveService {
         }
     }
 
-
-
     private String emptyOrNA(String value) {
         return (value == null || value.trim().isEmpty() || value.equalsIgnoreCase("NA")) ? "NA" : value;
     }
@@ -915,4 +980,108 @@ public class ResponsiveService {
         ));
     }
 
+    public void generateCardResponsive(RequestGenerateAccessResponsiveDto dto) throws Exception {
+        BeanAccessCard card = acessCardRepository.findByPersonPersonId(dto.getPersonId())
+                .orElseThrow(() -> new CustomException("Tarjeta de acceso no encontrada para el empleado con ID: " + dto.getPersonId()));
+
+        BeanTemplateResponsive template = templateRepository.findByTemplateName("Plantilla de tarjetas")
+                .orElseThrow(() -> new CustomException("Plantilla 'Plantilla de tarjetas' no encontrada"));
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
+        XWPFDocument document;
+
+        try {
+            document = new XWPFDocument(inputStream);
+        } catch (IOException e) {
+            throw new CustomException("Error al leer la plantilla Word: " + e.getMessage());
+        }
+
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("nombre", card.getPerson().getFullName());
+        placeholders.put("puesto", card.getPerson().getPosition());
+        placeholders.put("fecha", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        // Flags de acceso
+        placeholders.put("accesoPuerta", toYesNo(card.isAccessBetweenBuildings()));
+        placeholders.put("accesoPrincipal", toYesNo(card.isMainDoor()));
+        placeholders.put("accesoServicio", toYesNo(card.isAccessTechnicalService()));
+        placeholders.put("accesoServicio1", toYesNo(card.isTechnicalServiceWarehouses()));
+        placeholders.put("accesoServicio2", toYesNo(card.isTechnicalServiceWarehousesTwo()));
+        placeholders.put("accesoAlmacenP", toYesNo(card.isMainWarehouse()));
+        placeholders.put("accesoAlmacenS", toYesNo(card.isWarehouseBasement()));
+
+        try {
+            // Reemplazar texto
+            for (XWPFParagraph p : document.getParagraphs()) {
+                replaceTextInParagraph(p, placeholders);
+            }
+
+            for (XWPFTable table : document.getTables()) {
+                for (XWPFTableRow row : table.getRows()) {
+                    for (XWPFTableCell cell : row.getTableCells()) {
+                        for (XWPFParagraph p : cell.getParagraphs()) {
+                            replaceTextInParagraph(p, placeholders);
+                        }
+                    }
+                }
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            document.write(outputStream);
+            document.close();
+
+            BeanResponsiveCards responsive = new BeanResponsiveCards();
+            responsive.setAccessCard(card);
+            responsive.setCreationDate(LocalDate.now());
+            responsive.setStatus(EStatus.ACTIVA_POR_FIRMAR);
+            responsive.setGeneratedDoc(outputStream.toByteArray());
+            responsive.setSignedDoc(null);
+
+            responsiveCardsRepository.save(responsive);
+        } catch (Exception ex) {
+            throw new CustomException("Error durante la generación de la responsiva de tarjetas: " + ex.getMessage());
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    private String toYesNo(boolean flag) {
+        return flag ? "Sí" : "No";
+    }
+
+
+    public Page<ResponseResponsiveCardsDTO> getResponsiveCards(RequestSearchResponsiveEquipmentsDto dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
+        EStatus statusEnum = null;
+
+        // Mapeo de estado similar al frontend
+        if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
+            statusEnum = switch (dto.getEstado()) {
+                case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
+                case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
+                case "Cancelada" -> EStatus.CANCELADA;
+                default -> null;
+            };
+        }
+
+        Page<BeanResponsiveCards> responsives = responsiveCardsRepository.searchResponsivesCards(
+                dto.getSearch(),
+                statusEnum,
+                dto.getSort(),
+                pageable
+        );
+
+        return responsives.map(r -> {
+            BeanPerson person = r.getAccessCard().getPerson();
+            String fullName = person != null ? person.getFullName().replace(" NA NA", "") : "Desconocido";
+
+            return new ResponseResponsiveCardsDTO(
+                    r.getResponsiveCardId(),
+                    r.getCreationDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    fullName,
+                    r.getStatus().name().replace("_", " "),
+                    r.getSignedDoc() != null && r.getSignedDoc().length > 0
+            );
+        });
+    }
 }

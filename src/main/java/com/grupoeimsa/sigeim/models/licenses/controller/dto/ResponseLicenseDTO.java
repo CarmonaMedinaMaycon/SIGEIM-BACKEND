@@ -192,8 +192,8 @@ public class ResponseLicenseDTO {
                         ? license.getResponsivesLicenses().getFirst().getResponsiveCellphoneId()
                         : null;
         this.fullName = license.getPerson().getName() + " " +
-                license.getPerson().getSurname() + " " +
-                license.getPerson().getLastname();
+                license.getPerson().getLastname() + " " +
+                license.getPerson().getSurname();
         this.personDepartament = license.getPerson().getDepartament();
     }
 
