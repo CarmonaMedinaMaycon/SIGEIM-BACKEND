@@ -35,11 +35,11 @@ public class ResponseLicenseDTO {
 
     private String commentsOutlook;
 
-    private String phoneNumber;
+    private String authPhoneNumber;
 
-    private String twoFactorAuthenticationName;
+    private String authTwoFactorAuthenticationName;
 
-    private String departament;
+    private String authDepartament;
 
     private boolean crm;
 
@@ -131,58 +131,73 @@ public class ResponseLicenseDTO {
 
     private Long responsiveLicenseId;
 
-    public ResponseLicenseDTO(BeanLicense beanLicense) {
-        this.licenseId = beanLicense.getLicensesId();
-        this.outlook = beanLicense.isOutlook();
-        this.accountOutlook = beanLicense.getAccountOutlook();
-        this.typeOutlook = beanLicense.getTypeOutlook();
-        this.alias = beanLicense.getAlias();
-        this.mailbox = beanLicense.getMailbox();
-        this.commentsOutlook = beanLicense.getCommentsOutlook();
-        this.phoneNumber = beanLicense.getPhoneNumber();
-        this.twoFactorAuthenticationName = beanLicense.getTwoFactorAuthenticationName();
-        this.departament = beanLicense.getDepartament();
-        this.crm = beanLicense.isCrm();
-        this.userCrm = beanLicense.getUserCrm();
-        this.typeCrm = beanLicense.getTypeCrm();
-        this.commentsCrm = beanLicense.getCommentsCrm();
-        this.bc = beanLicense.isBc();
-        this.userBc = beanLicense.getUserBc();
-        this.idUserBc = beanLicense.getIdUserBc();
-        this.typeBc = beanLicense.getTypeBc();
-        this.enterpriseBc = beanLicense.getEnterpriseBc();
-        this.purecloud = beanLicense.isPurecloud();
-        this.userPureCloud = beanLicense.getUserPureCloud();
-        this.idUserPureCloud = beanLicense.getIdUserPureCloud();
-        this.rpa = beanLicense.isRpa();
-        this.userRpa = beanLicense.getUserRpa();
-        this.moduleRpa = beanLicense.getModuleRpa();
-        this.enterpriseRpa = beanLicense.getEnterpriseRpa();
-        this.tactical = beanLicense.isTactical();
-        this.instagram = beanLicense.isInstagram();
-        this.userInstagram = beanLicense.getUserInstagram();
-        this.facebook = beanLicense.isFacebook();
-        this.userFacebook = beanLicense.getUserFacebook();
-        this.tiktok = beanLicense.isTiktok();
-        this.userTiktok = beanLicense.getUserTiktok();
-        this.linkedin = beanLicense.isLinkedin();
-        this.userLinkedin = beanLicense.getUserLinkedin();
-        this.youtube = beanLicense.isYoutube();
-        this.userYoutube = beanLicense.getUserYoutube();
-        this.adobe = beanLicense.isAdobe();
-        this.mailchimp = beanLicense.isMailchimp();
-        this.linktree = beanLicense.isLinktree();
-        this.magento = beanLicense.isMagento();
-        this.magentoUser = beanLicense.getMagentoUser();
-        this.shopify = beanLicense.isShopify();
-        this.userShopify = beanLicense.getUserShopify();
-        this.mercadoLibre = beanLicense.isMercadoLibre();
-        this.amazon = beanLicense.isAmazon();
-        this.conekta = beanLicense.isConekta();
-        this.openPay = beanLicense.isOpenPay();
-        this.kuesky = beanLicense.isKuesky();
-        this.person = beanLicense.getPerson();
-        this.responsiveLicenses = beanLicense.getResponsiveLicenses();
+
+    // CHANGE
+
+    public ResponseLicenseDTO(BeanLicense license) {
+        this.licenseId = license.getLicensesId();
+        this.outlook = license.isOutlook();
+        this.accountOutlook = license.getAccountOutlook();
+        this.typeOutlook = license.getTypeOutlook();
+        this.supplierOutlook = license.getSupplierOutlook();
+        this.aliasOutlook = license.getAliasOutlook();
+        this.mailboxOutlook = license.getMailboxOutlook();
+        this.commentsOutlook = license.getCommentsOutlook();
+        this.authPhoneNumber = license.getAuthPhoneNumber();
+        this.authTwoFactorAuthenticationName = license.getAuthTwoFactorAuthenticationName();
+        this.authDepartament = license.getAuthDepartament();
+        this.crm = license.isCrm();
+        this.userCrm = license.getUserCrm();
+        this.typeCrm = license.getTypeCrm();
+        this.supplierCrm = license.getSupplierCrm();
+        this.commentsCrm = license.getCommentsCrm();
+        this.bc = license.isBc();
+        this.userBc = license.getUserBc();
+        this.idUserBc = license.getIdUserBc();
+        this.typeBc = license.getTypeBc();
+        this.supplierBc = license.getSupplierBc();
+        this.enterpriseBc = license.getEnterpriseBc();
+        this.purecloud = license.isPurecloud();
+        this.userPureCloud = license.getUserPureCloud();
+        this.idUserPureCloud = license.getIdUserPureCloud();
+        this.rpa = license.isRpa();
+        this.userRpa = license.getUserRpa();
+        this.moduleRpa = license.getModuleRpa();
+        this.enterpriseRpa = license.getEnterpriseRpa();
+        this.powerbi = license.isPowerbi();
+        this.copilot = license.isCopilot();
+        this.tactical = license.isTactical();
+        this.instagram = license.isInstagram();
+        this.userInstagram = license.getUserInstagram();
+        this.facebook = license.isFacebook();
+        this.userFacebook = license.getUserFacebook();
+        this.tiktok = license.isTiktok();
+        this.userTiktok = license.getUserTiktok();
+        this.linkedin = license.isLinkedin();
+        this.userLinkedin = license.getUserLinkedin();
+        this.youtube = license.isYoutube();
+        this.userYoutube = license.getUserYoutube();
+        this.adobe = license.isAdobe();
+        this.mailchimp = license.isMailchimp();
+        this.linktree = license.isLinktree();
+        this.magento = license.isMagento();
+        this.magentoUser = license.getMagentoUser();
+        this.shopify = license.isShopify();
+        this.userShopify = license.getUserShopify();
+        this.mercadoLibre = license.isMercadoLibre();
+        this.amazon = license.isAmazon();
+        this.conekta = license.isConekta();
+        this.openPay = license.isOpenPay();
+        this.kuesky = license.isKuesky();
+        this.personId = license.getPerson() != null ? license.getPerson().getPersonId() : null;
+        this.responsiveLicenseId =
+                license.getResponsivesLicenses() != null && !license.getResponsivesLicenses().isEmpty()
+                        ? license.getResponsivesLicenses().getFirst().getResponsiveCellphoneId()
+                        : null;
+        this.fullName = license.getPerson().getName() + " " +
+                license.getPerson().getLastname() + " " +
+                license.getPerson().getSurname();
+        this.personDepartament = license.getPerson().getDepartament();
     }
 
 
