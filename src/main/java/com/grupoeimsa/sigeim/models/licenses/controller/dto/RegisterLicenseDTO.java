@@ -118,4 +118,6 @@ public class RegisterLicenseDTO {
     private boolean kuesky;
 
     private Long personId;
+
+    //cambios
 }
