@@ -131,6 +131,9 @@ public class ResponseLicenseDTO {
 
     private Long responsiveLicenseId;
 
+
+    // CHANGE
+
     public ResponseLicenseDTO(BeanLicense license) {
         this.licenseId = license.getLicensesId();
         this.outlook = license.isOutlook();
