@@ -1,9 +1,13 @@
 package com.grupoeimsa.sigeim.models.person.service;
 
+import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
+import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
+import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
+import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
@@ -32,12 +36,16 @@ public class PersonService {
     public final IComputerEquipament computerEquipamentRepository;
     public final ICellphone cellphoneRepository;
     public final IResponsiveEquipments responsiveEquipmentsRepository;
+    public final ILicense licenseRepository;
+    public final IAcessCard acessCardRepository;
 
-    public PersonService(IPerson personRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
+    public PersonService(IPerson personRepository, IAcessCard acessCardRepository, ILicense licenseRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
         this.personRepository = personRepository;
         this.computerEquipamentRepository = computerEquipamentRepository;
         this.cellphoneRepository = cellphoneRepository;
         this.responsiveEquipmentsRepository = responsiveEquipmentsRepository;
+        this.licenseRepository = licenseRepository;
+        this.acessCardRepository = acessCardRepository;
     }
 
     @Transactional(readOnly = true)
@@ -307,6 +315,159 @@ public class PersonService {
         }).collect(Collectors.toList());
 
         return new PageImpl<>(resultList, pageable, persons.getTotalElements());
+    }
+
+
+    public ResponsePersonalInfoDto getPersonalInfo(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Empleado no encontrado"));
+
+        return new ResponsePersonalInfoDto(
+                person.getPersonId(),
+                person.getName(),
+                person.getSurname(),
+                person.getLastname(),
+                person.getEnterprise(),
+                person.getDepartament(),
+                person.getPosition(),
+                person.getEntryDate(),
+                person.getPhoneNumber(),
+                person.getEmail()
+        );
+    }
+
+    public List<ResponseComputerEquipmentDto> getEquipmentsByPersonId(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Empleado no encontrado"));
+
+        return person.getComputerEquipaments().stream().map(e -> new ResponseComputerEquipmentDto(
+                e.getComputerEquipamentId(),
+                e.getSerialNumber(),
+                e.getIdEsset(),
+                e.getBrand(),
+                e.getModel(),
+                e.getType(),
+                e.getStatus().toString()
+        )).collect(Collectors.toList());
+    }
+
+    public ResponseCellphoneDto getCellphoneByPersonId(Long id) {
+        BeanCellphone cellphone = cellphoneRepository.findByPersonPersonId(id)
+                .orElse(null); // No lanzamos excepción
+
+        if (cellphone == null) {
+            return null;
+        }
+
+        return new ResponseCellphoneDto(
+                cellphone.getImei(),
+                cellphone.getCompany(),
+                Integer.toString(cellphone.getShortDialing()),
+                cellphone.getDateRenovation().toString()
+        );
+    }
+
+    public ResponseLicenseDto getLicensesByPersonId(Long id) {
+        BeanLicense license = licenseRepository.findByPersonPersonId(id)
+                .orElse(null);
+
+        if (license == null) {
+            return null;
+        }
+
+        ResponseLicenseDto dto = new ResponseLicenseDto();
+
+        // Office
+        dto.setOutlook(license.isOutlook());
+        dto.setAccountOutlook(license.getAccountOutlook());
+        dto.setTypeOutlook(license.getTypeOutlook());
+        dto.setAlias(license.getAliasOutlook());
+        dto.setMailbox(license.getMailboxOutlook());
+        dto.setCommentsOutlook(license.getCommentsOutlook());
+        dto.setPhoneNumber(license.getAuthPhoneNumber());
+        dto.setTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+
+        // CRM
+        dto.setCrm(license.isCrm());
+        dto.setUserCrm(license.getUserCrm());
+        dto.setTypeCrm(license.getTypeCrm());
+        dto.setCommentsCrm(license.getCommentsCrm());
+
+        // Business Central
+        dto.setBc(license.isBc());
+        dto.setUserBc(license.getUserBc());
+        dto.setIdUserBc(license.getIdUserBc());
+        dto.setTypeBc(license.getTypeBc());
+        dto.setEnterpriseBc(license.getEnterpriseBc());
+
+        // PureCloud
+        dto.setPurecloud(license.isPurecloud());
+        dto.setUserPureCloud(license.getUserPureCloud());
+        dto.setIdUserPureCloud(license.getIdUserPureCloud());
+
+        // RPA
+        dto.setRpa(license.isRpa());
+        dto.setUserRpa(license.getUserRpa());
+        dto.setModuleRpa(license.getModuleRpa());
+        dto.setEnterpriseRpa(license.getEnterpriseRpa());
+
+        // Herramientas adicionales
+        dto.setTactical(license.isTactical());
+
+        // Redes Sociales
+        dto.setInstagram(license.isInstagram());
+        dto.setUserInstagram(license.getUserInstagram());
+        dto.setFacebook(license.isFacebook());
+        dto.setUserFacebook(license.getUserFacebook());
+        dto.setTiktok(license.isTiktok());
+        dto.setUserTiktok(license.getUserTiktok());
+        dto.setLinkedin(license.isLinkedin());
+        dto.setUserLinkedin(license.getUserLinkedin());
+        dto.setYoutube(license.isYoutube());
+        dto.setUserYoutube(license.getUserYoutube());
+
+        // Herramientas digitales
+        dto.setAdobe(license.isAdobe());
+        dto.setMailchimp(license.isMailchimp());
+        dto.setLinktree(license.isLinktree());
+
+        // E-commerce
+        dto.setMagento(license.isMagento());
+        dto.setMagentoUser(license.getMagentoUser());
+        dto.setShopify(license.isShopify());
+        dto.setUserShopify(license.getUserShopify());
+        dto.setMercadoLibre(license.isMercadoLibre());
+        dto.setAmazon(license.isAmazon());
+        dto.setConekta(license.isConekta());
+        dto.setOpenPay(license.isOpenPay());
+        dto.setKuesky(license.isKuesky());
+
+        // Autenticación extra
+        dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
+        dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+        dto.setAuthDepartament(license.getAuthDepartament());
+
+        return dto;
+    }
+
+
+    public ResponseAccessCardDto getAccessCardByPersonId(Long id) {
+        BeanAccessCard accessCard = acessCardRepository.findByPersonPersonId(id)
+                .orElse(null);
+
+        if (accessCard == null) {
+            return null;
+        }
+
+        return new ResponseAccessCardDto(
+                accessCard.isAccessBetweenBuildings(),
+                accessCard.isMainDoor(),
+                accessCard.isAccessTechnicalService(),
+                accessCard.isMainWarehouse(),
+                accessCard.isWarehouseBasement(),
+                accessCard.isTechnicalServiceWarehouses(),
+                accessCard.isTechnicalServiceWarehousesTwo()
+        );
     }
 
 

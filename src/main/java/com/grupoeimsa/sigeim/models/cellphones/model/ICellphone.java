@@ -38,5 +38,8 @@ public interface ICellphone extends JpaRepository<BeanCellphone, Long> {
     """)
     List<BeanCellphone> findAvailableForResponsiva();
 
+    Optional<BeanCellphone> findByPersonPersonId(Long personId);
+
+
 
 }

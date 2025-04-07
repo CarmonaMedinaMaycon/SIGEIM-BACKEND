@@ -125,4 +125,30 @@ public class PersonController {
     }
 
 
+    @PostMapping("/personal-info")
+    public ResponseEntity<ResponsePersonalInfoDto> getPersonalInfo(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getPersonalInfo(dto.getId()));
+    }
+
+    @PostMapping("/equipment")
+    public ResponseEntity<List<ResponseComputerEquipmentDto>> getEquipment(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getEquipmentsByPersonId(dto.getId()));
+    }
+
+    @PostMapping("/cellphone")
+    public ResponseEntity<ResponseCellphoneDto> getCellphone(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getCellphoneByPersonId(dto.getId()));
+    }
+
+    @PostMapping("/license")
+    public ResponseEntity<ResponseLicenseDto> getLicenses(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getLicensesByPersonId(dto.getId()));
+    }
+
+    @PostMapping("/access-card")
+    public ResponseEntity<ResponseAccessCardDto> getAccessCard(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getAccessCardByPersonId(dto.getId()));
+    }
+
+
 }
