@@ -12,11 +12,15 @@ import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.service.CellphoneService;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import jakarta.validation.Valid;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -97,5 +101,20 @@ public class CellphoneController {
     @PostMapping("/select-responsive-cellphone")
     public ResponseEntity<List<ResponseToGenerateResponsiveDto>> getAvailableCellphones() {
         return ResponseEntity.ok(cellphoneService.getCellphonesForResponsive());
+    }
+
+    @GetMapping("/export-to-excel")
+    public ResponseEntity<InputStreamResource> exportToExcel() throws IOException {
+
+        byte[] excelData = cellphoneService.generateExcelFile();
+
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(excelData));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
 }
