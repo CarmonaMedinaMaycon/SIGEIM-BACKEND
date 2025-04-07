@@ -25,11 +25,11 @@ public class RegisterLicenseDTO {
 
     private String commentsOutlook;
 
-    private String phoneNumber;
+    private String authPhoneNumber;
 
-    private String twoFactorAuthenticationName;
+    private String authTwoFactorAuthenticationName;
 
-    private String departament;
+    private String authDepartament;
 
     private boolean crm;
 
@@ -117,57 +117,7 @@ public class RegisterLicenseDTO {
 
     private boolean kuesky;
 
-    private BeanPerson person;
+    private Long personId;
 
-    public RegisterLicenseDTO(BeanLicense beanLicense) {
-        this.licenseId = beanLicense.getLicensesId();
-        this.outlook = beanLicense.isOutlook();
-        this.accountOutlook = beanLicense.getAccountOutlook();
-        this.typeOutlook = beanLicense.getTypeOutlook();
-        this.alias = beanLicense.getAlias();
-        this.mailbox = beanLicense.getMailbox();
-        this.commentsOutlook = beanLicense.getCommentsOutlook();
-        this.phoneNumber = beanLicense.getPhoneNumber();
-        this.twoFactorAuthenticationName = beanLicense.getTwoFactorAuthenticationName();
-        this.departament = beanLicense.getDepartament();
-        this.crm = beanLicense.isCrm();
-        this.userCrm = beanLicense.getUserCrm();
-        this.typeCrm = beanLicense.getTypeCrm();
-        this.commentsCrm = beanLicense.getCommentsCrm();
-        this.bc = beanLicense.isBc();
-        this.userBc = beanLicense.getUserBc();
-        this.idUserBc = beanLicense.getIdUserBc();
-        this.typeBc = beanLicense.getTypeBc();
-        this.enterpriseBc = beanLicense.getEnterpriseBc();
-        this.purecloud = beanLicense.isPurecloud();
-        this.userPureCloud = beanLicense.getUserPureCloud();
-        this.idUserPureCloud = beanLicense.getIdUserPureCloud();
-        this.rpa = beanLicense.isRpa();
-        this.userRpa = beanLicense.getUserRpa();
-        this.moduleRpa = beanLicense.getModuleRpa();
-        this.enterpriseRpa = beanLicense.getEnterpriseRpa();
-        this.tactical = beanLicense.isTactical();
-        this.instagram = beanLicense.isInstagram();
-        this.userInstagram = beanLicense.getUserInstagram();
-        this.facebook = beanLicense.isFacebook();
-        this.userFacebook = beanLicense.getUserFacebook();
-        this.tiktok = beanLicense.isTiktok();
-        this.userTiktok = beanLicense.getUserTiktok();
-        this.linkedin = beanLicense.isLinkedin();
-        this.userLinkedin = beanLicense.getUserLinkedin();
-        this.youtube = beanLicense.isYoutube();
-        this.userYoutube = beanLicense.getUserYoutube();
-        this.adobe = beanLicense.isAdobe();
-        this.mailchimp = beanLicense.isMailchimp();
-        this.linktree = beanLicense.isLinktree();
-        this.magento = beanLicense.isMagento();
-        this.magentoUser = beanLicense.getMagentoUser();
-        this.shopify = beanLicense.isShopify();
-        this.userShopify = beanLicense.getUserShopify();
-        this.mercadoLibre = beanLicense.isMercadoLibre();
-        this.amazon = beanLicense.isAmazon();
-        this.conekta = beanLicense.isConekta();
-        this.openPay = beanLicense.isOpenPay();
-        this.kuesky = beanLicense.isKuesky();
-    }
+    //cambios
 }
