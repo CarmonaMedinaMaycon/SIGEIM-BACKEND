@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IAcessCard extends JpaRepository<BeanAccessCard, Long> {
 
@@ -36,4 +37,7 @@ public interface IAcessCard extends JpaRepository<BeanAccessCard, Long> {
     )
 """)
     List<BeanAccessCard> findAvailableForAccessCardResponsive();
+
+    Optional<BeanAccessCard> findByPersonPersonId(Long personId);
+
 }
