@@ -9,13 +9,17 @@ import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @Transactional
@@ -167,5 +171,189 @@ public class LicenseService {
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
         licensesRepository.save(license);
+    }
+
+    public byte[] generateExcelFile() throws IOException {
+        List<BeanLicense> licenses = licensesRepository.findAll();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Licencias");
+
+        // Definir los encabezados
+        String[] headers = {
+                "Núm.",
+                "Persona",
+                "Empresa",
+                "Departamento",
+                "Puesto",
+                // Outlook
+                "Outlook", "Cuenta Outlook", "Tipo Outlook", "Proveedor Outlook", "Alias", "Mailbox", "Comentarios Outlook",
+                // Autenticación
+                "Teléfono Auth", "Nombre 2FA", "Departamento Auth",
+                // CRM
+                "CRM", "Usuario CRM", "Tipo CRM", "Proveedor CRM", "Comentarios CRM",
+                // Business Central
+                "BC", "Usuario BC", "ID Usuario BC", "Tipo BC", "Proveedor BC", "Empresa BC",
+                // PureCloud
+                "PureCloud", "Usuario PureCloud", "ID PureCloud",
+                // RPA
+                "RPA", "Usuario RPA", "Módulo RPA", "Empresa RPA",
+                // Otros
+                "Power BI", "Copilot", "Táctico",
+                // Redes Sociales
+                "Instagram", "Usuario Instagram",
+                "Facebook", "Usuario Facebook",
+                "TikTok", "Usuario TikTok",
+                "LinkedIn", "Usuario LinkedIn",
+                "YouTube", "Usuario YouTube",
+                // Plataformas
+                "Adobe", "Mailchimp", "Linktree",
+                // E-commerce
+                "Magento", "Usuario Magento",
+                "Shopify", "Usuario Shopify",
+                "Mercado Libre",
+                "Amazon",
+                "Conekta",
+                "OpenPay",
+                "Kuesky"
+        };
+
+        // Crear estilo para encabezados en negrita
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        // Crear la fila de cabecera con estilo en negrita
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle); // Aplicar estilo negrita
+        }
+
+        // Congelar paneles (fila de encabezados)
+        sheet.createFreezePane(0, 1, 0, 1);
+
+        // Ajustar el tamaño de las columnas de la cabecera
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        int rowNum = 1;
+        for (BeanLicense license : licenses) {
+            Row row = sheet.createRow(rowNum++);
+
+            // Información básica
+            row.createCell(0).setCellValue(rowNum - 1);
+            if (license.getPerson() != null) {
+                row.createCell(1).setCellValue(getSafeValue(
+                        license.getPerson().getName() + " " +
+                                license.getPerson().getSurname() + " " +
+                                license.getPerson().getLastname()
+                ));
+                row.createCell(2).setCellValue(getSafeValue(license.getPerson().getEnterprise()));
+                row.createCell(3).setCellValue(getSafeValue(license.getPerson().getDepartament()));
+                row.createCell(4).setCellValue(getSafeValue(license.getPerson().getPosition()));
+            } else {
+                for (int i = 1; i <= 4; i++) {
+                    row.createCell(i).setCellValue("SIN-INF");
+                }
+            }
+
+            // Outlook
+            row.createCell(5).setCellValue(license.isOutlook() ? "Sí" : "No");
+            row.createCell(6).setCellValue(getSafeValue(license.getAccountOutlook()));
+            row.createCell(7).setCellValue(getSafeValue(license.getTypeOutlook()));
+            row.createCell(8).setCellValue(getSafeValue(license.getSupplierOutlook()));
+            row.createCell(9).setCellValue(getSafeValue(license.getAliasOutlook()));
+            row.createCell(10).setCellValue(getSafeValue(license.getMailboxOutlook()));
+            row.createCell(11).setCellValue(getSafeValue(license.getCommentsOutlook()));
+
+            // Autenticación
+            row.createCell(12).setCellValue(getSafeValue(license.getAuthPhoneNumber()));
+            row.createCell(13).setCellValue(getSafeValue(license.getAuthTwoFactorAuthenticationName()));
+            row.createCell(14).setCellValue(getSafeValue(license.getAuthDepartament()));
+
+            // CRM
+            row.createCell(15).setCellValue(license.isCrm() ? "Sí" : "No");
+            row.createCell(16).setCellValue(getSafeValue(license.getUserCrm()));
+            row.createCell(17).setCellValue(getSafeValue(license.getTypeCrm()));
+            row.createCell(18).setCellValue(getSafeValue(license.getSupplierCrm()));
+            row.createCell(19).setCellValue(getSafeValue(license.getCommentsCrm()));
+
+            // Business Central
+            row.createCell(20).setCellValue(license.isBc() ? "Sí" : "No");
+            row.createCell(21).setCellValue(getSafeValue(license.getUserBc()));
+            row.createCell(22).setCellValue(getSafeValue(license.getIdUserBc()));
+            row.createCell(23).setCellValue(getSafeValue(license.getTypeBc()));
+            row.createCell(24).setCellValue(getSafeValue(license.getSupplierBc()));
+            row.createCell(25).setCellValue(getSafeValue(license.getEnterpriseBc()));
+
+            // PureCloud
+            row.createCell(26).setCellValue(license.isPurecloud() ? "Sí" : "No");
+            row.createCell(27).setCellValue(getSafeValue(license.getUserPureCloud()));
+            row.createCell(28).setCellValue(getSafeValue(license.getIdUserPureCloud()));
+
+            // RPA
+            row.createCell(29).setCellValue(license.isRpa() ? "Sí" : "No");
+            row.createCell(30).setCellValue(getSafeValue(license.getUserRpa()));
+            row.createCell(31).setCellValue(getSafeValue(license.getModuleRpa()));
+            row.createCell(32).setCellValue(getSafeValue(license.getEnterpriseRpa()));
+
+            // Otros
+            row.createCell(33).setCellValue(license.isPowerbi() ? "Sí" : "No");
+            row.createCell(34).setCellValue(license.isCopilot() ? "Sí" : "No");
+            row.createCell(35).setCellValue(license.isTactical() ? "Sí" : "No");
+
+            // Redes Sociales
+            row.createCell(36).setCellValue(license.isInstagram() ? "Sí" : "No");
+            row.createCell(37).setCellValue(getSafeValue(license.getUserInstagram()));
+            row.createCell(38).setCellValue(license.isFacebook() ? "Sí" : "No");
+            row.createCell(39).setCellValue(getSafeValue(license.getUserFacebook()));
+            row.createCell(40).setCellValue(license.isTiktok() ? "Sí" : "No");
+            row.createCell(41).setCellValue(getSafeValue(license.getUserTiktok()));
+            row.createCell(42).setCellValue(license.isLinkedin() ? "Sí" : "No");
+            row.createCell(43).setCellValue(getSafeValue(license.getUserLinkedin()));
+            row.createCell(44).setCellValue(license.isYoutube() ? "Sí" : "No");
+            row.createCell(45).setCellValue(getSafeValue(license.getUserYoutube()));
+
+            // Plataformas
+            row.createCell(46).setCellValue(license.isAdobe() ? "Sí" : "No");
+            row.createCell(47).setCellValue(license.isMailchimp() ? "Sí" : "No");
+            row.createCell(48).setCellValue(license.isLinktree() ? "Sí" : "No");
+
+            // E-commerce
+            row.createCell(49).setCellValue(license.isMagento() ? "Sí" : "No");
+            row.createCell(50).setCellValue(getSafeValue(license.getMagentoUser()));
+            row.createCell(51).setCellValue(license.isShopify() ? "Sí" : "No");
+            row.createCell(52).setCellValue(getSafeValue(license.getUserShopify()));
+            row.createCell(53).setCellValue(license.isMercadoLibre() ? "Sí" : "No");
+            row.createCell(54).setCellValue(license.isAmazon() ? "Sí" : "No");
+            row.createCell(55).setCellValue(license.isConekta() ? "Sí" : "No");
+            row.createCell(56).setCellValue(license.isOpenPay() ? "Sí" : "No");
+            row.createCell(57).setCellValue(license.isKuesky() ? "Sí" : "No");
+        }
+
+        // Ajustar tamaño de columnas para todas las filas
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+            // Asegurar un ancho mínimo para columnas importantes
+            if (i == 1 || i == 2 || i == 6 || i == 7 || i == 8) {
+                if (sheet.getColumnWidth(i) < 4000) {
+                    sheet.setColumnWidth(i, 4000);
+                }
+            }
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        return baos.toByteArray();
+    }
+
+    private String getSafeValue(String value) {
+        return value != null ? value : "";
     }
 }
