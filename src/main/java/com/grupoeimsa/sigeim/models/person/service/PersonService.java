@@ -347,7 +347,8 @@ public class PersonService {
                 e.getBrand(),
                 e.getModel(),
                 e.getType(),
-                e.getStatus().toString()
+                e.getStatus().toString(),
+                e.getAssetNumber()
         )).collect(Collectors.toList());
     }
 
