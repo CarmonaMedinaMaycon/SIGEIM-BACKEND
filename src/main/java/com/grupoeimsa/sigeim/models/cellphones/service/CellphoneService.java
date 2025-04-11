@@ -12,12 +12,16 @@ import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -188,6 +192,146 @@ public class CellphoneService {
     }
 
 
+    public byte[] generateExcelFile() throws IOException {
+        List<BeanCellphone> cellphones = cellphoneRepository.findAll();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Teléfonos Celulares");
+
+        // Crear estilo para fechas
+        CellStyle dateCellStyle = workbook.createCellStyle();
+        CreationHelper createHelper = workbook.getCreationHelper();
+        dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/MM/yyyy"));
+
+        // Definir los encabezados
+        String[] headers = {
+                "Núm.",
+                "Nombre del Equipo",
+                "Nombre Legal",
+                "Empresa",
+                "Persona Asignada",
+                "Departamento",
+                "Puesto",
+                "Marcación Rápida",
+                "Número Teléfono",
+                "IMEI",
+                "Fecha de Renovación",
+                "Estado",
+                "WhatsApp Business",
+                "Comentarios"
+        };
+
+        // Crear la fila de cabecera
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+
+        // Aplicar estilo de negrita a los encabezados
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        for (Cell cell : headerRow) {
+            cell.setCellStyle(headerStyle);
+        }
+
+        // Ajustar el tamaño de las columnas de la cabecera
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        int rowNum = 1;
+        for (BeanCellphone cellphone : cellphones) {
+            Row row = sheet.createRow(rowNum++);
+
+            // Información básica
+            row.createCell(0).setCellValue(rowNum - 1); // Número de fila
+            row.createCell(1).setCellValue(getSafeValue(cellphone.getEquipamentName()));
+            row.createCell(2).setCellValue(getSafeValue(cellphone.getLegalName()));
+            row.createCell(3).setCellValue(getSafeValue(cellphone.getCompany()));
+
+            // Información de la persona asignada
+            if (cellphone.getPerson() != null) {
+                row.createCell(4).setCellValue(getSafeValue(
+                        cellphone.getPerson().getName() + " " +
+                                cellphone.getPerson().getSurname() + " " +
+                                cellphone.getPerson().getLastname()
+                ));
+                row.createCell(5).setCellValue(getSafeValue(cellphone.getPerson().getDepartament()));
+                row.createCell(6).setCellValue(getSafeValue(cellphone.getPerson().getPosition()));
+            } else {
+                row.createCell(4).setCellValue("SIN ASIGNAR");
+                row.createCell(5).setCellValue("");
+                row.createCell(6).setCellValue("");
+            }
+
+            // Datos del teléfono
+            row.createCell(7).setCellValue(cellphone.getShortDialing());
+            row.createCell(8).setCellValue(getSafeValue(cellphone.getNumber()));
+            row.createCell(9).setCellValue(getSafeValue(cellphone.getImei()));
+
+            // Formatear fecha de renovación
+            Cell dateCell = row.createCell(10);
+            if (cellphone.getDateRenovation() != null) {
+                dateCell.setCellValue(cellphone.getDateRenovation());
+                dateCell.setCellStyle(dateCellStyle);
+            } else {
+                dateCell.setCellValue("");
+            }
+
+            // Estado (con estilo condicional)
+            Cell statusCell = row.createCell(11);
+            if (cellphone.getStatus() != null) {
+                statusCell.setCellValue(cellphone.getStatus() ? "Activo" : "Inactivo");
+
+                // Aplicar color de fondo según el estado
+                CellStyle statusStyle = workbook.createCellStyle();
+                statusStyle.cloneStyleFrom(dateCellStyle);
+                if (cellphone.getStatus()) {
+                    statusStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+                } else {
+                    statusStyle.setFillForegroundColor(IndexedColors.LIGHT_ORANGE.getIndex());
+                }
+                statusStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                statusCell.setCellStyle(statusStyle);
+            } else {
+                statusCell.setCellValue("Sin estado");
+            }
+
+            // WhatsApp Business
+            row.createCell(12).setCellValue(cellphone.getWhatsappBussiness() != null ?
+                    (cellphone.getWhatsappBussiness() ? "Sí" : "No") : "Sin info");
+
+            // Comentarios
+            row.createCell(13).setCellValue(getSafeValue(cellphone.getComments()));
+        }
+
+        // Congelar la fila de encabezados
+        sheet.createFreezePane(0, 1, 0, 1);
+
+        // Ajustar tamaño de columnas para todas las filas
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+            // Asegurar un ancho mínimo para columnas importantes
+            if (i == 1 || i == 4 || i == 8 || i == 9) {
+                if (sheet.getColumnWidth(i) < 4000) {
+                    sheet.setColumnWidth(i, 4000);
+                }
+            }
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        return baos.toByteArray();
+    }
+
+    private String getSafeValue(String value) {
+        return value != null ? value : "";
+    }
 
 
 
