@@ -15,4 +15,5 @@ public class ResponseComputerEquipmentDto {
     private String model;
     private String type;
     private String status;
+    private String assetNumber;
 }
