@@ -47,6 +47,8 @@ public class BeanLicense {
     @Column(name = "phone_authenticator", nullable = false)
     private String authPhoneNumber;
 
+    //change
+
     @Column(name = "two_factor_authentication_name", nullable = false)
     private String authTwoFactorAuthenticationName;
 
