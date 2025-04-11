@@ -31,3 +31,4 @@ EXPOSE 8081
 # Comando de ejecución
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
+ENTRYPOINT ["java", "-Djava.awt.headless=true", "-jar", "app.jar"]
