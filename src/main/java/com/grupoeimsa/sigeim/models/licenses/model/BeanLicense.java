@@ -44,7 +44,7 @@ public class BeanLicense {
     @Column(name = "comments_outlook", nullable = false)
     private String commentsOutlook;
 
-    @Column(name = "phoneNumber", nullable = false)
+    @Column(name = "phone_authenticator", nullable = false)
     private String authPhoneNumber;
 
     //change
