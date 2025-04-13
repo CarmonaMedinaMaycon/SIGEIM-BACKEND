@@ -25,7 +25,7 @@ public class ResponseCellphoneDTO {
 
     private String company;
 
-    private int shortDialing; //marcacion rapida
+    private String shortDialing; //marcacion rapida
 
     private LocalDate dateRenovation;
 
@@ -34,6 +34,8 @@ public class ResponseCellphoneDTO {
     private String comments;
 
     private BeanPerson person;
+
+    private String number;
 
     private Boolean status;
 

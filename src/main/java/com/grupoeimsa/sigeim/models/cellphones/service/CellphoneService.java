@@ -17,6 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,19 +39,37 @@ public class CellphoneService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ResponseCellphoneDTO> findAll(String search, int page, int size, Boolean status, String enterprise, String departament) {
+    public Page<ResponseCellphoneDTO> findAll(String search, int page, int size, Boolean status, String legalName, String area) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BeanCellphone> cellphone = cellphoneRepository.findAllBySearch(
-                search,
-                departament,
-                enterprise,
-                status,
-                pageable
-        );
-        if (cellphone.isEmpty()){
-            throw new CustomException("No cellphone were found");
+
+        Specification<BeanCellphone> spec = Specification.where(null);
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) -> {
+                String likeValue = "%" + search.toLowerCase() + "%";
+                return cb.or(
+                        cb.like(cb.lower(root.get("legalName")), likeValue),
+                        cb.like(cb.lower(root.get("company")), likeValue),
+                        cb.like(cb.lower(cb.function("CAST", String.class, root.get("shortDialing"))), likeValue),
+                        cb.like(cb.lower(root.get("imei")), likeValue)
+                );
+            });
         }
-        return cellphone.map(ResponseCellphoneDTO::new);
+
+        if (legalName != null && !legalName.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("legalName")), legalName.toLowerCase()));
+        }
+
+        if (area != null && !area.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("area")), area.toLowerCase()));
+        }
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        Page<BeanCellphone> result = cellphoneRepository.findAll(spec, pageable);
+        return result.map(ResponseCellphoneDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -62,19 +81,43 @@ public class CellphoneService {
     @Transactional(rollbackFor = {SQLException.class})
     public void registerCellphone(ResponseRegisterCellphone registerCellphone) {
         BeanCellphone cellphone = new BeanCellphone();
+
         cellphone.setLegalName(registerCellphone.getLegalName());
         cellphone.setEquipamentName(registerCellphone.getEquipamentName());
         cellphone.setCompany(registerCellphone.getCompany());
-        cellphone.setShortDialing(registerCellphone.getShortDialing());
+        cellphone.setArea(registerCellphone.getArea());
+
+        cellphone.setShortDialing( registerCellphone.getShortDialing() == null || registerCellphone.getShortDialing().trim().isEmpty() ? "NA" : registerCellphone.getShortDialing().trim());
+
         cellphone.setDateRenovation(registerCellphone.getDateRenovation());
-        cellphone.setImei(registerCellphone.getImei());
-        cellphone.setComments(registerCellphone.getComments());
+        cellphone.setNumber(registerCellphone.getNumber());
+
+        // IMEI: si viene null o vacío, poner "NA"
+        cellphone.setImei(
+                (registerCellphone.getImei() == null || registerCellphone.getImei().trim().isEmpty())
+                        ? "NA"
+                        : registerCellphone.getImei().trim()
+        );
+
+        // Comentarios: si viene null o vacío, poner "NA"
+        cellphone.setComments(
+                (registerCellphone.getComments() == null || registerCellphone.getComments().trim().isEmpty())
+                        ? "NA"
+                        : registerCellphone.getComments().trim()
+        );
+
         cellphone.setStatus(true);
-        cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
-        cellphone.setPerson(personRepository.findById(registerCellphone.getPersonId())
-                .orElseThrow(() -> new CustomException("El usuario asignado no fue encontrado")));
+        cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness() != null && registerCellphone.getWhatsappBussiness());
+
+        // Usuario asignado: si no se encuentra, lanza excepción
+        cellphone.setPerson(
+                personRepository.findById(registerCellphone.getPersonId())
+                        .orElseThrow(() -> new CustomException("El usuario asignado no fue encontrado"))
+        );
+
         cellphoneRepository.save(cellphone);
     }
+
 
     @Transactional
     public void enableDisable(Long id){
@@ -101,6 +144,8 @@ public class CellphoneService {
         cellphone.setComments(registerCellphone.getComments());
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness());
         cellphone.setStatus(true);
+        cellphone.setNumber(registerCellphone.getNumber());
+        cellphone.setArea(registerCellphone.getArea());
 
         System.out.println("Usuario asignado" + registerCellphone.getPersonId());
 
@@ -127,22 +172,38 @@ public class CellphoneService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CellphoneTableDto> getAllCellphonesForTable(String search, int page, int size, Boolean status, String enterprise, String departament) {
+    public Page<CellphoneTableDto> getAllCellphonesForTable(String search, int page, int size, Boolean status, String legalName, String area) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BeanCellphone> cellphones = cellphoneRepository.findAllBySearch(
-                search,
-                departament,
-                enterprise,
-                status,
-                pageable
-        );
 
-        if (cellphones.isEmpty()) {
-            throw new CustomException("No cellphones were found");
+        Specification<BeanCellphone> spec = Specification.where(null);
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and((root, query, cb) -> {
+                String likeValue = "%" + search.toLowerCase() + "%";
+                return cb.or(
+                        cb.like(cb.lower(root.get("legalName")), likeValue),
+                        cb.like(cb.lower(root.get("company")), likeValue),
+                        cb.like(cb.lower(cb.concat("", root.get("shortDialing").as(String.class))), likeValue),
+                        cb.like(cb.lower(root.get("imei")), likeValue)
+                );
+            });
         }
 
-        // Mapeo al DTO ligero
-        return cellphones.map(c -> new CellphoneTableDto(
+        if (legalName != null && !legalName.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("legalName")), legalName.toLowerCase()));
+        }
+
+        if (area != null && !area.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("area")), area.toLowerCase()));
+        }
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        Page<BeanCellphone> result = cellphoneRepository.findAll(spec, pageable);
+
+        return result.map(c -> new CellphoneTableDto(
                 c.getCellphoneId(),
                 c.getEquipamentName(),
                 c.getCompany(),
@@ -157,7 +218,10 @@ public class CellphoneService {
                 c.getPerson() != null
                         ? c.getPerson().getName() + " " + c.getPerson().getLastname() + " " + c.getPerson().getSurname()
                         : "No ha sido asignado",
-                c.getStatus()
+                c.getStatus(),
+                c.getNumber(),
+                c.getWhatsappBussiness() ? "Si" : "No",
+                c.getArea()
         ));
     }
 
@@ -176,7 +240,9 @@ public class CellphoneService {
                 cellphone.getWhatsappBussiness(),
                 cellphone.getDateRenovation(),
                 cellphone.getComments(),
-                cellphone.getPerson() != null ? cellphone.getPerson().getPersonId() : null
+                cellphone.getPerson() != null ? cellphone.getPerson().getPersonId() : null,
+                cellphone.getNumber(),
+                cellphone.getArea()
         );
     }
 
@@ -203,135 +269,87 @@ public class CellphoneService {
         CreationHelper createHelper = workbook.getCreationHelper();
         dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/MM/yyyy"));
 
-        // Definir los encabezados
-        String[] headers = {
-                "Núm.",
-                "Nombre del Equipo",
-                "Nombre Legal",
-                "Empresa",
-                "Persona Asignada",
-                "Departamento",
-                "Puesto",
-                "Marcación Rápida",
-                "Número Teléfono",
-                "IMEI",
-                "Fecha de Renovación",
-                "Estado",
-                "WhatsApp Business",
-                "Comentarios"
-        };
-
-        // Crear la fila de cabecera
-        Row headerRow = sheet.createRow(0);
-        for (int i = 0; i < headers.length; i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(headers[i]);
-        }
-
-        // Aplicar estilo de negrita a los encabezados
+        // Estilo para encabezado
         CellStyle headerStyle = workbook.createCellStyle();
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
         headerStyle.setFont(headerFont);
-        for (Cell cell : headerRow) {
-            cell.setCellStyle(headerStyle);
-        }
 
-        // Ajustar el tamaño de las columnas de la cabecera
+        // Encabezados personalizados
+        String[] headers = {
+                "Razón Social",
+                "Usuario",
+                "Teléfono",
+                "Compañía",
+                "Área",
+                "Marcación Corta",
+                "Fecha de Última Renovación",
+                "Equipo Asignado",
+                "IMEI",
+                "WhatsApp Bussiness",
+                "COMENTARIO GENERAL"
+        };
+
+        // Crear fila de encabezado
+        Row headerRow = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
         }
 
         int rowNum = 1;
         for (BeanCellphone cellphone : cellphones) {
             Row row = sheet.createRow(rowNum++);
 
-            // Información básica
-            row.createCell(0).setCellValue(rowNum - 1); // Número de fila
-            row.createCell(1).setCellValue(getSafeValue(cellphone.getEquipamentName()));
-            row.createCell(2).setCellValue(getSafeValue(cellphone.getLegalName()));
+            row.createCell(0).setCellValue(getSafeValue(cellphone.getLegalName()));
+            row.createCell(1).setCellValue(
+                    cellphone.getPerson() != null && !"Sistemas NA NA".equals(cellphone.getPerson().getFullName())
+                            ? cellphone.getPerson().getFullName()
+                            : "NA"
+            );
+            row.createCell(2).setCellValue(getSafeValue(cellphone.getNumber()));
             row.createCell(3).setCellValue(getSafeValue(cellphone.getCompany()));
+            row.createCell(4).setCellValue(getSafeValue(cellphone.getArea()));
+            row.createCell(5).setCellValue(getSafeValue(cellphone.getShortDialing()));
 
-            // Información de la persona asignada
-            if (cellphone.getPerson() != null) {
-                row.createCell(4).setCellValue(getSafeValue(
-                        cellphone.getPerson().getName() + " " +
-                                cellphone.getPerson().getSurname() + " " +
-                                cellphone.getPerson().getLastname()
-                ));
-                row.createCell(5).setCellValue(getSafeValue(cellphone.getPerson().getDepartament()));
-                row.createCell(6).setCellValue(getSafeValue(cellphone.getPerson().getPosition()));
-            } else {
-                row.createCell(4).setCellValue("SIN ASIGNAR");
-                row.createCell(5).setCellValue("");
-                row.createCell(6).setCellValue("");
-            }
-
-            // Datos del teléfono
-            row.createCell(7).setCellValue(cellphone.getShortDialing());
-            row.createCell(8).setCellValue(getSafeValue(cellphone.getNumber()));
-            row.createCell(9).setCellValue(getSafeValue(cellphone.getImei()));
-
-            // Formatear fecha de renovación
-            Cell dateCell = row.createCell(10);
+            // Fecha con formato
+            Cell dateCell = row.createCell(6);
             if (cellphone.getDateRenovation() != null) {
-                dateCell.setCellValue(cellphone.getDateRenovation());
+                dateCell.setCellValue(java.sql.Date.valueOf(cellphone.getDateRenovation()));
                 dateCell.setCellStyle(dateCellStyle);
             } else {
                 dateCell.setCellValue("");
             }
 
-            // Estado (con estilo condicional)
-            Cell statusCell = row.createCell(11);
-            if (cellphone.getStatus() != null) {
-                statusCell.setCellValue(cellphone.getStatus() ? "Activo" : "Inactivo");
-
-                // Aplicar color de fondo según el estado
-                CellStyle statusStyle = workbook.createCellStyle();
-                statusStyle.cloneStyleFrom(dateCellStyle);
-                if (cellphone.getStatus()) {
-                    statusStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-                } else {
-                    statusStyle.setFillForegroundColor(IndexedColors.LIGHT_ORANGE.getIndex());
-                }
-                statusStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                statusCell.setCellStyle(statusStyle);
-            } else {
-                statusCell.setCellValue("Sin estado");
-            }
-
-            // WhatsApp Business
-            row.createCell(12).setCellValue(cellphone.getWhatsappBussiness() != null ?
-                    (cellphone.getWhatsappBussiness() ? "Sí" : "No") : "Sin info");
-
-            // Comentarios
-            row.createCell(13).setCellValue(getSafeValue(cellphone.getComments()));
+            row.createCell(7).setCellValue(getSafeValue(cellphone.getEquipamentName()));
+            row.createCell(8).setCellValue(getSafeValue(cellphone.getImei()));
+            row.createCell(9).setCellValue(cellphone.getWhatsappBussiness() != null
+                    ? (cellphone.getWhatsappBussiness() ? "Sí" : "No")
+                    : "Sin info");
+            row.createCell(10).setCellValue(getSafeValue(cellphone.getComments()));
         }
 
-        // Congelar la fila de encabezados
-        sheet.createFreezePane(0, 1, 0, 1);
-
-        // Ajustar tamaño de columnas para todas las filas
+        // Ajuste de columnas
         for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
-            // Asegurar un ancho mínimo para columnas importantes
-            if (i == 1 || i == 4 || i == 8 || i == 9) {
-                if (sheet.getColumnWidth(i) < 4000) {
-                    sheet.setColumnWidth(i, 4000);
-                }
+            if (sheet.getColumnWidth(i) < 4000) {
+                sheet.setColumnWidth(i, 4000);
             }
         }
+
+        sheet.createFreezePane(0, 1); // congelar encabezado
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
         workbook.close();
-
         return baos.toByteArray();
     }
 
     private String getSafeValue(String value) {
-        return value != null ? value : "";
+        return (value != null && !value.trim().isEmpty()) ? value : "NA";
     }
+
 
 
 

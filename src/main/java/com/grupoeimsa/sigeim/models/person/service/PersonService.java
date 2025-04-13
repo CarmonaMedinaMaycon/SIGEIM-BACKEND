@@ -363,7 +363,7 @@ public class PersonService {
         return new ResponseCellphoneDto(
                 cellphone.getImei(),
                 cellphone.getCompany(),
-                Integer.toString(cellphone.getShortDialing()),
+                cellphone.getShortDialing(),
                 cellphone.getDateRenovation().toString()
         );
     }
