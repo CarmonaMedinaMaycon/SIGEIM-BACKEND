@@ -8,13 +8,18 @@ import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 @Transactional
@@ -104,15 +109,38 @@ public class AccessCardService {
             String departament) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<BeanAccessCard> accessCards = accessCardRepository.findAllByPersonName(
-                search,
-                departament,
-                enterprise,
-                status,
-                pageable
-        );
 
-        // ❌ NO lances error si no hay resultados
+        Specification<BeanAccessCard> spec = (root, query, cb) -> {
+            Join<Object, Object> personJoin = root.join("person");
+
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (search != null && !search.isBlank()) {
+                String searchPattern = "%" + search.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(personJoin.get("name")), searchPattern),
+                        cb.like(cb.lower(personJoin.get("lastname")), searchPattern),
+                        cb.like(cb.lower(personJoin.get("surname")), searchPattern)
+                ));
+            }
+
+            if (enterprise != null && !enterprise.isBlank()) {
+                predicates.add(cb.equal(cb.lower(personJoin.get("enterprise")), enterprise.toLowerCase()));
+            }
+
+            if (departament != null && !departament.isBlank()) {
+                predicates.add(cb.equal(cb.lower(personJoin.get("departament")), departament.toLowerCase()));
+            }
+
+            if (status != null) {
+                predicates.add(cb.equal(personJoin.get("status"), status));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<BeanAccessCard> accessCards = accessCardRepository.findAll(spec, pageable);
+
         return accessCards.map(card -> new ResponseAccessCardTableDto(
                 card.getAccessCardId(),
                 card.getPerson().getPersonId(),
@@ -126,8 +154,7 @@ public class AccessCardService {
                 card.isTechnicalServiceWarehousesTwo()
         ));
     }
-
-
+    
 
     @Transactional
     public void delete(Long id) {
