@@ -10,10 +10,5 @@ import java.util.Optional;
 public interface IUser extends JpaRepository<BeanUser, Long>, JpaSpecificationExecutor<BeanUser> {
     Optional<BeanUser> findBeanUserByEmail (String email);
     boolean existsBeanUserByEmail (String email);
-
     long countByRoleAndStatus(ERole role, boolean status);
-
-
-
-
 }

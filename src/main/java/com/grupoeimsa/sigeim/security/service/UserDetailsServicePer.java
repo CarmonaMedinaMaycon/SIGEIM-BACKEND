@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.security.service;
 
 import com.grupoeimsa.sigeim.models.users.model.BeanUser;
+import com.grupoeimsa.sigeim.models.users.model.ERole;
 import com.grupoeimsa.sigeim.models.users.model.IUser;
 import com.grupoeimsa.sigeim.security.controller.dto.RequestAuthDto;
 import com.grupoeimsa.sigeim.security.controller.dto.RequestChangePasswordDto;
@@ -161,15 +162,19 @@ public class UserDetailsServicePer implements UserDetailsService {
             throw new CustomException("Cuenta bloqueada");
         }
 
-        // validate password
+        // validar contraseña
         if (!passwordEncoder.matches(authRequest.password(), userDetails.getPassword())) {
             int newAttempts = user.getAttempts() + 1;
             user.setAttempts(newAttempts);
             user.setLastTry(LocalTime.now());
 
-            if (newAttempts >= 3) {
-                user.setStatus(false); // lock account
-                System.out.println("Cuenta bloqueada por intentos fallidos.");
+            boolean isAdmin = user.getRole() == ERole.ADMIN;
+            long activeAdminCount = userRepository.countByRoleAndStatus(ERole.ADMIN, true);
+
+            if (!isAdmin || activeAdminCount > 1) {
+                if (newAttempts >= 3) {
+                    user.setStatus(false);
+                }
             }
 
             userRepository.save(user);

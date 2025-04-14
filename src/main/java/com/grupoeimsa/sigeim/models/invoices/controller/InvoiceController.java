@@ -69,6 +69,8 @@ public class InvoiceController {
             @RequestParam(required = false) String supplier,
             @RequestParam(required = false) String search
     ) {
+        System.out.println("Supplier: " + supplier);
+        System.out.println("Search: " + search);
         Page<RequestGetAllInvoicesDto> invoices = invoiceService.getAllInvoices(page, size, supplier, search);
         return ResponseEntity.ok(invoices);
     }

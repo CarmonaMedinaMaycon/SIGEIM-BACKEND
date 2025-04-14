@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,21 +49,12 @@ public class UserController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Page<UserDto>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String search) {
-
-        GetUsersFilterDto filters = new GetUsersFilterDto();
-        filters.setPage(page);
-        filters.setSize(size);
-        filters.setStatus(status);
-        filters.setSearch(search);
-
+    public ResponseEntity<Page<UserDto>> getAllUsers(@ModelAttribute GetUsersFilterDto filters) {
+        System.out.println("Filters: " + filters);
         Page<UserDto> users = userService.getAllUsers(filters);
         return ResponseEntity.ok(users);
     }
+
 
     @GetMapping("/status")
     public ResponseEntity<List<String>> getUserStatuses() {

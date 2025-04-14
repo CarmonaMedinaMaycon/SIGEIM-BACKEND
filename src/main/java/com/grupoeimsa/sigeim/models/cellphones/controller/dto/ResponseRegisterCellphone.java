@@ -20,7 +20,7 @@ public class ResponseRegisterCellphone {
 
     private String company;
 
-    private int shortDialing; //marcacion rapida
+    private String shortDialing; //marcacion rapida
 
     private LocalDate dateRenovation;
 
@@ -31,6 +31,10 @@ public class ResponseRegisterCellphone {
     private Boolean status;
 
     private Boolean whatsappBussiness;
+
+    private String number;
+
+    private String area;
 
     private Long personId;
 }

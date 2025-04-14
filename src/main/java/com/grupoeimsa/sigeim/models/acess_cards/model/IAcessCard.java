@@ -3,13 +3,14 @@ package com.grupoeimsa.sigeim.models.acess_cards.model;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface IAcessCard extends JpaRepository<BeanAccessCard, Long> {
+public interface IAcessCard extends JpaRepository<BeanAccessCard, Long>, JpaSpecificationExecutor<BeanAccessCard> {
 
     @Query("SELECT a FROM BeanAccessCard a " +
             "JOIN a.person p " + // Unir con la tabla person

@@ -117,4 +117,6 @@ public class EditLicenseDTO {
     private boolean kuesky;
 
     private Long personId;
+
+    private boolean hasUsb;
 }

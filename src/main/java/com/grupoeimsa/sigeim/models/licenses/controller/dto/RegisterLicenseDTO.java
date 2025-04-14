@@ -119,5 +119,7 @@ public class RegisterLicenseDTO {
 
     private Long personId;
 
+    private boolean hasUsb;
+
     //cambios
 }

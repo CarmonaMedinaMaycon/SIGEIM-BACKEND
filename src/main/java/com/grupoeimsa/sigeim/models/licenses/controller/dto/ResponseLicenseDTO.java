@@ -131,6 +131,9 @@ public class ResponseLicenseDTO {
 
     private Long responsiveLicenseId;
 
+    private boolean hasUsb;
+
+    private boolean status;
 
     // CHANGE
 
@@ -198,6 +201,8 @@ public class ResponseLicenseDTO {
                 license.getPerson().getLastname() + " " +
                 license.getPerson().getSurname();
         this.personDepartament = license.getPerson().getDepartament();
+        this.hasUsb = license.isHasUsb();
+        this.status = license.isStatus();
     }
 
 
