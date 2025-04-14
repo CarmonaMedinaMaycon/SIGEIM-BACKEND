@@ -154,7 +154,7 @@ public class AccessCardService {
                 card.isTechnicalServiceWarehousesTwo()
         ));
     }
-    
+
 
     @Transactional
     public void delete(Long id) {

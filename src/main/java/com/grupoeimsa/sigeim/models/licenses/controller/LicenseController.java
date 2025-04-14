@@ -47,12 +47,16 @@ public class LicenseController {
 
     @PostMapping("/assign")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterLicenseDTO responseLicenseDTO){
-        licenseService.assignLicense(responseLicenseDTO);
-        return new ResponseEntity<>(
-                "Licenses assigned",
-                HttpStatus.CREATED
-        );
+        try {
+            licenseService.assignLicense(responseLicenseDTO);
+            return new ResponseEntity<>("Licencias asignadas correctamente", HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>("❌ Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("❌ Error inesperado al asignar licencia", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     @PutMapping("/update-assign")
     public ResponseEntity<String> updateAssign(@Valid @RequestBody EditLicenseDTO responseUpdateLicenseDTO){

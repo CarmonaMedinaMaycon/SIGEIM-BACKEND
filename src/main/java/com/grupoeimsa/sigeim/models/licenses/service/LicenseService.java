@@ -42,9 +42,7 @@ public class LicenseService {
                 status,
                 pageable
         );
-        if (licenses.isEmpty()){
-            throw  new CustomException("No licences were found");
-        }
+
         return licenses.map(ResponseLicenseDTO::new);
     }
 
@@ -108,9 +106,11 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
+        license.setHasUsb(licenseDTO.isHasUsb());
         BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
-        license.setPerson(person);        licensesRepository.save(license);
+        license.setPerson(person);
+        licensesRepository.save(license);
     }
 
 
@@ -170,6 +170,10 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
+        license.setHasUsb(licenseDTO.isHasUsb());
+        BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
+        license.setPerson(person);
         licensesRepository.save(license);
     }
 
@@ -215,7 +219,8 @@ public class LicenseService {
                 "Amazon",
                 "Conekta",
                 "OpenPay",
-                "Kuesky"
+                "Kuesky",
+                "USB"
         };
 
         // Crear estilo para encabezados en negrita
@@ -333,6 +338,7 @@ public class LicenseService {
             row.createCell(55).setCellValue(license.isConekta() ? "Sí" : "No");
             row.createCell(56).setCellValue(license.isOpenPay() ? "Sí" : "No");
             row.createCell(57).setCellValue(license.isKuesky() ? "Sí" : "No");
+            row.createCell(58).setCellValue(license.isHasUsb() ? "Sí" : "No");
         }
 
         // Ajustar tamaño de columnas para todas las filas
