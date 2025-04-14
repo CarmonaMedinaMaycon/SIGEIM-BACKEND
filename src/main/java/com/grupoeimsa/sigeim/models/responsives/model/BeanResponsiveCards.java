@@ -31,7 +31,7 @@ public class BeanResponsiveCards {
     private byte[] generatedDoc;
 
     @Lob
-    @Column(name = "signed_doc", nullable = false, columnDefinition = "LONGBLOB")
+    @Column(name = "signed_doc", columnDefinition = "LONGBLOB")
     private byte[] signedDoc;
 
     @ManyToOne

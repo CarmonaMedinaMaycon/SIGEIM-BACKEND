@@ -63,6 +63,7 @@ public class LicenseService {
 
     @Transactional
     public void assignLicense(RegisterLicenseDTO licenseDTO) {
+
         BeanLicense license = new BeanLicense();
         license.setOutlook(licenseDTO.isOutlook());
         license.setAccountOutlook(licenseDTO.getAccountOutlook());
@@ -116,6 +117,7 @@ public class LicenseService {
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
         license.setHasUsb(licenseDTO.isHasUsb());
+        license.setStatus(true);
         BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
         license.setPerson(person);
@@ -373,25 +375,21 @@ public class LicenseService {
         BeanLicense license = licensesRepository.findById(dto.getLicenseId())
                 .orElseThrow(() -> new RuntimeException("Licencia no encontrada"));
 
+        // Baja lógica: cambiar el status a false
+        license.setStatus(false);
+        licensesRepository.save(license);
+
         List<BeanResponsiveLicenses> responsives = responsiveLicensesRepository
                 .findByLicense_LicensesId(dto.getLicenseId());
 
         if (responsives != null && !responsives.isEmpty()) {
             for (BeanResponsiveLicenses resp : responsives) {
-                resp.setStatus(EStatus.CANCELADA);
+                resp.setStatus(EStatus.CANCELADA); // aquí puedes seguir usando enum
             }
             responsiveLicensesRepository.saveAll(responsives);
-        } else {
-            // ⚠️ desvincular desde el lado de la persona
-            BeanPerson person = license.getPerson();
-            if (person != null) {
-                person.setLicense(null);
-            }
-
-            // eliminar la licencia
-            licensesRepository.delete(license);
         }
     }
+
 
 
     private String getSafeValue(String value) {

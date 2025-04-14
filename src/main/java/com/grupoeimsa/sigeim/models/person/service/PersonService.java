@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -352,21 +353,23 @@ public class PersonService {
         )).collect(Collectors.toList());
     }
 
-    public ResponseCellphoneDto getCellphoneByPersonId(Long id) {
-        BeanCellphone cellphone = cellphoneRepository.findByPersonPersonId(id)
-                .orElse(null); // No lanzamos excepción
+    public List<ResponseCellphoneDto> getCellphonesByPersonId(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Empleado no encontrado"));
 
-        if (cellphone == null) {
-            return null;
+        List<BeanCellphone> cellphones = person.getCellphone();
+        if (cellphones == null || cellphones.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        return new ResponseCellphoneDto(
-                cellphone.getImei(),
-                cellphone.getCompany(),
-                cellphone.getShortDialing(),
-                cellphone.getDateRenovation().toString()
-        );
+        return cellphones.stream().map(cell -> new ResponseCellphoneDto(
+                cell.getImei(),
+                cell.getCompany(),
+                cell.getShortDialing(),
+                cell.getDateRenovation() != null ? cell.getDateRenovation().toString() : "NA"
+        )).collect(Collectors.toList());
     }
+
 
     public ResponseLicenseDto getLicensesByPersonId(Long id) {
         BeanLicense license = licenseRepository.findByPersonPersonId(id)

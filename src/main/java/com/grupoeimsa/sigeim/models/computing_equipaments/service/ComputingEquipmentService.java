@@ -1,5 +1,6 @@
 package com.grupoeimsa.sigeim.models.computing_equipaments.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -22,6 +23,7 @@ import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -60,6 +62,50 @@ public class ComputingEquipmentService {
         this.beanHistoryPhotosEquipament = beanHistoryPhotosEquipament;
         this.invoiceService = invoiceService;
     }
+
+
+    public byte[] generateEquipmentQr(Long id) throws Exception {
+        BeanComputerEquipament equipment = repository.findById(id)
+                .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + id));
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("computerEquipamentId", equipment.getComputerEquipamentId());
+        data.put("serialNumber", equipment.getSerialNumber());
+        data.put("idEsset", equipment.getIdEsset());
+        data.put("departament", equipment.getDepartament());
+        data.put("enterprise", equipment.getEnterprise());
+        data.put("workModality", equipment.getWorkModality());
+        data.put("type", equipment.getType());
+        data.put("brand", equipment.getBrand());
+        data.put("model", equipment.getModel());
+        data.put("ramMemoryCapacity", equipment.getRamMemoryCapacity());
+        data.put("memoryCapacity", equipment.getMemoryCapacity());
+        data.put("processor", equipment.getProcessor());
+        data.put("purchasingCompany", equipment.getPurchasingCompany());
+        data.put("supplier", equipment.getSupplier());
+        data.put("status", equipment.getStatus());
+        data.put("hasInvoice", equipment.getHasInvoice());
+        data.put("invoiceFolio", equipment.getInvoiceFolio());
+        data.put("systemObservations", equipment.getSystemObservations());
+        data.put("purchaseDate", equipment.getPurchaseDate());
+        data.put("assetNumber", equipment.getAssetNumber());
+        data.put("price", equipment.getPrice());
+
+        data.put("responsiveEquipaments", equipment.getResponsiveEquipaments()
+                .stream()
+                .map(BeanResponsiveEquipaments::getResponsiveEquipamentId)
+                .toList());
+
+        data.put("invoice", equipment.getInvoice() != null ? equipment.getInvoice().getInvoiceId() : null);
+        data.put("person", equipment.getPerson().getPersonId());
+
+        String json = new ObjectMapper().writeValueAsString(data);
+        return generateQRCodeImage(json, 500, 500);
+    }
+
+
+
+
 
     @Transactional
     public String createComputingEquipment(RequestRegisterComputingEquipmentDto dto) throws IOException {

@@ -187,6 +187,9 @@ public class BeanLicense {
     @Column(name = "has_usb", nullable = false)
     private boolean hasUsb;
 
+    @Column(name = "status", nullable = false)
+    private boolean status;
+
     @OneToOne
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference("person-license")

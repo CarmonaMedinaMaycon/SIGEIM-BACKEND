@@ -133,6 +133,8 @@ public class ResponseLicenseDTO {
 
     private boolean hasUsb;
 
+    private boolean status;
+
     // CHANGE
 
     public ResponseLicenseDTO(BeanLicense license) {
@@ -200,6 +202,7 @@ public class ResponseLicenseDTO {
                 license.getPerson().getSurname();
         this.personDepartament = license.getPerson().getDepartament();
         this.hasUsb = license.isHasUsb();
+        this.status = license.isStatus();
     }
 
 
