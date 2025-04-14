@@ -34,7 +34,7 @@ public class BeanCellphone {
     private String company;
 
     @Column(name = "short_dialing", nullable = false)
-    private int shortDialing; //marcacion rapida
+    private String shortDialing; //marcacion rapida
 
     @Column(name = "date_renovation", nullable = false)
     private LocalDate dateRenovation;
@@ -48,7 +48,10 @@ public class BeanCellphone {
     @Column(name = "status")
     private Boolean status;
 
-    @Column(name = "number")
+    @Column(name = "area", nullable = false)
+    private String area;
+
+    @Column(name = "number", nullable = false)
     private String number;
 
     @Column(name = "whatsapp_bussiness")

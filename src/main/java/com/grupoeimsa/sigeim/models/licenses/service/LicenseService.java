@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.service;
 
 
+import com.grupoeimsa.sigeim.models.licenses.controller.dto.DeleteLicenseDto;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.EditLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RegisterLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.ResponseLicenseDTO;
@@ -8,7 +9,12 @@ import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveLicenses;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
+import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveLicenses;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
@@ -26,10 +32,13 @@ import java.util.List;
 public class LicenseService {
     public final ILicense licensesRepository;
     public final IPerson personsRepository;
+    public final IResponsiveLicenses responsiveLicensesRepository;
 
-    public LicenseService(ILicense licenseRepository, IPerson personsRepository) {
+    public LicenseService(ILicense licenseRepository, IPerson personsRepository
+            , IResponsiveLicenses responsiveLicensesRepository) {
         this.licensesRepository = licenseRepository;
         this.personsRepository = personsRepository;
+        this.responsiveLicensesRepository = responsiveLicensesRepository;
     }
 
     @Transactional(readOnly = true)
@@ -42,9 +51,7 @@ public class LicenseService {
                 status,
                 pageable
         );
-        if (licenses.isEmpty()){
-            throw  new CustomException("No licences were found");
-        }
+
         return licenses.map(ResponseLicenseDTO::new);
     }
 
@@ -56,6 +63,7 @@ public class LicenseService {
 
     @Transactional
     public void assignLicense(RegisterLicenseDTO licenseDTO) {
+
         BeanLicense license = new BeanLicense();
         license.setOutlook(licenseDTO.isOutlook());
         license.setAccountOutlook(licenseDTO.getAccountOutlook());
@@ -108,9 +116,12 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
+        license.setHasUsb(licenseDTO.isHasUsb());
+        license.setStatus(true);
         BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
-        license.setPerson(person);        licensesRepository.save(license);
+        license.setPerson(person);
+        licensesRepository.save(license);
     }
 
 
@@ -170,6 +181,10 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
+        license.setHasUsb(licenseDTO.isHasUsb());
+        BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
+        license.setPerson(person);
         licensesRepository.save(license);
     }
 
@@ -215,7 +230,8 @@ public class LicenseService {
                 "Amazon",
                 "Conekta",
                 "OpenPay",
-                "Kuesky"
+                "Kuesky",
+                "USB"
         };
 
         // Crear estilo para encabezados en negrita
@@ -333,6 +349,7 @@ public class LicenseService {
             row.createCell(55).setCellValue(license.isConekta() ? "Sí" : "No");
             row.createCell(56).setCellValue(license.isOpenPay() ? "Sí" : "No");
             row.createCell(57).setCellValue(license.isKuesky() ? "Sí" : "No");
+            row.createCell(58).setCellValue(license.isHasUsb() ? "Sí" : "No");
         }
 
         // Ajustar tamaño de columnas para todas las filas
@@ -352,6 +369,28 @@ public class LicenseService {
 
         return baos.toByteArray();
     }
+
+    @Transactional
+    public void deleteLicense(DeleteLicenseDto dto) {
+        BeanLicense license = licensesRepository.findById(dto.getLicenseId())
+                .orElseThrow(() -> new RuntimeException("Licencia no encontrada"));
+
+        // Baja lógica: cambiar el status a false
+        license.setStatus(false);
+        licensesRepository.save(license);
+
+        List<BeanResponsiveLicenses> responsives = responsiveLicensesRepository
+                .findByLicense_LicensesId(dto.getLicenseId());
+
+        if (responsives != null && !responsives.isEmpty()) {
+            for (BeanResponsiveLicenses resp : responsives) {
+                resp.setStatus(EStatus.CANCELADA); // aquí puedes seguir usando enum
+            }
+            responsiveLicensesRepository.saveAll(responsives);
+        }
+    }
+
+
 
     private String getSafeValue(String value) {
         return value != null ? value : "";

@@ -91,31 +91,32 @@ public class UserService {
 
         Specification<BeanUser> spec = Specification.where(null);
 
+        System.out.println("Status recibido: " + filters.getStatus());
+        System.out.println("Search recibido: " + filters.getSearch());
+        System.out.println("Size recibido: " + filters.getSize());
+
+
+        // Filtrar por estado (Activo/Bloqueado)
         if (filters.getStatus() != null && !filters.getStatus().equalsIgnoreCase("Todos")) {
-            Boolean active;
-
             if (filters.getStatus().equalsIgnoreCase("Activo")) {
-                active = true;
+                spec = spec.and((root, query, cb) -> cb.isTrue(root.get("status")));
             } else if (filters.getStatus().equalsIgnoreCase("Bloqueado")) {
-                active = false;
-            } else {
-                active = null;
-            }
-
-            if (active != null) {
-                spec = spec.and((root, query, cb) ->
-                        cb.equal(root.get("status"), active));
+                spec = spec.and((root, query, cb) -> cb.isFalse(root.get("status")));
             }
         }
 
+        // Filtrar por correo
         if (filters.getSearch() != null && !filters.getSearch().trim().isEmpty()) {
+            String searchTerm = "%" + filters.getSearch().toLowerCase().trim() + "%";
             spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("email")), "%" + filters.getSearch().toLowerCase() + "%"));
+                    cb.like(cb.lower(root.get("email")), searchTerm));
         }
 
         Page<BeanUser> users = userRepository.findAll(spec, pageable);
-        return users.map(UserDto::new); // convertir a DTO
+        return users.map(UserDto::new);
     }
+
+
 
     public void deleteUser(Long userId) {
         Optional<BeanUser> userOpt = userRepository.findById(userId);

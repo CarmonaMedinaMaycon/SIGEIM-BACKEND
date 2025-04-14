@@ -31,6 +31,12 @@ public class InvoiceService {
     }
 
     public BeanInvoice saveInvoice(InvoiceDto invoiceDTO) throws IOException {
+        // Verifica si ya existe una factura con el mismo folio
+        if (findByInvoiceFolio(invoiceDTO.getInvoiceFolio()).isPresent()) {
+            throw new CustomException("Ya existe una factura con el folio " + invoiceDTO.getInvoiceFolio());
+        }
+
+        // Crear nueva instancia si no existe
         BeanInvoice invoice = new BeanInvoice();
         invoice.setTotal_iva(invoiceDTO.getTotal_iva());
         invoice.setSupplier(invoiceDTO.getSupplier());
@@ -41,12 +47,16 @@ public class InvoiceService {
         return repository.save(invoice);
     }
 
+
     public Optional<BeanInvoice> findByInvoiceFolio(String invoiceFolio) {
         return repository.findByInvoiceFolio(invoiceFolio);
     }
 
     public Page<RequestGetAllInvoicesDto> getAllInvoices(int page, int size, String supplier, String search) {
         Pageable pageable = PageRequest.of(page, size);
+
+        System.out.println("El proveedor es: " + supplier);
+        System.out.println("La palabra de busqueda es: " + search);
 
         Specification<BeanInvoice> spec = Specification.where(null);
 

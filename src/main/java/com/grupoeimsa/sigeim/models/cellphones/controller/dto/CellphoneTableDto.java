@@ -14,11 +14,14 @@ public class CellphoneTableDto {
     private String equipamentName;
     private String company;
     private String imei;
-    private int shortDialing;
+    private String shortDialing;
     private String legalName;
     private String assignedTo;
     private LocalDate dateRenovation;
     private String comments;
     private String userFullName;
     private Boolean status;
+    private String number;
+    private String whatsappBussiness;
+    private String area;
 }

@@ -135,10 +135,11 @@ public class PersonController {
         return ResponseEntity.ok(personService.getEquipmentsByPersonId(dto.getId()));
     }
 
-    @PostMapping("/cellphone")
-    public ResponseEntity<ResponseCellphoneDto> getCellphone(@RequestBody RequestPersonIdDto dto) {
-        return ResponseEntity.ok(personService.getCellphoneByPersonId(dto.getId()));
+    @PostMapping("/cellphones")
+    public ResponseEntity<List<ResponseCellphoneDto>> getCellphones(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getCellphonesByPersonId(dto.getId()));
     }
+
 
     @PostMapping("/license")
     public ResponseEntity<ResponseLicenseDto> getLicenses(@RequestBody RequestPersonIdDto dto) {

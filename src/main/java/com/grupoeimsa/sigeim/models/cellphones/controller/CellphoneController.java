@@ -37,7 +37,7 @@ public class CellphoneController {
 
     @PostMapping("/")
     public ResponseEntity<Page<ResponseCellphoneDTO>> findAll(@Valid @RequestBody RequestCellphoneDTO requestCellphoneDTO){
-        Page<ResponseCellphoneDTO> cellphone = cellphoneService.findAll(requestCellphoneDTO.getSearch(), requestCellphoneDTO.getPage(), requestCellphoneDTO.getSize(), requestCellphoneDTO.getStatus(), requestCellphoneDTO.getEnterprise(), requestCellphoneDTO.getDepartament());
+        Page<ResponseCellphoneDTO> cellphone = cellphoneService.findAll(requestCellphoneDTO.getSearch(), requestCellphoneDTO.getPage(), requestCellphoneDTO.getSize(), requestCellphoneDTO.getStatus(), requestCellphoneDTO.getLegalName(), requestCellphoneDTO.getArea());
         return new ResponseEntity<>(
                 cellphone,
                 HttpStatus.OK
@@ -85,8 +85,8 @@ public class CellphoneController {
                 filter.getPage(),
                 filter.getSize(),
                 filter.getStatus(),
-                filter.getEnterprise(),
-                filter.getDepartament()
+                filter.getLegalName(),
+                filter.getArea()
         );
         return ResponseEntity.ok(result);
     }
@@ -112,9 +112,11 @@ public class CellphoneController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        headers.add("Content-Disposition", "attachment; filename=celulares.xlsx");
 
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
     }
+
 }

@@ -878,6 +878,8 @@ public class ResponsiveService {
         platforms.put("BC365", new String[]{license.isBc() ? "Sí" : "NA", emptyOrNA(license.getUserBc())});
         platforms.put("Pure Cloud", new String[]{license.isPurecloud() ? "Sí" : "NA", emptyOrNA(license.getUserPureCloud())});
         platforms.put("RPA", new String[]{license.isRpa() ? "Sí" : "NA", emptyOrNA(license.getUserRpa())});
+        platforms.put("Permiso de USB", new String[]{license.isHasUsb() ? "Sí" : "NA", "NA"});
+
 
         // Plataformas adicionales activas
         Map<String, Boolean> dynamic = Map.ofEntries(

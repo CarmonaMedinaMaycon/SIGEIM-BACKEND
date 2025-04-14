@@ -14,10 +14,12 @@ public class CellphoneEditDto {
     private String equipamentName;     // Nombre del equipo
     private String legalName;          // Razón social
     private String company;            // Compañía telefónica
-    private int shortDialing;          // Marcación corta
+    private String shortDialing;          // Marcación corta
     private String imei;
     private Boolean whatsappBussiness;
     private LocalDate dateRenovation;
     private String comments;
     private Long personId;
+    private String number;
+    private String area;
 }
