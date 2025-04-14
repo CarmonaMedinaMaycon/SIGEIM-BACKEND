@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.controller;
 
 
+import com.grupoeimsa.sigeim.models.licenses.controller.dto.DeleteLicenseDto;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.EditLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RegisterLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RequestLicensesDTO;
@@ -80,6 +81,13 @@ public class LicenseController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteLicense(@RequestBody DeleteLicenseDto dto) {
+        licenseService.deleteLicense(dto);
+        System.out.println(dto.getLicenseId());
+        return ResponseEntity.ok().build();
     }
 
 }

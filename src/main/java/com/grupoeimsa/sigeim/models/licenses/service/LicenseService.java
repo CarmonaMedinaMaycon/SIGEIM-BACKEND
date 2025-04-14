@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.licenses.service;
 
 
+import com.grupoeimsa.sigeim.models.licenses.controller.dto.DeleteLicenseDto;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.EditLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.RegisterLicenseDTO;
 import com.grupoeimsa.sigeim.models.licenses.controller.dto.ResponseLicenseDTO;
@@ -8,7 +9,12 @@ import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveLicenses;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
+import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveLicenses;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
@@ -26,10 +32,13 @@ import java.util.List;
 public class LicenseService {
     public final ILicense licensesRepository;
     public final IPerson personsRepository;
+    public final IResponsiveLicenses responsiveLicensesRepository;
 
-    public LicenseService(ILicense licenseRepository, IPerson personsRepository) {
+    public LicenseService(ILicense licenseRepository, IPerson personsRepository
+            , IResponsiveLicenses responsiveLicensesRepository) {
         this.licensesRepository = licenseRepository;
         this.personsRepository = personsRepository;
+        this.responsiveLicensesRepository = responsiveLicensesRepository;
     }
 
     @Transactional(readOnly = true)
@@ -358,6 +367,32 @@ public class LicenseService {
 
         return baos.toByteArray();
     }
+
+    @Transactional
+    public void deleteLicense(DeleteLicenseDto dto) {
+        BeanLicense license = licensesRepository.findById(dto.getLicenseId())
+                .orElseThrow(() -> new RuntimeException("Licencia no encontrada"));
+
+        List<BeanResponsiveLicenses> responsives = responsiveLicensesRepository
+                .findByLicense_LicensesId(dto.getLicenseId());
+
+        if (responsives != null && !responsives.isEmpty()) {
+            for (BeanResponsiveLicenses resp : responsives) {
+                resp.setStatus(EStatus.CANCELADA);
+            }
+            responsiveLicensesRepository.saveAll(responsives);
+        } else {
+            // ⚠️ desvincular desde el lado de la persona
+            BeanPerson person = license.getPerson();
+            if (person != null) {
+                person.setLicense(null);
+            }
+
+            // eliminar la licencia
+            licensesRepository.delete(license);
+        }
+    }
+
 
     private String getSafeValue(String value) {
         return value != null ? value : "";
