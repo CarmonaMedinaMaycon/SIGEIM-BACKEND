@@ -26,19 +26,19 @@ public class HistoryPhotoEquipmentController {
         this.service = service;
     }
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadPhotos(
-            @RequestPart("request") UploadHistoryEquipmentPhotosDto request,
-            @RequestPart("photos") List<MultipartFile> photos) throws IOException {
-        String response = service.uploadPhotos(request, photos);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+//    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<String> uploadPhotos(
+//            @RequestPart("request") UploadHistoryEquipmentPhotosDto request,
+//            @RequestPart("photos") List<MultipartFile> photos) throws IOException {
+//        String response = service.uploadPhotos(request, photos);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//    }
 
-    @PostMapping("/photos")
-    public ResponseEntity<Map<String, Map<String, List<String>>>> getPhotosByEquipmentId(@RequestBody UploadHistoryEquipmentPhotosDto request) {
-        Map<String, Map<String, List<String>>> groupedPhotos = service.getGroupedPhotosByEquipment(request.getEquipmentId());
-        return ResponseEntity.ok(groupedPhotos);
-    }
+//    @PostMapping("/photos")
+//    public ResponseEntity<Map<String, Map<String, List<String>>>> getPhotosByEquipmentId(@RequestBody UploadHistoryEquipmentPhotosDto request) {
+//        Map<String, Map<String, List<String>>> groupedPhotos = service.getGroupedPhotosByEquipment(request.getEquipmentId());
+//        return ResponseEntity.ok(groupedPhotos);
+//    }
 
 
 }
