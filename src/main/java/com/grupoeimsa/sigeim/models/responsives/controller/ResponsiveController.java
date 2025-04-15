@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/sigeim/responsives")
@@ -97,6 +98,22 @@ public class ResponsiveController {
     @PostMapping("/equipments/download")
     public ResponseEntity<byte[]> downloadResponsive(@RequestBody DownloadResponsiveDto dto) {
         return responsiveService.downloadResponsive(dto);
+    }
+
+    @PostMapping("/equipments/download/mobile")
+    public ResponseEntity<byte[]> openAndDowloandResponsive(@RequestBody DownloadResponsiveDto dto) {
+        Optional<BeanResponsiveEquipaments> responsive = responsiveEquipmentsRepository.findById(dto.getResponsiveId());
+
+        if (responsive.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        byte[] documentBytes = responsive.get().getGeneratedDoc();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=documento.pdf") // Cambiado a .pdf
+                .contentType(MediaType.APPLICATION_PDF) // Cambiado a APPLICATION_PDF
+                .body(documentBytes);
     }
 
     @PostMapping("/cellphones/download")
