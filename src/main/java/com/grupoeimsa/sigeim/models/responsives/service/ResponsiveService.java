@@ -116,10 +116,10 @@ public class ResponsiveService {
     public void generateResponsive(GenerateResponsiveDto dto) throws Exception {
 
         BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
-                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
+                .orElseThrow(() -> new CustomException("Plantilla no encontrada"));
 
         BeanComputerEquipament computerEquipament = equipamentRepository.findById(dto.getEquipmentId())
-                .orElseThrow(() -> new RuntimeException("Equipo de cómputo no encontrado"));
+                .orElseThrow(() -> new CustomException("Equipo de cómputo no encontrado"));
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
         XWPFDocument document = new XWPFDocument(inputStream);
@@ -251,10 +251,10 @@ public class ResponsiveService {
 
     public void generateResponsiveCellphone(GenerateResponsiveCellphoneDto dto) throws Exception {
         BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
-                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
+                .orElseThrow(() -> new CustomException("Plantilla no encontrada"));
 
         BeanCellphone cellphone = cellphoneRepository.findById(dto.getCellphoneId())
-                .orElseThrow(() -> new RuntimeException("Celular no encontrado"));
+                .orElseThrow(() -> new CustomException("Celular no encontrado"));
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
         XWPFDocument document = new XWPFDocument(inputStream);
@@ -305,10 +305,10 @@ public class ResponsiveService {
 
     public void updateResponsive(UpdateResponsiveDto dto) throws Exception {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(dto.getResponsiveId())
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
-                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
+                .orElseThrow(() -> new CustomException("Plantilla no encontrada"));
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
         XWPFDocument document = new XWPFDocument(inputStream);
@@ -385,25 +385,42 @@ public class ResponsiveService {
         outputStream.close();
     }
 
+
+
     public Page<ResponseResponsiveEquipmentsDto> getResponsivesEquipments(RequestSearchResponsiveEquipmentsDto dto) {
-        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
-        EStatus statusEnum = null;
+        Sort sort = dto.getSort().equalsIgnoreCase("asc")
+                ? Sort.by("creationDate").ascending()
+                : Sort.by("creationDate").descending();
+
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
+
+        if (dto.getSearch() != null && dto.getSearch().trim().isEmpty()) {
+            dto.setSearch(null);
+        }
+
+        Specification<BeanResponsiveEquipaments> spec = Specification.where(null);
 
         if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
-            statusEnum = switch (dto.getEstado()) {
+            EStatus statusEnum = switch (dto.getEstado()) {
                 case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
                 case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
                 case "Cancelada" -> EStatus.CANCELADA;
                 default -> null;
             };
+            if (statusEnum != null) {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), statusEnum));
+            }
         }
 
-        Page<BeanResponsiveEquipaments> responsives = responsiveEquipmentRepository.searchResponsives(
-                dto.getSearch(),
-                statusEnum,
-                dto.getSort(),
-                pageable
-        );
+        if (dto.getSearch() != null && !dto.getSearch().trim().isEmpty()) {
+            String term = "%" + dto.getSearch().toLowerCase() + "%";
+
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("responsibleName")), term)
+            );
+        }
+
+        Page<BeanResponsiveEquipaments> responsives = responsiveEquipmentRepository.findAll(spec, pageable);
 
         return responsives.map(r -> new ResponseResponsiveEquipmentsDto(
                 r.getResponsiveEquipamentId(),
@@ -416,24 +433,39 @@ public class ResponsiveService {
     }
 
     public Page<ResponseResponsiveCellphonesDto> getResponsivesCellphones(RequestSearchResponsiveEquipmentsDto dto) {
-        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
-        EStatus statusEnum = null;
+        Sort sort = dto.getSort().equalsIgnoreCase("asc")
+                ? Sort.by("creationDate").ascending()
+                : Sort.by("creationDate").descending();
+
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
+
+        if (dto.getSearch() != null && dto.getSearch().trim().isEmpty()) {
+            dto.setSearch(null);
+        }
+
+        Specification<BeanResponsiveCellphone> spec = Specification.where(null);
 
         if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
-            statusEnum = switch (dto.getEstado()) {
+            EStatus statusEnum = switch (dto.getEstado()) {
                 case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
                 case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
                 case "Cancelada" -> EStatus.CANCELADA;
                 default -> null;
             };
+            if (statusEnum != null) {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), statusEnum));
+            }
         }
 
-        Page<BeanResponsiveCellphone> responsives = responsiveCellphoneRepository.searchResponsives(
-                dto.getSearch(),
-                statusEnum,
-                dto.getSort(),
-                pageable
-        );
+        if (dto.getSearch() != null && !dto.getSearch().trim().isEmpty()) {
+            String term = "%" + dto.getSearch().toLowerCase() + "%";
+
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("responsibleName")), term)
+            );
+        }
+
+        Page<BeanResponsiveCellphone> responsives = responsiveCellphoneRepository.findAll(spec, pageable);
 
         return responsives.map(r -> new ResponseResponsiveCellphonesDto(
                 r.getResponsiveCellphoneId(),
@@ -444,6 +476,7 @@ public class ResponsiveService {
                 r.getSignedDoc() != null
         ));
     }
+
 
 
     private void replaceTextInParagraph(XWPFParagraph paragraph, Map<String, String> placeholders) {
@@ -595,7 +628,7 @@ public class ResponsiveService {
 
     public void uploadSignedDoc(Long id, MultipartFile file) throws IOException {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         // Guardar el nuevo archivo firmado
         responsive.setSignedDoc(file.getBytes());
@@ -612,7 +645,7 @@ public class ResponsiveService {
 
     public void uploadSignedDocCellphone(Long responsiveId, MultipartFile file) throws IOException {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva de celular no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva de celular no encontrada"));
 
         responsive.setSignedDoc(file.getBytes());
         responsive.setStatus(EStatus.ACTIVA_FIRMADA);
@@ -623,7 +656,7 @@ public class ResponsiveService {
 
     public void uploadSignedDocCard(Long responsiveId, MultipartFile file) throws IOException {
         BeanResponsiveCards responsive = responsiveCardsRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva de celular no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva de celular no encontrada"));
 
         responsive.setSignedDoc(file.getBytes());
         responsive.setStatus(EStatus.ACTIVA_FIRMADA);
@@ -633,7 +666,7 @@ public class ResponsiveService {
 
     public void uploadSignedDocAccess(Long responsiveId, MultipartFile file) throws IOException {
         BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva de accesos no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva de accesos no encontrada"));
 
         responsive.setSignedDoc(file.getBytes());
         responsive.setStatus(EStatus.ACTIVA_FIRMADA);
@@ -645,10 +678,10 @@ public class ResponsiveService {
 
     public byte[] getSignedDocCellphone(Long responsiveId) {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         if (responsive.getSignedDoc() == null) {
-            throw new RuntimeException("La responsiva no tiene documento firmado.");
+            throw new CustomException("La responsiva no tiene documento firmado.");
         }
 
         return responsive.getSignedDoc();
@@ -656,10 +689,10 @@ public class ResponsiveService {
 
     public byte[] getSignedDocAccess(Long responsiveId) {
         BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         if (responsive.getSignedDoc() == null) {
-            throw new RuntimeException("La responsiva no tiene documento firmado.");
+            throw new CustomException("La responsiva no tiene documento firmado.");
         }
 
         return responsive.getSignedDoc();
@@ -667,10 +700,10 @@ public class ResponsiveService {
 
     public byte[] getSignedDocCard(Long responsiveId) {
         BeanResponsiveCards responsive = responsiveCardsRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         if (responsive.getSignedDoc() == null) {
-            throw new RuntimeException("La responsiva no tiene documento firmado.");
+            throw new CustomException("La responsiva no tiene documento firmado.");
         }
 
         return responsive.getSignedDoc();
@@ -678,7 +711,7 @@ public class ResponsiveService {
 
     public void cancelResponsiveCellphone(Long responsiveId) {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         responsive.setStatus(EStatus.CANCELADA);
         responsive.setModificationDate(LocalDate.now());
@@ -688,7 +721,7 @@ public class ResponsiveService {
 
     public void cancelResponsiveCard(Long responsiveId) {
         BeanResponsiveCards responsive = responsiveCardsRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         responsive.setStatus(EStatus.CANCELADA);
 
@@ -697,7 +730,7 @@ public class ResponsiveService {
 
     public void cancelResponsiveAccess(Long responsiveId) {
         BeanResponsiveLicenses responsive = responsiveLicensesRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         responsive.setStatus(EStatus.CANCELADA);
 
@@ -706,7 +739,7 @@ public class ResponsiveService {
 
     public void cancelResponsive(Long responsiveId) {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(responsiveId)
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         responsive.setStatus(EStatus.CANCELADA);
         responsive.setModificationDate(LocalDate.now());
@@ -716,7 +749,7 @@ public class ResponsiveService {
 
     public ResponseEditResponsiveCellphoneDto getResponsiveCellphoneData(DownloadResponsiveDto dto) {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(dto.getResponsiveId())
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         ResponseEditResponsiveCellphoneDto response = new ResponseEditResponsiveCellphoneDto();
         response.setResponsiveId(responsive.getResponsiveCellphoneId());
@@ -736,10 +769,10 @@ public class ResponsiveService {
 
     public void updateResponsiveCellphone(UpdateResponsiveCellphoneDto dto) throws Exception {
         BeanResponsiveCellphone responsive = responsiveCellphoneRepository.findById(dto.getResponsiveId())
-                .orElseThrow(() -> new RuntimeException("Responsiva no encontrada"));
+                .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
         BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
-                .orElseThrow(() -> new RuntimeException("Plantilla no encontrada"));
+                .orElseThrow(() -> new CustomException("Plantilla no encontrada"));
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(template.getTemplateFile());
         XWPFDocument document = new XWPFDocument(inputStream);
@@ -778,7 +811,7 @@ public class ResponsiveService {
 
         // Si el celular también puede cambiar:
         BeanCellphone cellphone = cellphoneRepository.findById(dto.getCellphoneId())
-                .orElseThrow(() -> new RuntimeException("Celular no encontrado"));
+                .orElseThrow(() -> new CustomException("Celular no encontrado"));
         responsive.setCellphone(cellphone);
 
         responsiveCellphoneRepository.save(responsive);
@@ -954,24 +987,51 @@ public class ResponsiveService {
     }
 
     public Page<ResponseResponsiveAccessDto> getResponsivesAccess(RequestSearchResponsiveEquipmentsDto dto) {
-        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
-        EStatus statusEnum = null;
+        Sort sort = dto.getSort().equalsIgnoreCase("asc")
+                ? Sort.by("creationDate").ascending()
+                : Sort.by("creationDate").descending();
+
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
+
+        if (dto.getSearch() != null && dto.getSearch().trim().isEmpty()) {
+            dto.setSearch(null);
+        }
+
+        Specification<BeanResponsiveLicenses> spec = Specification.where(null);
 
         if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
-            statusEnum = switch (dto.getEstado()) {
+            EStatus statusEnum = switch (dto.getEstado()) {
                 case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
                 case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
                 case "Cancelada" -> EStatus.CANCELADA;
                 default -> null;
             };
+            if (statusEnum != null) {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), statusEnum));
+            }
         }
 
-        Page<BeanResponsiveLicenses> responsives = responsiveLicensesRepository.searchResponsivesAccess(
-                dto.getSearch(),
-                statusEnum,
-                dto.getSort(),
-                pageable
-        );
+        if (dto.getSearch() != null && !dto.getSearch().trim().isEmpty()) {
+            String term = "%" + dto.getSearch().toLowerCase() + "%";
+
+            spec = spec.and((root, query, cb) -> {
+                Join<Object, Object> license = root.join("license");
+                Join<Object, Object> person = license.join("person");
+
+                Expression<String> fullName = cb.lower(cb.concat(
+                        cb.concat(
+                                cb.concat(person.get("name"), " "),
+                                cb.concat(person.get("lastname"), " ")
+                        ),
+                        person.get("surname")
+                ));
+
+                return cb.like(fullName, term);
+            });
+        }
+
+
+        Page<BeanResponsiveLicenses> responsives = responsiveLicensesRepository.findAll(spec, pageable);
 
         return responsives.map(r -> new ResponseResponsiveAccessDto(
                 r.getResponsiveCellphoneId(),
@@ -981,6 +1041,7 @@ public class ResponsiveService {
                 r.getSignedDoc() != null && r.getSignedDoc().length > 0
         ));
     }
+
 
     public void generateCardResponsive(RequestGenerateAccessResponsiveDto dto) throws Exception {
         BeanAccessCard card = acessCardRepository.findByPersonPersonId(dto.getPersonId())
@@ -1053,25 +1114,53 @@ public class ResponsiveService {
 
 
     public Page<ResponseResponsiveCardsDTO> getResponsiveCards(RequestSearchResponsiveEquipmentsDto dto) {
-        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize());
-        EStatus statusEnum = null;
+        Sort sort = dto.getSort().equalsIgnoreCase("asc")
+                ? Sort.by("creationDate").ascending()
+                : Sort.by("creationDate").descending();
 
-        // Mapeo de estado similar al frontend
+        Pageable pageable = PageRequest.of(dto.getPage(), dto.getSize(), sort);
+
+        if (dto.getSearch() != null && dto.getSearch().trim().isEmpty()) {
+            dto.setSearch(null);
+        }
+
+        Specification<BeanResponsiveCards> spec = Specification.where(null);
+
         if (dto.getEstado() != null && !dto.getEstado().equalsIgnoreCase("Todos")) {
-            statusEnum = switch (dto.getEstado()) {
+            EStatus statusEnum = switch (dto.getEstado()) {
                 case "Activa y firmada" -> EStatus.ACTIVA_FIRMADA;
                 case "Activa por firmar" -> EStatus.ACTIVA_POR_FIRMAR;
                 case "Cancelada" -> EStatus.CANCELADA;
                 default -> null;
             };
+            if (statusEnum != null) {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), statusEnum));
+            }
         }
 
-        Page<BeanResponsiveCards> responsives = responsiveCardsRepository.searchResponsivesCards(
-                dto.getSearch(),
-                statusEnum,
-                dto.getSort(),
-                pageable
-        );
+        if (dto.getSearch() != null && !dto.getSearch().trim().isEmpty()) {
+            String term = "%" + dto.getSearch().toLowerCase() + "%";
+
+            spec = spec.and((root, query, cb) -> {
+                Join<Object, Object> accessCard = root.join("accessCard");
+                Join<Object, Object> person = accessCard.join("person");
+
+                Expression<String> fullName = cb.lower(
+                        cb.concat(
+                                cb.concat(
+                                        cb.concat(person.get("name"), " "),
+                                        cb.concat(person.get("lastname"), " ")
+                                ),
+                                person.get("surname")
+                        )
+                );
+
+                return cb.like(fullName, term);
+            });
+        }
+
+
+        Page<BeanResponsiveCards> responsives = responsiveCardsRepository.findAll(spec, pageable);
 
         return responsives.map(r -> {
             BeanPerson person = r.getAccessCard().getPerson();
@@ -1086,4 +1175,5 @@ public class ResponsiveService {
             );
         });
     }
+
 }
