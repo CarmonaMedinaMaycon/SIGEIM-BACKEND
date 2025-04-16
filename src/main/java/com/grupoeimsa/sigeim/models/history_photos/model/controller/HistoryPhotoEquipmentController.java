@@ -34,11 +34,11 @@ public class HistoryPhotoEquipmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/photos")
-    public ResponseEntity<Map<String, Map<String, List<String>>>> getPhotosByEquipmentId(@RequestBody UploadHistoryEquipmentPhotosDto request) {
-        Map<String, Map<String, List<String>>> groupedPhotos = service.getGroupedPhotosByEquipment(request.getEquipmentId());
-        return ResponseEntity.ok(groupedPhotos);
-    }
+//    @PostMapping("/photos")
+//    public ResponseEntity<Map<String, Map<String, List<String>>>> getPhotosByEquipmentId(@RequestBody UploadHistoryEquipmentPhotosDto request) {
+//        Map<String, Map<String, List<String>>> groupedPhotos = service.getGroupedPhotosByEquipment(request.getEquipmentId());
+//        return ResponseEntity.ok(groupedPhotos);
+//    }
 
 
 }

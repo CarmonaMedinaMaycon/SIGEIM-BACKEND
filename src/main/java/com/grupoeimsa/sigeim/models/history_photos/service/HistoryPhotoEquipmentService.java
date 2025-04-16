@@ -9,12 +9,10 @@ import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +35,12 @@ public class HistoryPhotoEquipmentService {
             throw new CustomException("Too many photos");
         }
 
+        String uploadDir = "/opt/uploads/";
+        File uploadPath = new File(uploadDir);
+        if (!uploadPath.exists()) {
+            uploadPath.mkdirs();
+        }
+
         List<BeanHistoryPhotosEquipament> photosToSave = new ArrayList<>();
 
         for (MultipartFile photo : photos) {
@@ -44,9 +48,18 @@ public class HistoryPhotoEquipmentService {
                 throw new CustomException("El archivo " + photo.getOriginalFilename() + " supera el límite de 8MB.");
             }
 
+            // Generar nombre único para el archivo
+            String fileName = UUID.randomUUID().toString() + "_" + photo.getOriginalFilename();
+            String fullPath = uploadDir + fileName;
+
+            // Guardar archivo en disco
+            File destFile = new File(fullPath);
+            photo.transferTo(destFile);
+
+            // Guardar solo la ruta en la base de datos
             BeanHistoryPhotosEquipament historyPhoto = new BeanHistoryPhotosEquipament();
             historyPhoto.setComputerEquipament(equipament);
-            historyPhoto.setPhoto(photo.getBytes());
+            historyPhoto.setPhotos(fullPath); // Asumiendo que ahora guardas una ruta en vez de un byte[]
             historyPhoto.setPersonName(personName);
             historyPhoto.setDate(LocalDate.now());
 
@@ -57,21 +70,21 @@ public class HistoryPhotoEquipmentService {
         return "Fotos registradas";
     }
 
-    public Map<String, Map<String, List<String>>> getGroupedPhotosByEquipment(Long equipmentId) {
-        List<BeanHistoryPhotosEquipament> photos = repository.findByComputerEquipamentId(equipmentId);
-
-        return photos.stream()
-                .collect(Collectors.groupingBy(
-                        BeanHistoryPhotosEquipament::getPersonName,
-                        Collectors.groupingBy(
-                                photo -> photo.getDate().toString(),
-                                Collectors.mapping(
-                                        photo -> Base64.getEncoder().encodeToString(photo.getPhoto()),
-                                        Collectors.toList()
-                                )
-                        )
-                ));
-    }
+//    public Map<String, Map<String, List<String>>> getGroupedPhotosByEquipment(Long equipmentId) {
+//        List<BeanHistoryPhotosEquipament> photos = repository.findByComputerEquipamentId(equipmentId);
+//
+//        return photos.stream()
+//                .collect(Collectors.groupingBy(
+//                        BeanHistoryPhotosEquipament::getPersonName,
+//                        Collectors.groupingBy(
+//                                photo -> photo.getDate().toString(),
+//                                Collectors.mapping(
+//                                        photo -> Base64.getEncoder().encodeToString(photo.getPhoto()),
+//                                        Collectors.toList()
+//                                )
+//                        )
+//                ));
+//    }
 
 
 }
