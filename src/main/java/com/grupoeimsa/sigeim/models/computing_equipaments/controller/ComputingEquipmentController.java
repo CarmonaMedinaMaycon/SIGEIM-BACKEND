@@ -112,7 +112,6 @@ public class ComputingEquipmentController {
     public ResponseEntity<String> changeStatus(@RequestBody RequestChangeStatusDto request) {
         String response = computingEquipmentService.changeStatus(request.getEquipmentId(), request.getNewStatus());
         return ResponseEntity.status(HttpStatus.OK).body(response);
-
     }
 
     @PutMapping("/assign-sistemas")
@@ -137,21 +136,10 @@ public class ComputingEquipmentController {
     }
 
     @PostMapping("/generate-qr")
-    public ResponseEntity<byte[]> generateEquipmentQr(@RequestBody RequestEquipmentDetailsDto request) throws Exception {
-        byte[] qrImage = computingEquipmentService.generateEquipmentQr(request.getId());
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDisposition(ContentDisposition.attachment()
-                .filename("qr_equipment_" + request.getId() + ".png")
-                .build());
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(qrImage);
+    public ResponseEntity<String> generateEquipmentQr(@RequestBody RequestEquipmentDetailsDto request) throws Exception {
+        String base64Image = computingEquipmentService.generateEquipmentQr(request.getId());
+        return ResponseEntity.ok(base64Image);
     }
-
-
 
 
     @GetMapping("/mobile-details/{id}")

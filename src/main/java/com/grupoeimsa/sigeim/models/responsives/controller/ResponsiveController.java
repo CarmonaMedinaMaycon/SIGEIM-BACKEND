@@ -57,10 +57,14 @@ public class ResponsiveController {
     @PostMapping("/generate-equipment-responsive")
     public ResponseEntity<String> generateResponsive(@RequestBody GenerateResponsiveDto dto) {
         try {
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(dto);
+            System.out.println("DTO recibido:\n" + json);
+
             responsiveService.generateResponsive(dto);
-            return ResponseEntity.ok("Documento generado exitosamente");
+            return ResponseEntity.ok("Responsiva generada");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al generar documento: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generando responsiva");
         }
     }
 

@@ -30,7 +30,7 @@ public class BeanComputerEquipament {
     @Column(name = "computer_equipament_id", updatable = false, nullable = false)
     private Long computerEquipamentId;
 
-    @Column(name = "serial_number", nullable = false)
+    @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
     
     @Column(name="id_esset", nullable = false)
