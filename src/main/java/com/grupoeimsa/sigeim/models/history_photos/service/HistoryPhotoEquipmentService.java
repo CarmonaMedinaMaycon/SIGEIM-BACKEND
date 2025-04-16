@@ -82,6 +82,35 @@ public class HistoryPhotoEquipmentService {
             throw new CustomException("Too many photos");
         }
 
+        // Validar y eliminar si ya hay 3 usuarios
+// Obtener todas las fotos asociadas al equipo, ordenadas por fecha
+        List<BeanHistoryPhotosEquipament> existingPhotos =
+                repository.findByComputerEquipamentId(request.getEquipmentId());
+
+// Mapear los IDs de usuario únicos
+        Map<Long, List<BeanHistoryPhotosEquipament>> photosByUser = new LinkedHashMap<>();
+        for (BeanHistoryPhotosEquipament photo : existingPhotos) {
+            Long userId = photo.getComputerEquipament().getPerson().getPersonId();
+            photosByUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(photo);
+        }
+
+// Si hay fotos de 3 usuarios distintos y el actual no está entre ellos, eliminamos la más antigua
+        Long currentUserId = equipament.getPerson().getPersonId();
+        if (photosByUser.size() >= 3 && !photosByUser.containsKey(currentUserId)) {
+            BeanHistoryPhotosEquipament oldest = existingPhotos.get(0);
+
+            // Borrar el archivo físico
+            File oldestFile = new File(oldest.getPhotos());
+            if (oldestFile.exists()) {
+                oldestFile.delete();
+            }
+
+            // Borrar de la base de datos
+            repository.delete(oldest);
+        }
+
+
+        // Guardar nuevas fotos
         String uploadDir = "/opt/uploads/";
         File uploadPath = new File(uploadDir);
         if (!uploadPath.exists()) {
@@ -95,18 +124,15 @@ public class HistoryPhotoEquipmentService {
                 throw new CustomException("El archivo " + photo.getOriginalFilename() + " supera el límite de 8MB.");
             }
 
-            // Generar nombre único para el archivo
             String fileName = UUID.randomUUID().toString() + "_" + photo.getOriginalFilename();
             String fullPath = uploadDir + fileName;
 
-            // Guardar archivo en disco
             File destFile = new File(fullPath);
             photo.transferTo(destFile);
 
-            // Guardar solo la ruta en la base de datos
             BeanHistoryPhotosEquipament historyPhoto = new BeanHistoryPhotosEquipament();
             historyPhoto.setComputerEquipament(equipament);
-            historyPhoto.setPhotos(fullPath); // Asumiendo que ahora guardas una ruta en vez de un byte[]
+            historyPhoto.setPhotos(fullPath);
             historyPhoto.setPersonName(personName);
             historyPhoto.setDate(LocalDate.now());
 
