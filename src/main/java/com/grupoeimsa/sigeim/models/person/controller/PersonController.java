@@ -111,6 +111,12 @@ public class PersonController {
         return personService.getAllPersonsForResponsiveEquipmentGeneration();
     }
 
+    @PostMapping("/select-responsive-cards")
+    public List<ResponsePersonSelectDto> getPersonsForResponsiveCards() {
+        return personService.getPersonsAvailableForResponsiveCards();
+    }
+
+
     @PostMapping("/with-cellphone-details")
     public ResponseEntity<List<ReponsePersonWithPhoneDetailsDto>> getWithDetails(
             @RequestBody RequestPersonDTO request) {
@@ -147,9 +153,10 @@ public class PersonController {
     }
 
     @PostMapping("/access-card")
-    public ResponseEntity<ResponseAccessCardDto> getAccessCard(@RequestBody RequestPersonIdDto dto) {
-        return ResponseEntity.ok(personService.getAccessCardByPersonId(dto.getId()));
+    public ResponseEntity<ResponseAccessCardDto> getActiveAccessCard(@RequestBody RequestPersonIdDto dto) {
+        return ResponseEntity.ok(personService.getActiveAccessCardByPersonId(dto.getId()));
     }
+
 
 
 }

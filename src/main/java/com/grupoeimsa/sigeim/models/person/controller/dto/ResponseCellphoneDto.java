@@ -12,4 +12,5 @@ public class ResponseCellphoneDto {
     private String company;
     private String shortDialing;
     private String dateRenovation;
+    private Long cellphoneId;
 }

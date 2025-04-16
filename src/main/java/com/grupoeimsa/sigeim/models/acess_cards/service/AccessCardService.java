@@ -7,6 +7,7 @@ import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.domain.Page;
@@ -58,8 +59,18 @@ public class AccessCardService {
 
     @Transactional(rollbackFor = {SQLException.class})
     public void registerAccessCard(ResponseRegisterAccessCardDTO dto) {
-        BeanAccessCard accessCard = new BeanAccessCard();
+        BeanPerson person = personRepository.findById(dto.getPersonId())
+                .orElseThrow(() -> new CustomException("El usuario no fue encontrado"));
 
+        // Validar que no tenga ya una tarjeta activa (status == true)
+        boolean tieneActiva = person.getAccessCards().stream()
+                .anyMatch(card -> card.isStatus());
+
+        if (tieneActiva) {
+            throw new CustomException("El usuario ya tiene una tarjeta de acceso activa.");
+        }
+
+        BeanAccessCard accessCard = new BeanAccessCard();
         accessCard.setAccessBetweenBuildings(dto.isAccessBetweenBuildings());
         accessCard.setMainDoor(dto.isMainDoor());
         accessCard.setAccessTechnicalService(dto.isAccessTechnicalService());
@@ -68,14 +79,13 @@ public class AccessCardService {
         accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
         accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
 
-        // Buscar a la persona por ID y asignarla
-        BeanPerson person = personRepository.findById(dto.getPersonId())
-                .orElseThrow(() -> new CustomException("El usuario no fue encontrado"));
-
+        // Asignar la persona y marcar como activa
         accessCard.setPerson(person);
+        accessCard.setStatus(true); // ← La nueva tarjeta se registra como activa
 
         accessCardRepository.save(accessCard);
     }
+
 
     @Transactional
     public void update(ResponseRegisterAccessCardDTO dto) {
@@ -151,7 +161,8 @@ public class AccessCardService {
                 card.isMainWarehouse(),
                 card.isWarehouseBasement(),
                 card.isTechnicalServiceWarehouses(),
-                card.isTechnicalServiceWarehousesTwo()
+                card.isTechnicalServiceWarehousesTwo(),
+                card.isStatus()
         ));
     }
 
@@ -161,9 +172,21 @@ public class AccessCardService {
         BeanAccessCard accessCard = accessCardRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Tarjeta de acceso no encontrada"));
 
-        BeanPerson person = accessCard.getPerson();
-        person.setAccessCard(null); // desvinculamos primero
+        // 1. Cambiar estado de la tarjeta
+        accessCard.setStatus(false);
 
-        accessCardRepository.delete(accessCard);
+        // 2. Cancelar responsivas activas
+        if (accessCard.getResponsives() != null && !accessCard.getResponsives().isEmpty()) {
+            accessCard.getResponsives().forEach(responsive -> {
+                if (responsive.getStatus() == EStatus.ACTIVA_FIRMADA || responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR) {
+                    responsive.setStatus(EStatus.CANCELADA);
+                }
+            });
+        }
+
+        // 3. Guardar cambios
+        accessCardRepository.save(accessCard);
     }
+
+
 }
