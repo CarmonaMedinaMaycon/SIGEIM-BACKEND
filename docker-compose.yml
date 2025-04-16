@@ -11,7 +11,7 @@ services:
       MYSQL_PASSWORD: password_sigeim
     volumes:
       - ./mysql-data:/var/lib/mysql
-      - /home/ubuntu/uploads:/opt/uploads
+      - ./uploads:/opt/uploads
     ports:
       - "3306:3306"
 
