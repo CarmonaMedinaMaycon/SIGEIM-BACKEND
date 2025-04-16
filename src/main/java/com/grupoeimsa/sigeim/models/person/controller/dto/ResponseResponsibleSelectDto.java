@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ResponseResponsibleSelectDto {
     private Long personId;
     private String fullName;
+    private String departament;
 }

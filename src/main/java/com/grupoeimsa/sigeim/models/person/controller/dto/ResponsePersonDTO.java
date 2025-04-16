@@ -40,7 +40,7 @@ public class ResponsePersonDTO {
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipaments; // Cambio aquí
     private BeanLicense license;
-    private BeanAccessCard accessCard;
+    private List<BeanAccessCard> accessCard;
 
     public ResponsePersonDTO(BeanPerson beanPerson) {
         this.personId = beanPerson.getPersonId();
@@ -64,6 +64,6 @@ public class ResponsePersonDTO {
         this.cellphone = beanPerson.getCellphone();
         this.computerEquipaments = beanPerson.getComputerEquipaments(); // Cambio aquí
         this.license = beanPerson.getLicense();
-        this.accessCard = beanPerson.getAccessCard();
+        this.accessCard = beanPerson.getAccessCards();
     }
 }

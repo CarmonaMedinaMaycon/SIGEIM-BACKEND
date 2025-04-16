@@ -13,6 +13,7 @@ public interface IPerson extends JpaRepository<BeanPerson, Long> {
         boolean existsByEmail(String email);
 
 
+
         @Query("SELECT p FROM BeanPerson p WHERE " +
                 "(:search IS NULL OR " +
                 "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +

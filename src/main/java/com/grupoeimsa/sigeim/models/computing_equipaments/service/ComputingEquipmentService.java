@@ -24,6 +24,7 @@ import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -64,7 +65,7 @@ public class ComputingEquipmentService {
     }
 
 
-    public byte[] generateEquipmentQr(Long id) throws Exception {
+    public String generateEquipmentQr(Long id) throws Exception {
         BeanComputerEquipament equipment = repository.findById(id)
                 .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + id));
 
@@ -99,12 +100,20 @@ public class ComputingEquipmentService {
         data.put("invoice", equipment.getInvoice() != null ? equipment.getInvoice().getInvoiceId() : null);
         data.put("person", equipment.getPerson().getPersonId());
 
+        // Convertimos a JSON
         String json = new ObjectMapper().writeValueAsString(data);
-        return generateQRCodeImage(json, 500, 500);
+
+        // Generamos el QR como imagen PNG
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(json, BarcodeFormat.QR_CODE, 500, 500);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
+        byte[] imageBytes = outputStream.toByteArray();
+
+        // Codificamos a base64 y retornamos como String
+        return Base64.getEncoder().encodeToString(imageBytes);
     }
-
-
-
 
 
     @Transactional
@@ -264,6 +273,25 @@ public class ComputingEquipmentService {
 
         equipment.setSerialNumber(dto.getSerialNumber());
         equipment.setIdEsset(dto.getIdEsset());
+
+        BeanPerson responsableAnterior = equipment.getPerson();
+
+// Comprobar si cambió el responsable
+        boolean cambioDeResponsable = !responsableAnterior.getPersonId().equals(dto.getPersonId());
+
+// Comprobar si alguno es "Sistemas"
+        boolean eraSistemas = "Sistemas".equalsIgnoreCase(responsableAnterior.getName());
+        boolean esSistemas = "Sistemas".equalsIgnoreCase(person.getName());
+
+// Si cambió el responsable y no es un cambio de Sistemas → Sistemas
+        if (cambioDeResponsable && (!eraSistemas || !esSistemas)) {
+            List<BeanResponsiveEquipaments> responsivas = equipment.getResponsiveEquipaments();
+
+            responsivas.stream()
+                    .filter(r -> r.getStatus() == EStatus.ACTIVA_FIRMADA || r.getStatus() == EStatus.ACTIVA_POR_FIRMAR)
+                    .forEach(r -> r.setStatus(EStatus.CANCELADA));
+        }
+
         equipment.setPerson(person);
         equipment.setDepartament(dto.getDepartament());
         equipment.setEnterprise(dto.getEnterprise());
@@ -410,12 +438,30 @@ public class ComputingEquipmentService {
         BeanComputerEquipament equipament = repository.findById(equipamentId)
                 .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + equipamentId));
 
+        if (CEStatus.BAJA.equals(equipament.getStatus())) {
+            throw new CustomException("No se puede cambiar el estado, el equipo ya está dado de baja");
+        }
+
         if (equipament.getStatus().equals(newStatus)) {
             throw new CustomException("El estado ya es el mismo que el actual");
         }
 
+        if ("Sistemas".equals(equipament.getPerson() != null ? equipament.getPerson().getName() : "") &&
+                CEStatus.REPARACION.equals(equipament.getStatus()) &&
+                CEStatus.OCUPADO.equals(newStatus)) {
+            throw new CustomException("El estado no puede pasar a ocupado si el responsable es sistemas y el equipo está en reparación");
+        }
+
         if (equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.OCUPADO)){
             throw new CustomException("El estado no puede pasar a ocupado si el responsable es sistemas");
+        }
+
+        if (!equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.BAJA)){
+            throw new CustomException("El equipo no puede ser dado de baja si tiene un responsable asignado");
+        }
+
+        if (!equipament.getPerson().getName().isEmpty() && newStatus.equals(CEStatus.OCUPADO)){
+            throw new CustomException("El estado no puede pasar a ocupado si el equipo tiene un responsable asignado");
         }
 
         if (!equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.DISPONIBLE)){
@@ -502,6 +548,53 @@ public class ComputingEquipmentService {
             for (int i = 0; i < headers.length-1; i++) {
                 sheet.autoSizeColumn(i);
             }
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        return baos.toByteArray();
+    }
+
+    public byte[] generateExcelSummaryFile() throws IOException {
+        List<BeanComputerEquipament> equipments = repository.findAll();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Resumen de Equipos");
+
+        String[] headers = { "Número de Serie", "Precio", "Fecha de Compra", "Descripción" };
+
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+
+        int rowNum = 1;
+        for (BeanComputerEquipament equipment : equipments) {
+            Row row = sheet.createRow(rowNum++);
+
+            String descripcion = String.format(
+                    "Este equipo es el modelo %s con %s de ram y %s de almacenamiento con un procesador %s",
+                    getSafeValue(equipment.getModel()),
+                    getSafeValue(equipment.getRamMemoryCapacity()),
+                    getSafeValue(equipment.getMemoryCapacity()),
+                    getSafeValue(equipment.getProcessor())
+            );
+
+            row.createCell(0).setCellValue(getSafeValue(equipment.getSerialNumber()));
+            if (equipment.getPrice() != null) {
+                row.createCell(1).setCellValue(equipment.getPrice());
+            } else {
+                row.createCell(1).setBlank(); // o setCellValue("")
+            }
+            row.createCell(2).setCellValue(getSafeValue(equipment.getPurchaseDate()));
+            row.createCell(3).setCellValue(descripcion);
+        }
+
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
