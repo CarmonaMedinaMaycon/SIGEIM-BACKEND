@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,9 +24,8 @@ public class BeanHistoryPhotosEquipament {
     @Column(name = "history_equipament_id", updatable = false, nullable = false)
     private Long historyEquipamentId;
 
-    @Lob
-    @Column(name = "photo", columnDefinition = "LONGBLOB")
-    private byte[] photo;
+    @Column(name = "photos")
+    private String photos;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "computer_equipament_id", nullable = false)
