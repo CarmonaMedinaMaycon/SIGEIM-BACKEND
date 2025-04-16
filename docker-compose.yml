@@ -11,7 +11,6 @@ services:
       MYSQL_PASSWORD: password_sigeim
     volumes:
       - ./mysql-data:/var/lib/mysql
-      - ./uploads:/opt/uploads
     ports:
       - "3306:3306"
 
@@ -25,6 +24,8 @@ services:
       SPRING_DATASOURCE_USERNAME: sigeim_user
       SPRING_DATASOURCE_PASSWORD: password_sigeim
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    volumes:
+      - ./uploads:/opt/uploads
     ports:
       - "8081:8081"
     depends_on:
