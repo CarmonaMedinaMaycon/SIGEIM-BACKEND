@@ -553,6 +553,53 @@ public class ComputingEquipmentService {
         return baos.toByteArray();
     }
 
+    public byte[] generateExcelSummaryFile() throws IOException {
+        List<BeanComputerEquipament> equipments = repository.findAll();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Resumen de Equipos");
+
+        String[] headers = { "Número de Serie", "Precio", "Fecha de Compra", "Descripción" };
+
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+
+        int rowNum = 1;
+        for (BeanComputerEquipament equipment : equipments) {
+            Row row = sheet.createRow(rowNum++);
+
+            String descripcion = String.format(
+                    "Este equipo es el modelo %s con %s de ram y %s de almacenamiento con un procesador %s",
+                    getSafeValue(equipment.getModel()),
+                    getSafeValue(equipment.getRamMemoryCapacity()),
+                    getSafeValue(equipment.getMemoryCapacity()),
+                    getSafeValue(equipment.getProcessor())
+            );
+
+            row.createCell(0).setCellValue(getSafeValue(equipment.getSerialNumber()));
+            if (equipment.getPrice() != null) {
+                row.createCell(1).setCellValue(equipment.getPrice());
+            } else {
+                row.createCell(1).setBlank(); // o setCellValue("")
+            }
+            row.createCell(2).setCellValue(getSafeValue(equipment.getPurchaseDate()));
+            row.createCell(3).setCellValue(descripcion);
+        }
+
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        return baos.toByteArray();
+    }
+
 
     private String getSafeValue(Object value) {
         return (value != null) ? value.toString() : "SIN-INF";

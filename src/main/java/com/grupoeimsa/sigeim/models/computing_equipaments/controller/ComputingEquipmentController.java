@@ -135,6 +135,21 @@ public class ComputingEquipmentController {
                 .body(resource);
     }
 
+    @GetMapping("/export-summary")
+    public ResponseEntity<InputStreamResource> exportSummaryExcel() throws IOException {
+        byte[] excelData = computingEquipmentService.generateExcelSummaryFile();
+
+        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(excelData));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
+    }
+
+
     @PostMapping("/generate-qr")
     public ResponseEntity<String> generateEquipmentQr(@RequestBody RequestEquipmentDetailsDto request) throws Exception {
         String base64Image = computingEquipmentService.generateEquipmentQr(request.getId());
