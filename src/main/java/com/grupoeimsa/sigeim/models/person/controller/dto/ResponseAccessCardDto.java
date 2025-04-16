@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseAccessCardDto {
+    private Long accessCardId;
     private boolean accessBetweenBuildings;
     private boolean mainDoor;
     private boolean accessTechnicalService;
@@ -15,4 +16,5 @@ public class ResponseAccessCardDto {
     private boolean warehouseBasement;
     private boolean technicalServiceWarehouses;
     private boolean technicalServiceWarehousesTwo;
+    private boolean status;
 }

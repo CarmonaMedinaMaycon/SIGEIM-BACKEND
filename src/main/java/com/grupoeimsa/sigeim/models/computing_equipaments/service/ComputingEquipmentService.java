@@ -438,6 +438,10 @@ public class ComputingEquipmentService {
         BeanComputerEquipament equipament = repository.findById(equipamentId)
                 .orElseThrow(() -> new CustomException("Equipo no encontrado con ID: " + equipamentId));
 
+        if (CEStatus.BAJA.equals(equipament.getStatus())) {
+            throw new CustomException("No se puede cambiar el estado, el equipo ya está dado de baja");
+        }
+
         if (equipament.getStatus().equals(newStatus)) {
             throw new CustomException("El estado ya es el mismo que el actual");
         }

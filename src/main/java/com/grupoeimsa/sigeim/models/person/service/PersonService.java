@@ -11,6 +11,7 @@ import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCards;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
@@ -26,8 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -110,6 +113,11 @@ public class PersonService {
         BeanPerson defaultPerson = personRepository.findById(1L)
                 .orElseThrow(() -> new CustomException("Default person not found"));
 
+        // Validar si ya está desactivado. Si es así, no permitir reactivación
+        if (!person.getStatus()) {
+            throw new CustomException("No se puede reactivar un empleado desactivado permanentemente.");
+        }
+
         // Validar si la persona tiene equipos asignados
         if (!person.getComputerEquipaments().isEmpty()) {
             // Iterar sobre todos los equipos y reasignarlos
@@ -138,7 +146,7 @@ public class PersonService {
 
 
         // Cambiar el estado de la persona
-        person.setStatus(!person.getStatus());
+        person.setStatus(false);
         personRepository.save(person);
     }
 
@@ -200,7 +208,8 @@ public class PersonService {
                 .filter(BeanPerson::getStatus)
                 .map(person -> new ResponseResponsibleSelectDto(
                         person.getPersonId(),
-                        person.getFullName()
+                        person.getFullName(),
+                        person.getDepartament()
                 ))
                 .collect(Collectors.toList());
     }
@@ -256,16 +265,20 @@ public class PersonService {
         List<BeanPerson> personas = personasPage.getContent();
 
         return personas.stream()
-                .filter(p -> p.getAccessCard() == null)
+                .filter(p -> {
+                    List<BeanAccessCard> cards = p.getAccessCards();
+                    return cards == null || cards.isEmpty() || cards.stream().allMatch(card -> !card.isStatus());
+                })
                 .map(p -> new ResponsePersonWithoutAccessCardDto(
                         p.getPersonId(),
                         p.getFullName(),
                         p.getDepartament(),
                         p.getEnterprise(),
-                        false // No tiene tarjeta
+                        false // Confirmamos que no tiene tarjetas activas
                 ))
                 .toList();
     }
+
 
 
 
@@ -286,6 +299,42 @@ public class PersonService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<ResponsePersonSelectDto> getPersonsAvailableForResponsiveCards() {
+        List<BeanPerson> persons = personRepository.findAll();
+        Set<Long> addedPersonIds = new HashSet<>();
+
+        return persons.stream()
+                .filter(person -> Boolean.TRUE.equals(person.getStatus()))
+                .filter(person -> !"SISTEMAS NA NA".equalsIgnoreCase(person.getFullName()))
+                .filter(person -> {
+                    List<BeanAccessCard> activeCards = person.getAccessCards().stream()
+                            .filter(BeanAccessCard::isStatus)
+                            .toList();
+
+                    if (activeCards.isEmpty()) return false;
+
+                    return activeCards.stream().allMatch(card ->
+                            card.getResponsives().stream()
+                                    .noneMatch(r ->
+                                            r.getStatus() == EStatus.ACTIVA_POR_FIRMAR ||
+                                                    r.getStatus() == EStatus.ACTIVA_FIRMADA
+                                    )
+                    );
+                })
+                .filter(person -> addedPersonIds.add(person.getPersonId())) // ← evita duplicados
+                .map(person -> new ResponsePersonSelectDto(
+                        person.getPersonId(),
+                        person.getFullName(),
+                        person.getDepartament(),
+                        person.getPosition()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+
+
 
     public Page<ResponseTablePeopleDto> getPeopleForTable(String search, String departament, String enterprise, Boolean status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
@@ -471,24 +520,28 @@ public class PersonService {
     }
 
 
-    public ResponseAccessCardDto getAccessCardByPersonId(Long id) {
-        BeanAccessCard accessCard = acessCardRepository.findByPersonPersonId(id)
-                .orElse(null);
+    public ResponseAccessCardDto getActiveAccessCardByPersonId(Long id) {
+        BeanPerson person = personRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Empleado no encontrado"));
 
-        if (accessCard == null) {
-            return null;
-        }
-
-        return new ResponseAccessCardDto(
-                accessCard.isAccessBetweenBuildings(),
-                accessCard.isMainDoor(),
-                accessCard.isAccessTechnicalService(),
-                accessCard.isMainWarehouse(),
-                accessCard.isWarehouseBasement(),
-                accessCard.isTechnicalServiceWarehouses(),
-                accessCard.isTechnicalServiceWarehousesTwo()
-        );
+        return person.getAccessCards().stream()
+                .filter(BeanAccessCard::isStatus) // solo tarjeta activa
+                .findFirst()
+                .map(card -> new ResponseAccessCardDto(
+                        card.getAccessCardId(),
+                        card.isAccessBetweenBuildings(),
+                        card.isMainDoor(),
+                        card.isAccessTechnicalService(),
+                        card.isMainWarehouse(),
+                        card.isWarehouseBasement(),
+                        card.isTechnicalServiceWarehouses(),
+                        card.isTechnicalServiceWarehousesTwo(),
+                        card.isStatus()
+                ))
+                .orElse(null); // retorna null si no hay tarjeta activa
     }
+
+
 
 
 }
