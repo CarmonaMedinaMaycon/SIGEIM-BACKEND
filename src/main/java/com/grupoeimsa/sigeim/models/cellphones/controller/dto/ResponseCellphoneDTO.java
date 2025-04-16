@@ -49,12 +49,15 @@ public class ResponseCellphoneDTO {
         this.cellphoneId = cellphone.getCellphoneId();
         this.equipamentName = cellphone.getEquipamentName();
         this.legalName = cellphone.getLegalName();
+        this.equipamentName = cellphone.getEquipamentName();
         this.company = cellphone.getCompany();
         this.shortDialing = cellphone.getShortDialing();
         this.dateRenovation = cellphone.getDateRenovation();
         this.imei = cellphone.getImei();
         this.comments = cellphone.getComments();
         this.person = cellphone.getPerson();
+        this.status = cellphone.getStatus();
+        this.whatsappBussiness = cellphone.getWhatsappBussiness();
         this.responsiveCellphone = cellphone.getResponsiveCellphones();
         this.historyPhotosCellphone = cellphone.getHistoryPhotosCellphones();
     }

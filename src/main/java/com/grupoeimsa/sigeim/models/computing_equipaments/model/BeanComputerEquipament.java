@@ -111,4 +111,5 @@ public class BeanComputerEquipament {
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference(value = "person-equipment")
     private BeanPerson person;
+    
 }
