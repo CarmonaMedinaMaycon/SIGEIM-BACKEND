@@ -378,20 +378,6 @@ public class ComputingEquipmentService {
         BeanComputerEquipament equipo = repository.findById(id)
                 .orElseThrow(() -> new CustomException("Equipment not found with id: " + id));
 
-//        Map<String, List<String>> groupedPhotos = equipo.getHistoryPhotosEquipament().stream()
-//                .collect(Collectors.groupingBy(
-//                        p -> p.getDate() + " - " + p.getPersonName(),
-//                        Collectors.mapping(p -> Base64.getEncoder().encodeToString(p.getPhoto()), Collectors.toList())
-//                ));
-
-//
-//        List<HistoryEquipmentPhotosGroupDto> historyPhotos = groupedPhotos.entrySet().stream()
-//                .map(entry -> {
-//                    String[] parts = entry.getKey().split(" - ");
-//                    return new HistoryEquipmentPhotosGroupDto(LocalDate.parse(parts[0]), parts[1], entry.getValue());
-//                })
-//                .toList();
-
         return new ResponseSeeDetailsEquipmentDto(
                 equipo.getSerialNumber(),
                 equipo.getIdEsset(),

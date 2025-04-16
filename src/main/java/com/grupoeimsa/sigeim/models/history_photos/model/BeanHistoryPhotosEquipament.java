@@ -24,8 +24,7 @@ public class BeanHistoryPhotosEquipament {
     @Column(name = "history_equipament_id", updatable = false, nullable = false)
     private Long historyEquipamentId;
 
-    @Lob
-    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    @Column(name = "photos")
     private String photos;
 
     @ManyToOne(fetch = FetchType.LAZY)
