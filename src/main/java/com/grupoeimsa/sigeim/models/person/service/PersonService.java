@@ -12,6 +12,7 @@ import com.grupoeimsa.sigeim.models.person.controller.dto.*;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
@@ -341,17 +342,31 @@ public class PersonService {
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Empleado no encontrado"));
 
-        return person.getComputerEquipaments().stream().map(e -> new ResponseComputerEquipmentDto(
-                e.getComputerEquipamentId(),
-                e.getSerialNumber(),
-                e.getIdEsset(),
-                e.getBrand(),
-                e.getModel(),
-                e.getType(),
-                e.getStatus().toString(),
-                e.getAssetNumber()
-        )).collect(Collectors.toList());
+        return person.getComputerEquipaments().stream().map(e -> {
+            // Buscar la primera responsiva activa o por firmar
+            Optional<BeanResponsiveEquipaments> activeResponsive = e.getResponsiveEquipaments().stream()
+                    .filter(r -> r.getStatus() == EStatus.ACTIVA_FIRMADA || r.getStatus() == EStatus.ACTIVA_POR_FIRMAR)
+                    .findFirst();
+
+            boolean hasResponsiveActive = activeResponsive.isPresent();
+            Long responsiveId = activeResponsive.map(BeanResponsiveEquipaments::getResponsiveEquipamentId).orElse(null);
+
+            return new ResponseComputerEquipmentDto(
+                    e.getComputerEquipamentId(),
+                    e.getSerialNumber(),
+                    e.getIdEsset(),
+                    e.getBrand(),
+                    e.getModel(),
+                    e.getType(),
+                    e.getStatus().toString(),
+                    e.getAssetNumber(),
+                    hasResponsiveActive,
+                    responsiveId
+            );
+        }).collect(Collectors.toList());
     }
+
+
 
     public List<ResponseCellphoneDto> getCellphonesByPersonId(Long id) {
         BeanPerson person = personRepository.findById(id)
@@ -366,7 +381,8 @@ public class PersonService {
                 cell.getImei(),
                 cell.getCompany(),
                 cell.getShortDialing(),
-                cell.getDateRenovation() != null ? cell.getDateRenovation().toString() : "NA"
+                cell.getDateRenovation() != null ? cell.getDateRenovation().toString() : "NA",
+                cell.getCellphoneId()
         )).collect(Collectors.toList());
     }
 

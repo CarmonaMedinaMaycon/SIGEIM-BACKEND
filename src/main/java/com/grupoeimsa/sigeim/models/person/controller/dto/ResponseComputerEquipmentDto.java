@@ -16,4 +16,6 @@ public class ResponseComputerEquipmentDto {
     private String type;
     private String status;
     private String assetNumber;
+    private boolean hasSignedOrPendingResponsive;
+    private Long responsiveId;
 }
