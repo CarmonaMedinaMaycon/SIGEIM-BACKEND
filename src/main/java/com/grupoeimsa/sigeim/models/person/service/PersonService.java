@@ -262,6 +262,8 @@ public class PersonService {
                 pageable
         );
 
+        //avr
+
         List<BeanPerson> personas = personasPage.getContent();
 
         return personas.stream()
