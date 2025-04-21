@@ -4,6 +4,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEqui
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.IHistoryPhotosEquipament;
+import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.PhotoHistoryGroupDto;
 import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.UploadHistoryEquipmentPhotosDto;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.stereotype.Service;
@@ -25,53 +26,6 @@ public class HistoryPhotoEquipmentService {
         this.computerEquipmentRepository = computerEquipmentRepository;
     }
 
-//    public String uploadPhotos(UploadHistoryEquipmentPhotosDto request, List<MultipartFile> photos) throws IOException {
-//        BeanComputerEquipament equipament = computerEquipmentRepository.findById(request.getEquipmentId())
-//                .orElseThrow(() -> new CustomException("Equipment not found"));
-//
-//        String personName = equipament.getPerson().getFullName();
-//
-//        if (photos.size() > 9) {
-//            throw new CustomException("Too many photos");
-//        }
-//
-//        List<BeanHistoryPhotosEquipament> photosToSave = new ArrayList<>();
-//
-//        for (MultipartFile photo : photos) {
-//            if (photo.getSize() > 8 * 1024 * 1024) {
-//                throw new CustomException("El archivo " + photo.getOriginalFilename() + " supera el límite de 8MB.");
-//            }
-//
-//            BeanHistoryPhotosEquipament historyPhoto = new BeanHistoryPhotosEquipament();
-//            historyPhoto.setComputerEquipament(equipament);
-//            historyPhoto.setPhoto(photo.getBytes());
-//            historyPhoto.setPersonName(personName);
-//            historyPhoto.setDate(LocalDate.now());
-//
-//            photosToSave.add(historyPhoto);
-//        }
-//
-//        repository.saveAll(photosToSave);
-//        return "Fotos registradas";
-//    }
-//
-//    public Map<String, Map<String, List<String>>> getGroupedPhotosByEquipment(Long equipmentId) {
-//        List<BeanHistoryPhotosEquipament> photos = repository.findByComputerEquipamentId(equipmentId);
-//
-//        return photos.stream()
-//                .collect(Collectors.groupingBy(
-//                        BeanHistoryPhotosEquipament::getPersonName,
-//                        Collectors.groupingBy(
-//                                photo -> photo.getDate().toString(),
-//                                Collectors.mapping(
-//                                        photo -> Base64.getEncoder().encodeToString(photo.getPhoto()),
-//                                        Collectors.toList()
-//                                )
-//                        )
-//                ));
-//    }
-
-
     public String uploadPhotos(UploadHistoryEquipmentPhotosDto request, List<MultipartFile> photos) throws IOException {
         BeanComputerEquipament equipament = computerEquipmentRepository.findById(request.getEquipmentId())
                 .orElseThrow(() -> new CustomException("Equipment not found"));
@@ -82,19 +36,15 @@ public class HistoryPhotoEquipmentService {
             throw new CustomException("Too many photos");
         }
 
-        // Validar y eliminar si ya hay 3 usuarios
-// Obtener todas las fotos asociadas al equipo, ordenadas por fecha
         List<BeanHistoryPhotosEquipament> existingPhotos =
                 repository.findByComputerEquipamentId(request.getEquipmentId());
 
-// Mapear los IDs de usuario únicos
         Map<Long, List<BeanHistoryPhotosEquipament>> photosByUser = new LinkedHashMap<>();
         for (BeanHistoryPhotosEquipament photo : existingPhotos) {
             Long userId = photo.getComputerEquipament().getPerson().getPersonId();
             photosByUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(photo);
         }
 
-// Si hay fotos de 3 usuarios distintos y el actual no está entre ellos, eliminamos la más antigua
         Long currentUserId = equipament.getPerson().getPersonId();
         if (photosByUser.size() >= 3 && !photosByUser.containsKey(currentUserId)) {
             BeanHistoryPhotosEquipament oldest = existingPhotos.get(0);
@@ -105,12 +55,10 @@ public class HistoryPhotoEquipmentService {
                 oldestFile.delete();
             }
 
-            // Borrar de la base de datos
             repository.delete(oldest);
         }
 
 
-        // Guardar nuevas fotos
         String uploadDir = "/opt/uploads/";
         File uploadPath = new File(uploadDir);
         if (!uploadPath.exists()) {
@@ -141,6 +89,30 @@ public class HistoryPhotoEquipmentService {
 
         repository.saveAll(photosToSave);
         return "Fotos registradas";
+    }
+
+    public List<PhotoHistoryGroupDto> getPhotoHistoryByEquipmentId(Long equipmentId) {
+        List<BeanHistoryPhotosEquipament> allPhotos =
+                repository.findByComputerEquipamentId(equipmentId);
+
+        Map<String, List<BeanHistoryPhotosEquipament>> grouped = allPhotos.stream()
+                .collect(Collectors.groupingBy(p -> p.getDate() + "::" + p.getPersonName()));
+
+        return grouped.entrySet().stream()
+                .map(entry -> {
+                    String[] keyParts = entry.getKey().split("::");
+                    LocalDate date = LocalDate.parse(keyParts[0]);
+                    String personName = keyParts[1];
+
+                    List<String> photoPaths = entry.getValue().stream()
+                            .map(BeanHistoryPhotosEquipament::getPhotos)
+                            .collect(Collectors.toList());
+
+                    return new PhotoHistoryGroupDto(personName, date, photoPaths);
+                })
+                .sorted(Comparator.comparing(PhotoHistoryGroupDto::getDate).reversed())
+                .limit(3)
+                .collect(Collectors.toList());
     }
 
 

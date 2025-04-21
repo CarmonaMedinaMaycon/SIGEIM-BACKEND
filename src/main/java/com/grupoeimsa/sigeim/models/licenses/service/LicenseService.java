@@ -376,7 +376,7 @@ public class LicenseService {
                 .orElseThrow(() -> new RuntimeException("Licencia no encontrada"));
 
         // Baja lógica: cambiar el status a false
-        license.setStatus(false);
+        license.setStatus(!license.isStatus());
         licensesRepository.save(license);
 
         List<BeanResponsiveLicenses> responsives = responsiveLicensesRepository
@@ -384,7 +384,7 @@ public class LicenseService {
 
         if (responsives != null && !responsives.isEmpty()) {
             for (BeanResponsiveLicenses resp : responsives) {
-                resp.setStatus(EStatus.CANCELADA); // aquí puedes seguir usando enum
+                resp.setStatus(EStatus.CANCELADA);
             }
             responsiveLicensesRepository.saveAll(responsives);
         }

@@ -62,12 +62,9 @@ public class AccessCardService {
         BeanPerson person = personRepository.findById(dto.getPersonId())
                 .orElseThrow(() -> new CustomException("El usuario no fue encontrado"));
 
-        // Validar que no tenga ya una tarjeta activa (status == true)
-        boolean tieneActiva = person.getAccessCards().stream()
-                .anyMatch(card -> card.isStatus());
-
-        if (tieneActiva) {
-            throw new CustomException("El usuario ya tiene una tarjeta de acceso activa.");
+        // Validar que no tenga ya una tarjeta asignada (sin importar status)
+        if (person.getAccessCard() != null) {
+            throw new CustomException("El usuario ya tiene una tarjeta de acceso registrada.");
         }
 
         BeanAccessCard accessCard = new BeanAccessCard();
@@ -79,12 +76,11 @@ public class AccessCardService {
         accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
         accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
 
-        // Asignar la persona y marcar como activa
         accessCard.setPerson(person);
-        accessCard.setStatus(true); // ← La nueva tarjeta se registra como activa
 
         accessCardRepository.save(accessCard);
     }
+
 
 
     @Transactional
@@ -161,8 +157,7 @@ public class AccessCardService {
                 card.isMainWarehouse(),
                 card.isWarehouseBasement(),
                 card.isTechnicalServiceWarehouses(),
-                card.isTechnicalServiceWarehousesTwo(),
-                card.isStatus()
+                card.isTechnicalServiceWarehousesTwo()
         ));
     }
 
@@ -172,10 +167,7 @@ public class AccessCardService {
         BeanAccessCard accessCard = accessCardRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Tarjeta de acceso no encontrada"));
 
-        // 1. Cambiar estado de la tarjeta
-        accessCard.setStatus(false);
-
-        // 2. Cancelar responsivas activas
+        // 1. Cancelar responsivas activas
         if (accessCard.getResponsives() != null && !accessCard.getResponsives().isEmpty()) {
             accessCard.getResponsives().forEach(responsive -> {
                 if (responsive.getStatus() == EStatus.ACTIVA_FIRMADA || responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR) {
@@ -184,9 +176,10 @@ public class AccessCardService {
             });
         }
 
-        // 3. Guardar cambios
-        accessCardRepository.save(accessCard);
+        // 2. Eliminar la tarjeta del sistema
+        accessCardRepository.delete(accessCard);
     }
+
 
 
 }

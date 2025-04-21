@@ -69,7 +69,6 @@ public class BeanPerson {
     @Column(name="comments", nullable=false)
     private String comments;
 
-
     @Column(name = "email")
     private String email;
     @Column(name = "status")
@@ -87,9 +86,10 @@ public class BeanPerson {
     @JsonManagedReference("person-license")
     private BeanLicense license;
 
-    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("person-accesscard")
-    private List<BeanAccessCard> accessCards;
+    private BeanAccessCard accessCard;
+
 
     public String getFullName() {
         return name + " " + lastname + (surname != null ? " " + surname : "");

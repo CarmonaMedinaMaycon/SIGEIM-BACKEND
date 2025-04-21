@@ -11,6 +11,8 @@ import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
 import com.grupoeimsa.sigeim.models.person.model.IPerson;
+import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCellphone;
+import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -120,15 +122,34 @@ public class CellphoneService {
 
 
     @Transactional
-    public void enableDisable(Long id){
-        BeanCellphone cellphone = cellphoneRepository.findById(id).orElseThrow(() -> new CustomException("Person not found"));
-        cellphone.setStatus(!cellphone.getStatus());
-        BeanPerson defaultPerson = personRepository.findById(1L)
-                .orElseThrow(() -> new CustomException("Default person not found"));
+    public void enableDisable(Long id) {
+        BeanCellphone cellphone = cellphoneRepository.findById(id)
+                .orElseThrow(() -> new CustomException("Celular no encontrado"));
 
-        cellphone.setPerson(defaultPerson);
+        boolean wasActive = Boolean.TRUE.equals(cellphone.getStatus()); // evitar null
+        boolean willBeDisabled = wasActive; // ya que vamos a invertir el estado
+
+        // Invertir estado
+        cellphone.setStatus(!wasActive);
+
+        // Si se va a desactivar, cancelar responsivas activas o por firmar
+        if (willBeDisabled && cellphone.getResponsiveCellphones() != null) {
+            for (BeanResponsiveCellphone resp : cellphone.getResponsiveCellphones()) {
+                resp.setStatus(EStatus.CANCELADA);
+            }
+        }
+
+        // Asignar persona default si se desactiva
+        if (willBeDisabled) {
+            BeanPerson defaultPerson = personRepository.findById(1L)
+                    .orElseThrow(() -> new CustomException("Persona por defecto no encontrada"));
+            cellphone.setPerson(defaultPerson);
+        }
+
+        // Guardar cambios (gracias a la relación bidireccional, puede guardar en cascada si está configurado)
         cellphoneRepository.save(cellphone);
     }
+
 
     @Transactional
     public void update(ResponseRegisterCellphone registerCellphone) {

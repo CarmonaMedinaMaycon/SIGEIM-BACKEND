@@ -30,6 +30,11 @@ public class InvoiceService {
         this.repository = repository;
     }
 
+    public BeanInvoice updateInvoice(BeanInvoice invoice) {
+        return repository.save(invoice);
+    }
+
+
     public BeanInvoice saveInvoice(InvoiceDto invoiceDTO) throws IOException {
         // Verifica si ya existe una factura con el mismo folio
         if (findByInvoiceFolio(invoiceDTO.getInvoiceFolio()).isPresent()) {

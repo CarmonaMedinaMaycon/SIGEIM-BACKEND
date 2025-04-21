@@ -276,15 +276,11 @@ public class ComputingEquipmentService {
 
         BeanPerson responsableAnterior = equipment.getPerson();
 
-// Comprobar si cambió el responsable
         boolean cambioDeResponsable = !responsableAnterior.getPersonId().equals(dto.getPersonId());
 
-// Comprobar si alguno es "Sistemas"
-        boolean eraSistemas = "Sistemas".equalsIgnoreCase(responsableAnterior.getName());
         boolean esSistemas = "Sistemas".equalsIgnoreCase(person.getName());
 
-// Si cambió el responsable y no es un cambio de Sistemas → Sistemas
-        if (cambioDeResponsable && (!eraSistemas || !esSistemas)) {
+        if (cambioDeResponsable && esSistemas) {
             List<BeanResponsiveEquipaments> responsivas = equipment.getResponsiveEquipaments();
 
             responsivas.stream()
@@ -313,6 +309,7 @@ public class ComputingEquipmentService {
         equipment.setStatus("Sistemas".equalsIgnoreCase(person.getName()) ? CEStatus.DISPONIBLE : CEStatus.OCUPADO);
 
         if (Boolean.TRUE.equals(dto.getHasInvoice())) {
+            System.out.println("DTO enviado a findOrUpdateInvoice: " + dto);
             BeanInvoice invoice = findOrUpdateInvoice(dto);
             equipment.setInvoice(invoice);
         } else {
@@ -323,25 +320,27 @@ public class ComputingEquipmentService {
         return "Equipo actualizado correctamente";
     }
 
+
+
     private BeanInvoice findOrUpdateInvoice(RequestRegisterComputingEquipmentDto dto) throws IOException {
-        Optional<BeanInvoice> existingInvoiceOpt = invoiceService.findByInvoiceFolio(dto.getInvoiceFolio());
+        BeanInvoice existingInvoice = invoiceService
+                .findByInvoiceFolio(dto.getInvoiceFolio())
+                .orElseThrow(() -> new CustomException("Factura no encontrada con folio: " + dto.getInvoiceFolio()));
 
-        if (existingInvoiceOpt.isPresent()) {
-            return existingInvoiceOpt.get();
-        }
+        System.out.println("DTO RECIBIDO EN findOrUpdateInvoice: " + dto);
 
-        BeanInvoice newInvoice = new BeanInvoice();
-        newInvoice.setSupplier(dto.getSupplierInvoice());
-        newInvoice.setInvoiceFolio(dto.getInvoiceFolio());
-        newInvoice.setInvoiceDate(dto.getInvoiceDate());
-        newInvoice.setTotal_iva(dto.getTotalIva());
+        // Actualiza los campos necesarios
+        existingInvoice.setSupplier(dto.getSupplierInvoice());
+        existingInvoice.setInvoiceDate(dto.getInvoiceDate());
+        existingInvoice.setTotal_iva(dto.getTotalIva());
 
         if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-            newInvoice.setInvoiceFile(dto.getFile().getBytes());
+            existingInvoice.setInvoiceFile(dto.getFile().getBytes());
         }
 
-        return invoiceService.saveInvoice(mapToDto(newInvoice));
+        return invoiceService.updateInvoice(existingInvoice); // 👈 método que debes crear o ya tener
     }
+
 
 
     public List<ResponseSeeAllEquipmentsDto> searchEquipments(String searchQuery) {
@@ -474,6 +473,14 @@ public class ComputingEquipmentService {
 
         if (!equipament.getPerson().getName().equals("Sistemas") && newStatus.equals(CEStatus.CAMBIO_DISCO_AMPLIACION_RAM)){
             throw new CustomException("El estado no puede pasar a revisar para cambio de disco duro y/o ampliacion de RAM si tiene un responsable asignado");
+        }
+
+        if (equipament.getResponsiveEquipaments() != null && !equipament.getResponsiveEquipaments().isEmpty()) {
+            equipament.getResponsiveEquipaments().forEach(responsive -> {
+                if (responsive.getStatus() != EStatus.CANCELADA) {
+                    responsive.setStatus(EStatus.CANCELADA);
+                }
+            });
         }
 
         equipament.setStatus(newStatus);

@@ -77,4 +77,5 @@ public class ResponseLicenseDto {
     private String authPhoneNumber;
     private String authTwoFactorAuthenticationName;
     private String authDepartament;
+    private boolean status;
 }
