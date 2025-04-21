@@ -47,11 +47,9 @@ public class BeanAccessCard {
     @OneToMany(mappedBy = "accessCard", cascade = CascadeType.ALL)
     private List<BeanResponsiveCards> responsives;
 
-    @Column(name = "status", nullable = false)
-    private boolean status;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference("person-accesscard")
     private BeanPerson person;
+
 }

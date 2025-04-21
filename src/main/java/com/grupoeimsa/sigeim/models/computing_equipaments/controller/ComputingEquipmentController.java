@@ -82,6 +82,7 @@ public class ComputingEquipmentController {
     public ResponseEntity<String> editEquipment(
             @ModelAttribute RequestRegisterComputingEquipmentDto dto
     ) {
+        System.out.println("Informacion que llego: " + dto);
         try {
             String message = computingEquipmentService.editComputingEquipment(dto);
             return ResponseEntity.ok(message);

@@ -58,7 +58,7 @@ public class CellphoneController {
     }
 
     @PutMapping("/enable-disable")
-    public ResponseEntity<String> enableDisable(@RequestBody Map<String, Object> requestBody){
+    public ResponseEntity<String> enableDisable(@RequestBody Map<String, Object> requestBody) {
         String id = requestBody.get("id").toString();
         cellphoneService.enableDisable(Long.valueOf(id));
         return new ResponseEntity<>("Cellphone modified\n" +

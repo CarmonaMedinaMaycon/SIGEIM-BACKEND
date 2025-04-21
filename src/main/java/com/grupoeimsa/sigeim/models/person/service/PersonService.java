@@ -262,29 +262,19 @@ public class PersonService {
                 pageable
         );
 
-        //avr
-
         List<BeanPerson> personas = personasPage.getContent();
 
         return personas.stream()
-                .filter(p -> {
-                    List<BeanAccessCard> cards = p.getAccessCards();
-                    return cards == null || cards.isEmpty() || cards.stream().allMatch(card -> !card.isStatus());
-                })
+                .filter(p -> p.getAccessCard() == null) // Solo personas SIN tarjeta
                 .map(p -> new ResponsePersonWithoutAccessCardDto(
                         p.getPersonId(),
                         p.getFullName(),
                         p.getDepartament(),
                         p.getEnterprise(),
-                        false // Confirmamos que no tiene tarjetas activas
+                        false // Confirmamos que no tiene tarjeta
                 ))
                 .toList();
     }
-
-
-
-
-
 
 
     public List<ResponsePersonSelectDto> getAllPersonsForResponsiveEquipmentGeneration() {
@@ -310,19 +300,17 @@ public class PersonService {
                 .filter(person -> Boolean.TRUE.equals(person.getStatus()))
                 .filter(person -> !"SISTEMAS NA NA".equalsIgnoreCase(person.getFullName()))
                 .filter(person -> {
-                    List<BeanAccessCard> activeCards = person.getAccessCards().stream()
-                            .filter(BeanAccessCard::isStatus)
-                            .toList();
+                    BeanAccessCard card = person.getAccessCard();
 
-                    if (activeCards.isEmpty()) return false;
+                    // Si no tiene tarjeta, no pasa
+                    if (card == null) return false;
 
-                    return activeCards.stream().allMatch(card ->
-                            card.getResponsives().stream()
-                                    .noneMatch(r ->
-                                            r.getStatus() == EStatus.ACTIVA_POR_FIRMAR ||
-                                                    r.getStatus() == EStatus.ACTIVA_FIRMADA
-                                    )
-                    );
+                    // Si la tarjeta tiene responsivas activas o por firmar, no pasa
+                    return card.getResponsives().stream()
+                            .noneMatch(r ->
+                                    r.getStatus() == EStatus.ACTIVA_POR_FIRMAR ||
+                                            r.getStatus() == EStatus.ACTIVA_FIRMADA
+                            );
                 })
                 .filter(person -> addedPersonIds.add(person.getPersonId())) // ← evita duplicados
                 .map(person -> new ResponsePersonSelectDto(
@@ -333,6 +321,7 @@ public class PersonService {
                 ))
                 .collect(Collectors.toList());
     }
+
 
 
 
@@ -517,6 +506,7 @@ public class PersonService {
         dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
         dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
         dto.setAuthDepartament(license.getAuthDepartament());
+        dto.setStatus(license.isStatus());
 
         return dto;
     }
@@ -526,22 +516,25 @@ public class PersonService {
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Empleado no encontrado"));
 
-        return person.getAccessCards().stream()
-                .filter(BeanAccessCard::isStatus) // solo tarjeta activa
-                .findFirst()
-                .map(card -> new ResponseAccessCardDto(
-                        card.getAccessCardId(),
-                        card.isAccessBetweenBuildings(),
-                        card.isMainDoor(),
-                        card.isAccessTechnicalService(),
-                        card.isMainWarehouse(),
-                        card.isWarehouseBasement(),
-                        card.isTechnicalServiceWarehouses(),
-                        card.isTechnicalServiceWarehousesTwo(),
-                        card.isStatus()
-                ))
-                .orElse(null); // retorna null si no hay tarjeta activa
+        BeanAccessCard card = person.getAccessCard();
+
+        if (card != null) {
+            return new ResponseAccessCardDto(
+                    card.getAccessCardId(),
+                    card.isAccessBetweenBuildings(),
+                    card.isMainDoor(),
+                    card.isAccessTechnicalService(),
+                    card.isMainWarehouse(),
+                    card.isWarehouseBasement(),
+                    card.isTechnicalServiceWarehouses(),
+                    card.isTechnicalServiceWarehousesTwo() // Puedes conservar este valor si sigue siendo informativo
+            );
+        }
+
+        return null; // No tiene tarjeta asignada
     }
+
+
 
 
 
