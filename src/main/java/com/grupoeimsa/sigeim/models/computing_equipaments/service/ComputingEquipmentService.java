@@ -278,7 +278,6 @@ public class ComputingEquipmentService {
 
         boolean cambioDeResponsable = !responsableAnterior.getPersonId().equals(dto.getPersonId());
 
-        boolean eraSistemas = "Sistemas".equalsIgnoreCase(responsableAnterior.getName());
         boolean esSistemas = "Sistemas".equalsIgnoreCase(person.getName());
 
         if (cambioDeResponsable && esSistemas) {
