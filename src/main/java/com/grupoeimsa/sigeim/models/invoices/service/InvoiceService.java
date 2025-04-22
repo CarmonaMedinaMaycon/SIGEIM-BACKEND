@@ -5,6 +5,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipam
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDetailsDto;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDto;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.RequestGetAllInvoicesDto;
+import com.grupoeimsa.sigeim.models.invoices.controller.dto.ResponseUnassignedEquipmentDto;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.invoices.model.IInvoice;
 import com.grupoeimsa.sigeim.utils.CustomException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InvoiceService {
@@ -160,8 +162,17 @@ public class InvoiceService {
         computingEquipmentRepository.save(equip);
     }
 
-    public List<BeanComputerEquipament> getEquipmentsWithoutInvoice() {
-        return computingEquipmentRepository.findByInvoiceIsNull();
+    public List<ResponseUnassignedEquipmentDto> getEquipmentsWithoutInvoice() {
+        List<BeanComputerEquipament> entities = repository.findAllWithoutInvoice();
+
+        return entities.stream()
+                .map(e -> new ResponseUnassignedEquipmentDto(
+                        e.getComputerEquipamentId(),
+                        e.getBrand(),
+                        e.getSerialNumber()
+                ))
+                .collect(Collectors.toList());
     }
+
 
 }

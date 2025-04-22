@@ -6,6 +6,7 @@ import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDetailsDto;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.InvoiceDto;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.RequestGetAllInvoicesDto;
 import com.grupoeimsa.sigeim.models.invoices.controller.dto.RequestSearchInvoiceDto;
+import com.grupoeimsa.sigeim.models.invoices.controller.dto.ResponseUnassignedEquipmentDto;
 import com.grupoeimsa.sigeim.models.invoices.model.BeanInvoice;
 import com.grupoeimsa.sigeim.models.invoices.model.IInvoice;
 import com.grupoeimsa.sigeim.models.invoices.service.InvoiceService;
@@ -106,7 +107,8 @@ public class InvoiceController {
     }
 
     @GetMapping("/unassigned-equipments")
-    public ResponseEntity<List<BeanComputerEquipament>> getEquipmentsWithoutInvoice() {
+    public ResponseEntity<List<ResponseUnassignedEquipmentDto>> getEquipmentsWithoutInvoice() {
         return ResponseEntity.ok(invoiceService.getEquipmentsWithoutInvoice());
     }
+
 }

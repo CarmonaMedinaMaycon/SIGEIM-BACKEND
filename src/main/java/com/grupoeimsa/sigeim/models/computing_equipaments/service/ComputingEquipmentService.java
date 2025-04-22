@@ -323,23 +323,22 @@ public class ComputingEquipmentService {
 
 
     private BeanInvoice findOrUpdateInvoice(RequestRegisterComputingEquipmentDto dto) throws IOException {
-        BeanInvoice existingInvoice = invoiceService
+        BeanInvoice invoice = invoiceService
                 .findByInvoiceFolio(dto.getInvoiceFolio())
-                .orElseThrow(() -> new CustomException("Factura no encontrada con folio: " + dto.getInvoiceFolio()));
+                .orElseGet(BeanInvoice::new); // ✅ crea nueva si no existe
 
-        System.out.println("DTO RECIBIDO EN findOrUpdateInvoice: " + dto);
-
-        // Actualiza los campos necesarios
-        existingInvoice.setSupplier(dto.getSupplierInvoice());
-        existingInvoice.setInvoiceDate(dto.getInvoiceDate());
-        existingInvoice.setTotal_iva(dto.getTotalIva());
+        invoice.setInvoiceFolio(dto.getInvoiceFolio());
+        invoice.setSupplier(dto.getSupplierInvoice());
+        invoice.setInvoiceDate(dto.getInvoiceDate());
+        invoice.setTotal_iva(dto.getTotalIva());
 
         if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-            existingInvoice.setInvoiceFile(dto.getFile().getBytes());
+            invoice.setInvoiceFile(dto.getFile().getBytes());
         }
 
-        return invoiceService.updateInvoice(existingInvoice); // 👈 método que debes crear o ya tener
+        return invoiceService.updateInvoice(invoice); // actualiza o crea
     }
+
 
 
 
