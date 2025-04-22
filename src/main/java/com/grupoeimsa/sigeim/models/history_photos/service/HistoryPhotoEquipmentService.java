@@ -1,6 +1,7 @@
 package com.grupoeimsa.sigeim.models.history_photos.service;
 
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.IHistoryPhotosEquipament;
@@ -45,6 +46,8 @@ public class HistoryPhotoEquipmentService {
             throw new CustomException("Too many photos");
         }
         equipament.setPerson(sistemasPerson);
+        equipament.setStatus(CEStatus.DISPONIBLE);
+        equipament.setDepartament("Administracion");
         computerEquipmentRepository.save(equipament);
 
         List<BeanHistoryPhotosEquipament> existingPhotos =
