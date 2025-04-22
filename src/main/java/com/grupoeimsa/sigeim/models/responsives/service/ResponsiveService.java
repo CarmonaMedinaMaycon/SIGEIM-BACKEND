@@ -847,42 +847,51 @@ public class ResponsiveService {
         XWPFDocument document;
 
         try {
-            document = new XWPFDocument(inputStream);
-        } catch (IOException e) {
-            throw new CustomException("Error al leer la plantilla Word" + e.getMessage());
-        }
-
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("nombre", license.getPerson().getFullName());
-        placeholders.put("puesto", license.getPerson().getPosition());
-        placeholders.put("fecha", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-
-        try {
-            // Reemplazar marcadores
-            for (XWPFParagraph p : document.getParagraphs()) {
-                replaceTextInParagraph(p, placeholders);
+            try {
+                document = new XWPFDocument(inputStream);
+            } catch (IOException e) {
+                throw new CustomException("Error al leer la plantilla Word: " + e.getMessage());
             }
 
-            for (XWPFTable table : document.getTables()) {
-                for (XWPFTableRow row : table.getRows()) {
-                    for (XWPFTableCell cell : row.getTableCells()) {
-                        for (XWPFParagraph p : cell.getParagraphs()) {
-                            replaceTextInParagraph(p, placeholders);
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("nombre", license.getPerson().getFullName());
+            placeholders.put("puesto", license.getPerson().getPosition());
+            placeholders.put("fecha", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+            try {
+                for (XWPFParagraph p : document.getParagraphs()) {
+                    replaceTextInParagraph(p, placeholders);
+                }
+
+                for (XWPFTable table : document.getTables()) {
+                    for (XWPFTableRow row : table.getRows()) {
+                        for (XWPFTableCell cell : row.getTableCells()) {
+                            for (XWPFParagraph p : cell.getParagraphs()) {
+                                replaceTextInParagraph(p, placeholders);
+                            }
                         }
                     }
                 }
+            } catch (Exception e) {
+                throw new CustomException("Error al reemplazar texto en la plantilla: " + e.getMessage());
             }
 
-            // Validación básica de estructura
             if (document.getTables().size() < 2) {
                 throw new CustomException("La plantilla debe contener al menos dos tablas.");
             }
 
-            fillAccessTable(document, license);
+            try {
+                fillAccessTable(document, license);
+            } catch (Exception e) {
+                throw new CustomException("Error al llenar la tabla de accesos: " + e.getMessage());
+            }
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            document.write(outputStream);
-            document.close();
+            try {
+                document.write(outputStream);
+            } catch (IOException e) {
+                throw new CustomException("Error al escribir el documento Word: " + e.getMessage());
+            }
 
             BeanResponsiveLicenses responsive = new BeanResponsiveLicenses();
             responsive.setLicense(license);
@@ -891,13 +900,31 @@ public class ResponsiveService {
             responsive.setGeneratedDoc(outputStream.toByteArray());
             responsive.setSignedDoc(new byte[0]);
 
-            responsiveLicensesRepository.save(responsive);
+            try {
+                responsiveLicensesRepository.save(responsive);
+            } catch (Exception e) {
+                throw new CustomException("Error al guardar la responsiva en la base de datos: " + e.getMessage());
+            }
+
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                throw new CustomException("Error al cerrar el flujo de salida: " + e.getMessage());
+            }
+
+        } catch (CustomException e) {
+            throw e; // volver a lanzar para mantener la traza original
         } catch (Exception ex) {
-            throw new CustomException("Error durante la generación de la responsiva de accesos" + ex.getMessage());
+            throw new CustomException("Error general durante la generación de la responsiva de accesos: " + ex.getMessage());
         } finally {
-            inputStream.close();
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                throw new CustomException("Error al cerrar el flujo de entrada: " + e.getMessage());
+            }
         }
     }
+
 
 
     private void fillAccessTable(XWPFDocument doc, BeanLicense license) {
