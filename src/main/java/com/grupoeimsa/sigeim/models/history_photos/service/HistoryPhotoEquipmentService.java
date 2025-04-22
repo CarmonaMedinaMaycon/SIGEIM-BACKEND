@@ -6,6 +6,8 @@ import com.grupoeimsa.sigeim.models.history_photos.model.BeanHistoryPhotosEquipa
 import com.grupoeimsa.sigeim.models.history_photos.model.IHistoryPhotosEquipament;
 import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.PhotoHistoryGroupDto;
 import com.grupoeimsa.sigeim.models.history_photos.model.controller.dto.UploadHistoryEquipmentPhotosDto;
+import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
+import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,10 +22,12 @@ import java.util.stream.Collectors;
 @Service
 public class HistoryPhotoEquipmentService {
     private final IHistoryPhotosEquipament repository;
+    private final IPerson personRepository;
     private final IComputerEquipament computerEquipmentRepository;
 
-    public HistoryPhotoEquipmentService(IHistoryPhotosEquipament repository, IComputerEquipament computerEquipmentRepository) {
+    public HistoryPhotoEquipmentService(IHistoryPhotosEquipament repository, IPerson personRepository, IComputerEquipament computerEquipmentRepository) {
         this.repository = repository;
+        this.personRepository = personRepository;
         this.computerEquipmentRepository = computerEquipmentRepository;
     }
 
@@ -31,11 +35,17 @@ public class HistoryPhotoEquipmentService {
         BeanComputerEquipament equipament = computerEquipmentRepository.findById(request.getEquipmentId())
                 .orElseThrow(() -> new CustomException("Equipment not found"));
 
+        // 2. Obtener la persona de Sistemas (ID 1)
+        BeanPerson sistemasPerson = personRepository.findById(1L)
+                .orElseThrow(() -> new CustomException("Persona de Sistemas no encontrada"));
+
         String personName = equipament.getPerson().getFullName();
 
         if (photos.size() > 9) {
             throw new CustomException("Too many photos");
         }
+        equipament.setPerson(sistemasPerson);
+        computerEquipmentRepository.save(equipament);
 
         List<BeanHistoryPhotosEquipament> existingPhotos =
                 repository.findByComputerEquipamentId(request.getEquipmentId());
