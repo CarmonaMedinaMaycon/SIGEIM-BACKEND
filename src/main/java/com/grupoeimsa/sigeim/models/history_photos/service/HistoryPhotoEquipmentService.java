@@ -47,7 +47,7 @@ public class HistoryPhotoEquipmentService {
         }
         equipament.setPerson(sistemasPerson);
         equipament.setStatus(CEStatus.DISPONIBLE);
-        equipament.setDepartament("Administracion");
+        equipament.setDepartament("Administración");
         computerEquipmentRepository.save(equipament);
 
         List<BeanHistoryPhotosEquipament> existingPhotos =
