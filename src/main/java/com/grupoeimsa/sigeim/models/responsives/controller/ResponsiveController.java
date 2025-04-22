@@ -20,6 +20,7 @@ import com.grupoeimsa.sigeim.models.responsives.controller.dto.UpdateResponsiveD
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.models.responsives.service.ResponsiveService;
+import com.grupoeimsa.sigeim.utils.CustomException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -365,14 +367,17 @@ public class ResponsiveController {
 
 
     @PostMapping("/generate-access-responsive")
-    public ResponseEntity<Void> generateResponsive(@RequestBody RequestGenerateAccessResponsiveDto dto) {
+    public ResponseEntity<?> generateResponsive(@RequestBody RequestGenerateAccessResponsiveDto dto) {
         try {
             responsiveService.generateAccessResponsive(dto);
             return ResponseEntity.ok().build();
+        } catch (CustomException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.internalServerError().body(Collections.singletonMap("message", "Error interno al generar la responsiva."));
         }
     }
+
 
     @PostMapping("/generate-tarjetas-responsive")
     public ResponseEntity<Void> generateCardResponsive(@RequestBody RequestGenerateAccessResponsiveDto dto) {

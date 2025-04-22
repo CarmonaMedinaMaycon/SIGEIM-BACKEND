@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,6 +92,7 @@ public class HistoryPhotoEquipmentService {
         return "Fotos registradas";
     }
 
+
     public List<PhotoHistoryGroupDto> getPhotoHistoryByEquipmentId(Long equipmentId) {
         List<BeanHistoryPhotosEquipament> allPhotos =
                 repository.findByComputerEquipamentId(equipmentId);
@@ -105,7 +107,10 @@ public class HistoryPhotoEquipmentService {
                     String personName = keyParts[1];
 
                     List<String> photoPaths = entry.getValue().stream()
-                            .map(BeanHistoryPhotosEquipament::getPhotos)
+                            .map(photo -> {
+                                String fileName = Paths.get(photo.getPhotos()).getFileName().toString();
+                                return "http://192.168.2.130:8081/uploads/" + fileName;
+                            })
                             .collect(Collectors.toList());
 
                     return new PhotoHistoryGroupDto(personName, date, photoPaths);
@@ -114,6 +119,5 @@ public class HistoryPhotoEquipmentService {
                 .limit(3)
                 .collect(Collectors.toList());
     }
-
 
 }
