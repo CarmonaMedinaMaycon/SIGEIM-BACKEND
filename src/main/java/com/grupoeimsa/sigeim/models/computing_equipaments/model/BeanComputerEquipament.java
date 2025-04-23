@@ -96,7 +96,7 @@ public class BeanComputerEquipament {
     @Column(name = "price", nullable = false)
     private Double price;
 
-    @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<BeanResponsiveEquipaments> responsiveEquipaments;
 
     @OneToMany(mappedBy = "computerEquipament", fetch = FetchType.LAZY)

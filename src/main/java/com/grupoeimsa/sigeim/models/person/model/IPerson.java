@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface IPerson extends JpaRepository<BeanPerson, Long> {
@@ -51,5 +52,7 @@ public interface IPerson extends JpaRepository<BeanPerson, Long> {
 
         @Query("SELECT p FROM BeanPerson p WHERE p.status = true")
         List<BeanPerson> findAllActivePersons();
+
+        Optional<BeanPerson> findByName(String name);
 
 }

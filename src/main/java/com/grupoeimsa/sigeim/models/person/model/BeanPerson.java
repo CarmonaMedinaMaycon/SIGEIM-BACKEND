@@ -86,7 +86,7 @@ public class BeanPerson {
     @JsonManagedReference("person-license")
     private BeanLicense license;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("person-accesscard")
     private BeanAccessCard accessCard;
 
