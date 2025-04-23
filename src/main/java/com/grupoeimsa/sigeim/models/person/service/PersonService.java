@@ -5,6 +5,7 @@ import com.grupoeimsa.sigeim.models.acess_cards.model.IAcessCard;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.cellphones.model.ICellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
+import com.grupoeimsa.sigeim.models.computing_equipaments.model.CEStatus;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipament;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
@@ -105,50 +106,96 @@ public class PersonService {
 
     @Transactional
     public void enableDisable(Long id) {
-        // Buscar la persona por ID, lanzar excepción si no se encuentra
+        // Buscar a la persona
         BeanPerson person = personRepository.findById(id)
                 .orElseThrow(() -> new CustomException("Person not found"));
 
-        // Obtener la persona por defecto con ID 1 (para evitar múltiples consultas)
-        BeanPerson defaultPerson = personRepository.findById(1L)
-                .orElseThrow(() -> new CustomException("Default person not found"));
+        // No se permite desactivar a "Sistemas"
+        if ("Sistemas".equalsIgnoreCase(person.getName())) {
+            throw new CustomException("No se puede desactivar a la persona 'Sistemas'.");
+        }
 
-        // Validar si ya está desactivado. Si es así, no permitir reactivación
+        // No permitir reactivación
         if (!person.getStatus()) {
             throw new CustomException("No se puede reactivar un empleado desactivado permanentemente.");
         }
 
-        // Validar si la persona tiene equipos asignados
-        if (!person.getComputerEquipaments().isEmpty()) {
-            // Iterar sobre todos los equipos y reasignarlos
-            for (BeanComputerEquipament equipament : person.getComputerEquipaments()) {
-                BeanComputerEquipament computerEquipament = computerEquipamentRepository.findById(
-                        equipament.getComputerEquipamentId()
-                ).orElseThrow(() -> new CustomException("Computer equipment not found"));
+        // Obtener la persona "Sistemas"
+        BeanPerson sistemas = personRepository.findByName("Sistemas")
+                .orElseThrow(() -> new CustomException("Persona 'Sistemas' no encontrada"));
 
-                computerEquipament.setPerson(defaultPerson);
-                computerEquipamentRepository.save(computerEquipament);
+        // === 1. Cancelar responsivas de tarjeta de acceso y eliminar la tarjeta ===
+        if (person.getAccessCard() != null) {
+            BeanAccessCard card = person.getAccessCard();
+
+            if (card.getResponsives() != null) {
+                card.getResponsives().forEach(responsive -> {
+                    if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
+                        responsive.setStatus(EStatus.CANCELADA);
+                    }
+                });
             }
+
+            // ⚠️ Romper la relación para que se elimine automáticamente (por orphanRemoval)
+            person.setAccessCard(null);
         }
 
-        // Validar si la persona tiene celulares asignados
+        // === 2. Reasignar celulares a "Sistemas" y cancelar responsivas ===
         if (!person.getCellphone().isEmpty()) {
-            // Iterar sobre todos los celulares y reasignarlos
-            for (BeanCellphone cell : person.getCellphone()) {
-                BeanCellphone cellphone = cellphoneRepository.findById(
-                        cell.getCellphoneId()
-                ).orElseThrow(() -> new CustomException("Cellphone not found"));
+            for (BeanCellphone cellphone : person.getCellphone()) {
+                if (cellphone.getResponsiveCellphones() != null) {
+                    cellphone.getResponsiveCellphones().forEach(responsive -> {
+                        if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
+                            responsive.setStatus(EStatus.CANCELADA);
+                        }
+                    });
+                }
 
-                cellphone.setPerson(defaultPerson);
+                cellphone.setPerson(sistemas);
                 cellphoneRepository.save(cellphone);
             }
         }
 
+        // === 3. Dar de baja la licencia y cancelar sus responsivas ===
+        if (person.getLicense() != null) {
+            BeanLicense license = person.getLicense();
+            license.setStatus(false);
 
-        // Cambiar el estado de la persona
+            if (license.getResponsivesLicenses() != null) {
+                license.getResponsivesLicenses().forEach(responsive -> {
+                    if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
+                        responsive.setStatus(EStatus.CANCELADA);
+                    }
+                });
+            }
+
+            licenseRepository.save(license);
+        }
+
+        // === 4. Reasignar equipos, cambiar estado y cancelar responsivas ===
+        if (!person.getComputerEquipaments().isEmpty()) {
+            for (BeanComputerEquipament equip : person.getComputerEquipaments()) {
+                if (equip.getResponsiveEquipaments() != null) {
+                    equip.getResponsiveEquipaments().forEach(responsive -> {
+                        if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
+                            responsive.setStatus(EStatus.CANCELADA);
+                        }
+                    });
+                }
+
+                equip.setPerson(sistemas);
+                equip.setDepartament(sistemas.getDepartament());
+                equip.setStatus(CEStatus.DISPONIBLE);
+                computerEquipamentRepository.save(equip);
+            }
+        }
+
+        // === 5. Desactivar al empleado ===
         person.setStatus(false);
         personRepository.save(person);
     }
+
+
 
     public ResponseEditPersonDto getSimplePersonById(Long id) {
         BeanPerson person = personRepository.findById(id)
