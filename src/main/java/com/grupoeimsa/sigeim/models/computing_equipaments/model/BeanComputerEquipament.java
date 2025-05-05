@@ -78,7 +78,7 @@ public class BeanComputerEquipament {
     @Column(name = "invoice_folio", nullable = false)
     private String invoiceFolio;
 
-    @Column(name = "system_observations", nullable = false)
+    @Column(name = "system_observations", nullable = false, columnDefinition = "TEXT")
     private String systemObservations;
 
     @Column(name = "purchase_date", nullable = false)
