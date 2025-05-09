@@ -64,9 +64,7 @@ public class BeanCellphone {
     @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)
     private List<BeanResponsiveCellphone> responsiveCellphones;
 
-
     @OneToMany(mappedBy = "cellphone", fetch = FetchType.LAZY)
     private List<BeanHistoryPhotosCellphone> historyPhotosCellphones;
-
 
 }

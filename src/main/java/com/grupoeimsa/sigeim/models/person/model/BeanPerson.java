@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -93,5 +94,13 @@ public class BeanPerson {
 
     public String getFullName() {
         return name + " " + lastname + (surname != null ? " " + surname : "");
+    }
+
+    public String getCleanFullName() {
+        List<String> parts = new ArrayList<>();
+        if (name != null && !name.equalsIgnoreCase("NA")) parts.add(name);
+        if (lastname != null && !lastname.equalsIgnoreCase("NA")) parts.add(lastname);
+        if (surname != null && !surname.equalsIgnoreCase("NA")) parts.add(surname);
+        return String.join(" ", parts);
     }
 }
