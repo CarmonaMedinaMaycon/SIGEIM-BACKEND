@@ -19,8 +19,7 @@ public interface ICellphone extends JpaRepository<BeanCellphone, Long>, JpaSpeci
     @Query("""
     SELECT c FROM BeanCellphone c
     LEFT JOIN c.responsiveCellphones r
-    WHERE (r IS NULL OR r.status = com.grupoeimsa.sigeim.models.responsives.model.EStatus.CANCELADA)
-    AND c.status = true
+    WHERE c.status = true
 """)
     List<BeanCellphone> findAvailableForResponsiva();
 

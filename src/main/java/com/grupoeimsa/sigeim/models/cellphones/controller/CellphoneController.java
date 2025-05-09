@@ -84,7 +84,6 @@ public class CellphoneController {
                 filter.getSearch(),
                 filter.getPage(),
                 filter.getSize(),
-                filter.getStatus(),
                 filter.getLegalName(),
                 filter.getArea()
         );

@@ -193,7 +193,7 @@ public class CellphoneService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CellphoneTableDto> getAllCellphonesForTable(String search, int page, int size, Boolean status, String legalName, String area) {
+    public Page<CellphoneTableDto> getAllCellphonesForTable(String search, int page, int size, String legalName, String area) {
         Pageable pageable = PageRequest.of(page, size);
 
         Specification<BeanCellphone> spec = Specification.where(null);
@@ -203,8 +203,8 @@ public class CellphoneService {
                 String likeValue = "%" + search.toLowerCase() + "%";
                 return cb.or(
                         cb.like(cb.lower(root.get("legalName")), likeValue),
+                        cb.like(cb.lower(root.get("area")), likeValue),
                         cb.like(cb.lower(root.get("company")), likeValue),
-                        cb.like(cb.lower(cb.concat("", root.get("shortDialing").as(String.class))), likeValue),
                         cb.like(cb.lower(root.get("imei")), likeValue)
                 );
             });
@@ -216,10 +216,6 @@ public class CellphoneService {
 
         if (area != null && !area.isBlank()) {
             spec = spec.and((root, query, cb) -> cb.equal(cb.lower(root.get("area")), area.toLowerCase()));
-        }
-
-        if (status != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }
 
         Page<BeanCellphone> result = cellphoneRepository.findAll(spec, pageable);
