@@ -26,10 +26,8 @@ import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.utils.CustomException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -508,14 +506,19 @@ public class ComputingEquipmentService {
         String[] headers = {
                 "Núm.", "Núm. Serie", "ID ESSET", "Responsable", "Depto", "Empresa", "Lugar", "Tipo", "Marca", "Modelo",
                 "Núm. Serie", "Memoria RAM", "Disco Duro", "Procesador", "Empresa compradora", "Factura",
-                "Proveedor", "Folio Factura", "Fecha de Adquisición", "Núm. Activo", "Costo", "Estado", "Observaciones"
+                "Proveedor", "Folio Factura", "Fecha de Adquisición", "Núm. Activo", "Costo", "Estado", "Observaciones", ""
         };
 
         // Crear la fila de cabecera
         Row headerRow = sheet.createRow(0);
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
         }
 
         // Ajustar el tamaño de las columnas de la cabecera
@@ -530,7 +533,7 @@ public class ComputingEquipmentService {
             row.createCell(0).setCellValue(rowNum - 1);
             row.createCell(1).setCellValue(getSafeValue(equipment.getSerialNumber()));
             row.createCell(2).setCellValue(getSafeValue(equipment.getIdEsset()));
-            row.createCell(3).setCellValue(getSafeValue(equipment.getPerson() != null ? equipment.getPerson().getName() : null));
+            row.createCell(3).setCellValue(getSafeValue(equipment.getPerson() != null ? equipment.getPerson().getCleanFullName() : null));
             row.createCell(4).setCellValue(getSafeValue(equipment.getDepartament()));
             row.createCell(5).setCellValue(getSafeValue(equipment.getEnterprise()));
             row.createCell(6).setCellValue(getSafeValue(equipment.getWorkModality()));
@@ -550,10 +553,11 @@ public class ComputingEquipmentService {
             row.createCell(20).setCellValue(getSafeValue(equipment.getPrice()));
             row.createCell(21).setCellValue(equipment.getStatus() != null ? equipment.getStatus().name() : "SIN-INF");
             row.createCell(22).setCellValue(getSafeValue(equipment.getSystemObservations()));
+            row.createCell(23).setCellValue(getSafeValue(""));
+        }
 
-            for (int i = 0; i < headers.length-1; i++) {
-                sheet.autoSizeColumn(i);
-            }
+        for (int i = 0; i < headers.length-1; i++) {
+            sheet.autoSizeColumn(i);
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
