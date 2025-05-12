@@ -187,20 +187,22 @@ public class PersonService {
         }
 
         // === 3. Dar de baja la licencia y cancelar sus responsivas ===
-        if (person.getLicense() != null) {
-            BeanLicense license = person.getLicense();
-            license.setStatus(false);
+        if (person.getLicenses() != null && !person.getLicenses().isEmpty()) {
+            for (BeanLicense license : person.getLicenses()) {
+                license.setStatus(false);
 
-            if (license.getResponsivesLicenses() != null) {
-                license.getResponsivesLicenses().forEach(responsive -> {
-                    if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
-                        responsive.setStatus(EStatus.CANCELADA);
-                    }
-                });
+                if (license.getResponsivesLicenses() != null) {
+                    license.getResponsivesLicenses().forEach(responsive -> {
+                        if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
+                            responsive.setStatus(EStatus.CANCELADA);
+                        }
+                    });
+                }
+
+                licenseRepository.save(license);
             }
-
-            licenseRepository.save(license);
         }
+
 
         // === 4. Reasignar equipos, cambiar estado y cancelar responsivas ===
         if (!person.getComputerEquipaments().isEmpty()) {
@@ -299,7 +301,6 @@ public class PersonService {
                 .map(person -> new ResponseLicencesPersonSelectDto(
                         person.getPersonId(),
                         person.getFullName(),
-                        person.getLicense() != null,
                         person.getDepartament(),
                         person.getPhoneNumber()
                 ))
@@ -323,7 +324,7 @@ public class PersonService {
                 p.getFullName(),
                 p.getDepartament(),
                 p.getEnterprise(),
-                p.getLicense() != null,
+                p.getLicenses() != null,
                 p.getCellphone() != null && !p.getCellphone().isEmpty()
         )).toList();
     }

@@ -83,9 +83,9 @@ public class BeanPerson {
     @JsonManagedReference(value = "person-equipment")
     private List<BeanComputerEquipament> computerEquipaments;
 
-    @OneToOne(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
     @JsonManagedReference("person-license")
-    private BeanLicense license;
+    private List<BeanLicense> licenses;
 
     @OneToOne(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("person-accesscard")

@@ -190,7 +190,7 @@ public class BeanLicense {
     @Column(name = "status", nullable = false)
     private boolean status;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference("person-license")
     private BeanPerson person;
