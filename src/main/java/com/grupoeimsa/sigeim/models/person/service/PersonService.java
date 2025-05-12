@@ -16,22 +16,26 @@ import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveCards;
 import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
+import com.grupoeimsa.sigeim.models.users.model.BeanUser;
+import com.grupoeimsa.sigeim.security.service.VerificationCodeInfo;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import com.grupoeimsa.sigeim.utils.SessionInformation;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,14 +48,17 @@ public class PersonService {
     public final IResponsiveEquipments responsiveEquipmentsRepository;
     public final ILicense licenseRepository;
     public final IAcessCard acessCardRepository;
+    private final JavaMailSender mailSender;
 
-    public PersonService(IPerson personRepository, IAcessCard acessCardRepository, ILicense licenseRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
+
+    public PersonService(IPerson personRepository, JavaMailSender mailSender, IAcessCard acessCardRepository, ILicense licenseRepository, IComputerEquipament computerEquipamentRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentsRepository) {
         this.personRepository = personRepository;
         this.computerEquipamentRepository = computerEquipamentRepository;
         this.cellphoneRepository = cellphoneRepository;
         this.responsiveEquipmentsRepository = responsiveEquipmentsRepository;
         this.licenseRepository = licenseRepository;
         this.acessCardRepository = acessCardRepository;
+        this.mailSender = mailSender;
     }
 
     @Transactional(readOnly = true)
@@ -101,7 +108,30 @@ public class PersonService {
         person.setDateEnd(responsePersonDTO.getDateEnd());
         person.setEntryDate(responsePersonDTO.getEntryDate());
         person.setStatus(true);
+
+        sendNotification(person.getFullName(), person.getWhoRegistered(), person.getDateEnd());
+
         personRepository.save(person);
+    }
+
+    public void sendNotification(String userName, String whoRegistered, String dateEnd) {
+        sendEmail("dcarrillo@grupoeimsa.com", "Notificación de registro de usuario",
+                "Saludos Daniel se te informa que un nuevo usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
+                        whoRegistered + " el registro finalizó: " + dateEnd);
+    }
+
+
+    private void sendEmail(String to, String subject, String text) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new CustomException("Failed to send notification email");
+        }
     }
 
     @Transactional
