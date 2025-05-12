@@ -51,8 +51,6 @@ public class UserDetailsServicePer implements UserDetailsService {
 
     public void sendVerificationCode(String userToChangeEmail) {
         String adminEmail = SessionInformation.getEmail();
-        System.out.println(SessionInformation.getEmail());
-        System.out.println(userToChangeEmail);
         BeanUser userToChange = userRepository.findBeanUserByEmail(String.valueOf(userToChangeEmail))
                 .orElseThrow(() -> new CustomException("User not found"));
 

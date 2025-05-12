@@ -188,6 +188,10 @@ public class LicenseService {
         licensesRepository.save(license);
     }
 
+    private String boolToString(boolean bool) {
+        return bool ? "Sí" : "No";
+    }
+
     public byte[] generateExcelFile() throws IOException {
         List<BeanLicense> licenses = licensesRepository.findAll();
 
@@ -251,11 +255,6 @@ public class LicenseService {
         // Congelar paneles (fila de encabezados)
         sheet.createFreezePane(0, 1, 0, 1);
 
-        // Ajustar el tamaño de las columnas de la cabecera
-        for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
-        }
-
         int rowNum = 1;
         for (BeanLicense license : licenses) {
             Row row = sheet.createRow(rowNum++);
@@ -278,7 +277,7 @@ public class LicenseService {
             }
 
             // Outlook
-            row.createCell(5).setCellValue(license.isOutlook() ? "Sí" : "No");
+            row.createCell(5).setCellValue(boolToString(license.isOutlook()));
             row.createCell(6).setCellValue(getSafeValue(license.getAccountOutlook()));
             row.createCell(7).setCellValue(getSafeValue(license.getTypeOutlook()));
             row.createCell(8).setCellValue(getSafeValue(license.getSupplierOutlook()));
@@ -292,14 +291,14 @@ public class LicenseService {
             row.createCell(14).setCellValue(getSafeValue(license.getAuthDepartament()));
 
             // CRM
-            row.createCell(15).setCellValue(license.isCrm() ? "Sí" : "No");
+            row.createCell(15).setCellValue(boolToString(license.isCrm()));
             row.createCell(16).setCellValue(getSafeValue(license.getUserCrm()));
             row.createCell(17).setCellValue(getSafeValue(license.getTypeCrm()));
             row.createCell(18).setCellValue(getSafeValue(license.getSupplierCrm()));
             row.createCell(19).setCellValue(getSafeValue(license.getCommentsCrm()));
 
             // Business Central
-            row.createCell(20).setCellValue(license.isBc() ? "Sí" : "No");
+            row.createCell(20).setCellValue(boolToString(license.isBc()));
             row.createCell(21).setCellValue(getSafeValue(license.getUserBc()));
             row.createCell(22).setCellValue(getSafeValue(license.getIdUserBc()));
             row.createCell(23).setCellValue(getSafeValue(license.getTypeBc()));
@@ -307,49 +306,49 @@ public class LicenseService {
             row.createCell(25).setCellValue(getSafeValue(license.getEnterpriseBc()));
 
             // PureCloud
-            row.createCell(26).setCellValue(license.isPurecloud() ? "Sí" : "No");
+            row.createCell(26).setCellValue(boolToString(license.isPurecloud()));
             row.createCell(27).setCellValue(getSafeValue(license.getUserPureCloud()));
             row.createCell(28).setCellValue(getSafeValue(license.getIdUserPureCloud()));
 
             // RPA
-            row.createCell(29).setCellValue(license.isRpa() ? "Sí" : "No");
+            row.createCell(29).setCellValue(boolToString(license.isRpa()));
             row.createCell(30).setCellValue(getSafeValue(license.getUserRpa()));
             row.createCell(31).setCellValue(getSafeValue(license.getModuleRpa()));
             row.createCell(32).setCellValue(getSafeValue(license.getEnterpriseRpa()));
 
             // Otros
-            row.createCell(33).setCellValue(license.isPowerbi() ? "Sí" : "No");
-            row.createCell(34).setCellValue(license.isCopilot() ? "Sí" : "No");
-            row.createCell(35).setCellValue(license.isTactical() ? "Sí" : "No");
+            row.createCell(33).setCellValue(boolToString(license.isPowerbi()));
+            row.createCell(34).setCellValue(boolToString(license.isCopilot()));
+            row.createCell(35).setCellValue(boolToString(license.isTactical()));
 
             // Redes Sociales
-            row.createCell(36).setCellValue(license.isInstagram() ? "Sí" : "No");
+            row.createCell(36).setCellValue(boolToString(license.isInstagram()));
             row.createCell(37).setCellValue(getSafeValue(license.getUserInstagram()));
-            row.createCell(38).setCellValue(license.isFacebook() ? "Sí" : "No");
+            row.createCell(38).setCellValue(boolToString(license.isFacebook()));
             row.createCell(39).setCellValue(getSafeValue(license.getUserFacebook()));
-            row.createCell(40).setCellValue(license.isTiktok() ? "Sí" : "No");
+            row.createCell(40).setCellValue(boolToString(license.isTiktok()));
             row.createCell(41).setCellValue(getSafeValue(license.getUserTiktok()));
-            row.createCell(42).setCellValue(license.isLinkedin() ? "Sí" : "No");
+            row.createCell(42).setCellValue(boolToString(license.isLinkedin()));
             row.createCell(43).setCellValue(getSafeValue(license.getUserLinkedin()));
-            row.createCell(44).setCellValue(license.isYoutube() ? "Sí" : "No");
+            row.createCell(44).setCellValue(boolToString(license.isYoutube()));
             row.createCell(45).setCellValue(getSafeValue(license.getUserYoutube()));
 
             // Plataformas
-            row.createCell(46).setCellValue(license.isAdobe() ? "Sí" : "No");
-            row.createCell(47).setCellValue(license.isMailchimp() ? "Sí" : "No");
-            row.createCell(48).setCellValue(license.isLinktree() ? "Sí" : "No");
+            row.createCell(46).setCellValue(boolToString(license.isAdobe()));
+            row.createCell(47).setCellValue(boolToString(license.isMailchimp()));
+            row.createCell(48).setCellValue(boolToString(license.isLinktree()));
 
             // E-commerce
-            row.createCell(49).setCellValue(license.isMagento() ? "Sí" : "No");
+            row.createCell(49).setCellValue(boolToString(license.isMagento()));
             row.createCell(50).setCellValue(getSafeValue(license.getMagentoUser()));
-            row.createCell(51).setCellValue(license.isShopify() ? "Sí" : "No");
+            row.createCell(51).setCellValue(boolToString(license.isShopify()));
             row.createCell(52).setCellValue(getSafeValue(license.getUserShopify()));
-            row.createCell(53).setCellValue(license.isMercadoLibre() ? "Sí" : "No");
-            row.createCell(54).setCellValue(license.isAmazon() ? "Sí" : "No");
-            row.createCell(55).setCellValue(license.isConekta() ? "Sí" : "No");
-            row.createCell(56).setCellValue(license.isOpenPay() ? "Sí" : "No");
-            row.createCell(57).setCellValue(license.isKuesky() ? "Sí" : "No");
-            row.createCell(58).setCellValue(license.isHasUsb() ? "Sí" : "No");
+            row.createCell(53).setCellValue(boolToString(license.isMercadoLibre()));
+            row.createCell(54).setCellValue(boolToString(license.isAmazon()));
+            row.createCell(55).setCellValue(boolToString(license.isConekta()));
+            row.createCell(56).setCellValue(boolToString(license.isOpenPay()));
+            row.createCell(57).setCellValue(boolToString(license.isKuesky()));
+            row.createCell(58).setCellValue(boolToString(license.isHasUsb()));
         }
 
         // Ajustar tamaño de columnas para todas las filas
