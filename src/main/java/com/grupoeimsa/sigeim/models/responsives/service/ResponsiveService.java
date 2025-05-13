@@ -63,6 +63,8 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STHAnchor;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblLayoutType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblOverlap;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STVAnchor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -828,6 +830,7 @@ public class ResponsiveService {
                     ResponseAvailableAccessDto dto = new ResponseAvailableAccessDto();
                     dto.setPersonId(license.getPerson().getPersonId());
                     dto.setFullName(license.getPerson().getFullName());
+                    dto.setLicenseId(license.getLicensesId());
                     return dto;
                 }).toList();
     }
@@ -837,8 +840,8 @@ public class ResponsiveService {
     }
 
     public void generateAccessResponsive(RequestGenerateAccessResponsiveDto dto) throws Exception {
-        BeanLicense license = licenseRepository.findByPersonPersonId(dto.getPersonId())
-                .orElseThrow(() -> new CustomException("Licencia no encontrada para el empleado con ID: " + dto.getPersonId()));
+        BeanLicense license = licenseRepository.findById(dto.getLicenseId())
+                .orElseThrow(() -> new CustomException("Licencia no encontrada con id: " + dto.getLicenseId()));
 
         BeanTemplateResponsive template = templateRepository.findByTemplateName("Plantilla de licencias")
                 .orElseThrow(() -> new CustomException("Plantilla 'Plantilla de licencias' no encontrada"));

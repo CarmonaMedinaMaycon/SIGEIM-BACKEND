@@ -505,88 +505,91 @@ public class PersonService {
     }
 
 
-    public ResponseLicenseDto getLicensesByPersonId(Long id) {
-        BeanLicense license = licenseRepository.findByPersonPersonId(id)
-                .orElse(null);
+    public List<ResponseLicenseDto> getLicensesByPersonId(Long id) {
+        List<BeanLicense> licenses = licenseRepository.findByPersonPersonId(id);
 
-        if (license == null) {
-            return null;
+
+        if (licenses == null || licenses.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        ResponseLicenseDto dto = new ResponseLicenseDto();
+        return licenses.stream().map(license -> {
+            ResponseLicenseDto dto = new ResponseLicenseDto();
 
-        // Office
-        dto.setOutlook(license.isOutlook());
-        dto.setAccountOutlook(license.getAccountOutlook());
-        dto.setTypeOutlook(license.getTypeOutlook());
-        dto.setAlias(license.getAliasOutlook());
-        dto.setMailbox(license.getMailboxOutlook());
-        dto.setCommentsOutlook(license.getCommentsOutlook());
-        dto.setPhoneNumber(license.getAuthPhoneNumber());
-        dto.setTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+            // Office
+            dto.setOutlook(license.isOutlook());
+            dto.setAccountOutlook(license.getAccountOutlook());
+            dto.setTypeOutlook(license.getTypeOutlook());
+            dto.setAlias(license.getAliasOutlook());
+            dto.setMailbox(license.getMailboxOutlook());
+            dto.setCommentsOutlook(license.getCommentsOutlook());
+            dto.setPhoneNumber(license.getAuthPhoneNumber());
+            dto.setTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
 
-        // CRM
-        dto.setCrm(license.isCrm());
-        dto.setUserCrm(license.getUserCrm());
-        dto.setTypeCrm(license.getTypeCrm());
-        dto.setCommentsCrm(license.getCommentsCrm());
+            // CRM
+            dto.setCrm(license.isCrm());
+            dto.setUserCrm(license.getUserCrm());
+            dto.setTypeCrm(license.getTypeCrm());
+            dto.setCommentsCrm(license.getCommentsCrm());
 
-        // Business Central
-        dto.setBc(license.isBc());
-        dto.setUserBc(license.getUserBc());
-        dto.setIdUserBc(license.getIdUserBc());
-        dto.setTypeBc(license.getTypeBc());
-        dto.setEnterpriseBc(license.getEnterpriseBc());
+            // Business Central
+            dto.setBc(license.isBc());
+            dto.setUserBc(license.getUserBc());
+            dto.setIdUserBc(license.getIdUserBc());
+            dto.setTypeBc(license.getTypeBc());
+            dto.setEnterpriseBc(license.getEnterpriseBc());
 
-        // PureCloud
-        dto.setPurecloud(license.isPurecloud());
-        dto.setUserPureCloud(license.getUserPureCloud());
-        dto.setIdUserPureCloud(license.getIdUserPureCloud());
+            // PureCloud
+            dto.setPurecloud(license.isPurecloud());
+            dto.setUserPureCloud(license.getUserPureCloud());
+            dto.setIdUserPureCloud(license.getIdUserPureCloud());
 
-        // RPA
-        dto.setRpa(license.isRpa());
-        dto.setUserRpa(license.getUserRpa());
-        dto.setModuleRpa(license.getModuleRpa());
-        dto.setEnterpriseRpa(license.getEnterpriseRpa());
+            // RPA
+            dto.setRpa(license.isRpa());
+            dto.setUserRpa(license.getUserRpa());
+            dto.setModuleRpa(license.getModuleRpa());
+            dto.setEnterpriseRpa(license.getEnterpriseRpa());
 
-        // Herramientas adicionales
-        dto.setTactical(license.isTactical());
+            // Herramientas adicionales
+            dto.setTactical(license.isTactical());
 
-        // Redes Sociales
-        dto.setInstagram(license.isInstagram());
-        dto.setUserInstagram(license.getUserInstagram());
-        dto.setFacebook(license.isFacebook());
-        dto.setUserFacebook(license.getUserFacebook());
-        dto.setTiktok(license.isTiktok());
-        dto.setUserTiktok(license.getUserTiktok());
-        dto.setLinkedin(license.isLinkedin());
-        dto.setUserLinkedin(license.getUserLinkedin());
-        dto.setYoutube(license.isYoutube());
-        dto.setUserYoutube(license.getUserYoutube());
+            // Redes Sociales
+            dto.setInstagram(license.isInstagram());
+            dto.setUserInstagram(license.getUserInstagram());
+            dto.setFacebook(license.isFacebook());
+            dto.setUserFacebook(license.getUserFacebook());
+            dto.setTiktok(license.isTiktok());
+            dto.setUserTiktok(license.getUserTiktok());
+            dto.setLinkedin(license.isLinkedin());
+            dto.setUserLinkedin(license.getUserLinkedin());
+            dto.setYoutube(license.isYoutube());
+            dto.setUserYoutube(license.getUserYoutube());
 
-        // Herramientas digitales
-        dto.setAdobe(license.isAdobe());
-        dto.setMailchimp(license.isMailchimp());
-        dto.setLinktree(license.isLinktree());
+            // Herramientas digitales
+            dto.setAdobe(license.isAdobe());
+            dto.setMailchimp(license.isMailchimp());
+            dto.setLinktree(license.isLinktree());
 
-        // E-commerce
-        dto.setMagento(license.isMagento());
-        dto.setMagentoUser(license.getMagentoUser());
-        dto.setShopify(license.isShopify());
-        dto.setUserShopify(license.getUserShopify());
-        dto.setMercadoLibre(license.isMercadoLibre());
-        dto.setAmazon(license.isAmazon());
-        dto.setConekta(license.isConekta());
-        dto.setOpenPay(license.isOpenPay());
-        dto.setKuesky(license.isKuesky());
+            // E-commerce
+            dto.setMagento(license.isMagento());
+            dto.setMagentoUser(license.getMagentoUser());
+            dto.setShopify(license.isShopify());
+            dto.setUserShopify(license.getUserShopify());
+            dto.setMercadoLibre(license.isMercadoLibre());
+            dto.setAmazon(license.isAmazon());
+            dto.setConekta(license.isConekta());
+            dto.setOpenPay(license.isOpenPay());
+            dto.setKuesky(license.isKuesky());
 
-        // Autenticación extra
-        dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
-        dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
-        dto.setAuthDepartament(license.getAuthDepartament());
-        dto.setStatus(license.isStatus());
+            // Autenticación extra
+            dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
+            dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+            dto.setAuthDepartament(license.getAuthDepartament());
+            dto.setStatus(license.isStatus());
 
-        return dto;
+            return dto;
+        }).collect(Collectors.toList());
+
     }
 
 

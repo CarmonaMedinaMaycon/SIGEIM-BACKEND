@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class RequestGenerateAccessResponsiveDto {
     private Long personId;
+    private Long licenseId;
 }

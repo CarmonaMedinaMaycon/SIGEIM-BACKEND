@@ -11,6 +11,8 @@ import java.util.Optional;
 
 public interface ILicense extends JpaRepository<BeanLicense, Long> {
 
+    Optional<BeanLicense> findById(Long id);
+
     @Query("SELECT l FROM BeanLicense l " +
             "JOIN l.person p " + // Unir con BeanPerson
             "WHERE (:search IS NULL OR " +
@@ -57,16 +59,19 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
     );
 
     @Query("""
-    SELECT l FROM BeanLicense l\s
-    WHERE l.person.personId NOT IN (
-        SELECT rl.license.person.personId\s
-        FROM BeanResponsiveLicenses rl\s
-        WHERE rl.status <> com.grupoeimsa.sigeim.models.responsives.model.EStatus.CANCELADA
+    SELECT l FROM BeanLicense l
+    WHERE l.status = true
+    AND NOT EXISTS (
+        SELECT 1 FROM BeanResponsiveLicenses rl
+        WHERE rl.license.licensesId = l.licensesId
+        AND rl.status <> com.grupoeimsa.sigeim.models.responsives.model.EStatus.CANCELADA
     )
 """)
     List<BeanLicense> findAvailableForAccessResponsive();
 
-    Optional<BeanLicense> findByPersonPersonId(Long personId);
+
+
+    List<BeanLicense> findByPersonPersonId(Long personId);
 
 
 }
