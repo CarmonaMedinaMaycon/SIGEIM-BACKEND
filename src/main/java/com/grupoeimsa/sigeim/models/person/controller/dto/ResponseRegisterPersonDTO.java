@@ -36,6 +36,7 @@ public class ResponseRegisterPersonDTO {
     private String dateEnd ;
     private LocalDate entryDate;
     private Boolean status;
+    private String executiveCode;
     private BeanUser user;
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipament;
@@ -62,6 +63,7 @@ public class ResponseRegisterPersonDTO {
         this.dateEnd = beanPerson.getDateEnd();
         this.entryDate = beanPerson.getEntryDate();
         this.status = beanPerson.getStatus();
+        this.executiveCode = beanPerson.getExecutiveCode();
         this.cellphone = beanPerson.getCellphone();
         this.computerEquipament = beanPerson.getComputerEquipaments();
         this.license = beanPerson.getLicenses();

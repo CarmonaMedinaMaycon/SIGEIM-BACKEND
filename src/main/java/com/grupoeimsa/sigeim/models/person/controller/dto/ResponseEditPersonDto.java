@@ -26,4 +26,5 @@ public class ResponseEditPersonDto {
     private String commentsHardwareSoftware;
     private String commentsEmail;
     private LocalDate entryDate;
+    private String executiveCode;
 }

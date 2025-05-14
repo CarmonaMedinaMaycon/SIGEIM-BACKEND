@@ -37,6 +37,7 @@ public class ResponsePersonDTO {
     private String dateEnd;
     private LocalDate entryDate;
     private Boolean status;
+    private String executiveCode;
     private List<BeanCellphone> cellphone;
     private List<BeanComputerEquipament> computerEquipaments; // Cambio aquí
     private List<BeanLicense> license;

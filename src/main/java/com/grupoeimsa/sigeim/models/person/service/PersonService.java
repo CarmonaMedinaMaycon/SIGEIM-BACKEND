@@ -108,6 +108,7 @@ public class PersonService {
         person.setDateEnd(responsePersonDTO.getDateEnd());
         person.setEntryDate(responsePersonDTO.getEntryDate());
         person.setStatus(true);
+        person.setExecutiveCode(responsePersonDTO.getExecutiveCode());
 
         sendNotification(person.getFullName(), person.getWhoRegistered(), person.getDateEnd());
 
@@ -275,6 +276,9 @@ public class PersonService {
         person.setCommentsHardwareSoftware(dto.getCommentsHardwareSoftware());
         person.setCommentsEmail(dto.getCommentsEmail());
         person.setEntryDate(dto.getEntryDate());
+        person.setExecutiveCode(dto.getExecutiveCode());
+
+        System.out.println("Codigo de empleado resivido: " + person.getExecutiveCode());
 
         personRepository.save(person);
     }
@@ -452,7 +456,8 @@ public class PersonService {
                 person.getPosition(),
                 person.getEntryDate(),
                 person.getPhoneNumber(),
-                person.getEmail()
+                person.getEmail(),
+                person.getExecutiveCode()
         );
     }
 

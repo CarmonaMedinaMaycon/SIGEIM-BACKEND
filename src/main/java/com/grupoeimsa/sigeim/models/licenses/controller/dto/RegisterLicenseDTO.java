@@ -25,6 +25,8 @@ public class RegisterLicenseDTO {
 
     private String commentsOutlook;
 
+    private Double importeOutlook;
+
     private String authPhoneNumber;
 
     private String authTwoFactorAuthenticationName;
@@ -41,6 +43,8 @@ public class RegisterLicenseDTO {
 
     private String commentsCrm;
 
+    private Double importeCrm;
+
     private boolean bc;
 
     private String userBc;
@@ -52,6 +56,8 @@ public class RegisterLicenseDTO {
     private String supplierBc;
 
     private String enterpriseBc;
+
+    private Double importeBc;
 
     private boolean purecloud;
 

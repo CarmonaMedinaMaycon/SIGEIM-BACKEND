@@ -72,8 +72,12 @@ public class BeanPerson {
 
     @Column(name = "email")
     private String email;
+
     @Column(name = "status")
     private Boolean status;
+
+    @Column(name = "executive_code")
+    private String executiveCode;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("person-cellphone")

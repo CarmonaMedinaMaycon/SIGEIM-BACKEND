@@ -53,7 +53,8 @@ public class CellphoneService {
                         cb.like(cb.lower(root.get("legalName")), likeValue),
                         cb.like(cb.lower(root.get("company")), likeValue),
                         cb.like(cb.lower(cb.function("CAST", String.class, root.get("shortDialing"))), likeValue),
-                        cb.like(cb.lower(root.get("imei")), likeValue)
+                        cb.like(cb.lower(root.get("imei")), likeValue),
+                        cb.like(cb.lower(root.get("number")), likeValue)
                 );
             });
         }
@@ -205,7 +206,8 @@ public class CellphoneService {
                         cb.like(cb.lower(root.get("legalName")), likeValue),
                         cb.like(cb.lower(root.get("area")), likeValue),
                         cb.like(cb.lower(root.get("company")), likeValue),
-                        cb.like(cb.lower(root.get("imei")), likeValue)
+                        cb.like(cb.lower(root.get("imei")), likeValue),
+                        cb.like(cb.lower(root.get("number")), likeValue)
                 );
             });
         }
