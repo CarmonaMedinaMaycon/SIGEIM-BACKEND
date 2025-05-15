@@ -116,7 +116,7 @@ public class PersonService {
     }
 
     public void sendNotification(String userName, String whoRegistered, String dateEnd) {
-        sendEmail("dcarrillo@grupoeimsa.com", "Notificación de registro de usuario",
+        sendEmail("egonzalez@interferenciales.com.mx", "Notificación de registro de usuario - SIGEIM",
                 "Saludos Daniel se te informa que un nuevo usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
                         whoRegistered + " el registro finalizó: " + dateEnd);
     }
