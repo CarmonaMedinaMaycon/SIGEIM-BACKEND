@@ -110,6 +110,7 @@ public class CellphoneService {
         );
 
         cellphone.setStatus(true);
+        cellphone.setCostoEquipo(registerCellphone.getCostoEquipo());
         cellphone.setWhatsappBussiness(registerCellphone.getWhatsappBussiness() != null && registerCellphone.getWhatsappBussiness());
 
         // Usuario asignado: si no se encuentra, lanza excepción
@@ -168,6 +169,7 @@ public class CellphoneService {
         cellphone.setStatus(true);
         cellphone.setNumber(registerCellphone.getNumber());
         cellphone.setArea(registerCellphone.getArea());
+        cellphone.setCostoEquipo(registerCellphone.getCostoEquipo());
 
         System.out.println("Usuario asignado" + registerCellphone.getPersonId());
 
@@ -240,7 +242,8 @@ public class CellphoneService {
                 c.getStatus(),
                 c.getNumber(),
                 c.getWhatsappBussiness() ? "Si" : "No",
-                c.getArea()
+                c.getArea(),
+                c.getCostoEquipo()
         ));
     }
 
@@ -261,7 +264,8 @@ public class CellphoneService {
                 cellphone.getComments(),
                 cellphone.getPerson() != null ? cellphone.getPerson().getPersonId() : null,
                 cellphone.getNumber(),
-                cellphone.getArea()
+                cellphone.getArea(),
+                cellphone.getCostoEquipo()
         );
     }
 
@@ -297,6 +301,7 @@ public class CellphoneService {
         // Encabezados personalizados
         String[] headers = {
                 "Razón Social",
+                "Costo del equipo",
                 "Usuario",
                 "Teléfono",
                 "Compañía",
@@ -322,18 +327,19 @@ public class CellphoneService {
             Row row = sheet.createRow(rowNum++);
 
             row.createCell(0).setCellValue(getSafeValue(cellphone.getLegalName()));
-            row.createCell(1).setCellValue(
+            row.createCell(1).setCellValue(getSafeValue(String.valueOf(cellphone.getCostoEquipo())));
+            row.createCell(2).setCellValue(
                     cellphone.getPerson() != null && !"Sistemas NA NA".equals(cellphone.getPerson().getFullName())
                             ? cellphone.getPerson().getFullName()
                             : "NA"
             );
-            row.createCell(2).setCellValue(getSafeValue(cellphone.getNumber()));
-            row.createCell(3).setCellValue(getSafeValue(cellphone.getCompany()));
-            row.createCell(4).setCellValue(getSafeValue(cellphone.getArea()));
-            row.createCell(5).setCellValue(getSafeValue(cellphone.getShortDialing()));
+            row.createCell(3).setCellValue(getSafeValue(cellphone.getNumber()));
+            row.createCell(4).setCellValue(getSafeValue(cellphone.getCompany()));
+            row.createCell(5).setCellValue(getSafeValue(cellphone.getArea()));
+            row.createCell(6).setCellValue(getSafeValue(cellphone.getShortDialing()));
 
             // Fecha con formato
-            Cell dateCell = row.createCell(6);
+            Cell dateCell = row.createCell(7);
             if (cellphone.getDateRenovation() != null) {
                 dateCell.setCellValue(java.sql.Date.valueOf(cellphone.getDateRenovation()));
                 dateCell.setCellStyle(dateCellStyle);
@@ -341,12 +347,12 @@ public class CellphoneService {
                 dateCell.setCellValue("");
             }
 
-            row.createCell(7).setCellValue(getSafeValue(cellphone.getEquipamentName()));
-            row.createCell(8).setCellValue(getSafeValue(cellphone.getImei()));
-            row.createCell(9).setCellValue(cellphone.getWhatsappBussiness() != null
+            row.createCell(8).setCellValue(getSafeValue(cellphone.getEquipamentName()));
+            row.createCell(9).setCellValue(getSafeValue(cellphone.getImei()));
+            row.createCell(10).setCellValue(cellphone.getWhatsappBussiness() != null
                     ? (cellphone.getWhatsappBussiness() ? "Sí" : "No")
                     : "Sin info");
-            row.createCell(10).setCellValue(getSafeValue(cellphone.getComments()));
+            row.createCell(11).setCellValue(getSafeValue(cellphone.getComments()));
         }
 
         // Ajuste de columnas

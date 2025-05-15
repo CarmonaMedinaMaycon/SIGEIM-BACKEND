@@ -16,5 +16,6 @@ public class ResponseTablePeopleDto {
     private String departament;
     private String phoneNumber;
     private Boolean status;
+    private String executiveCode;
     private List<String> equipamentsSerialNumber;
 }

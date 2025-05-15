@@ -24,4 +24,5 @@ public class CellphoneTableDto {
     private String number;
     private String whatsappBussiness;
     private String area;
+    private Double costoEquipo;
 }

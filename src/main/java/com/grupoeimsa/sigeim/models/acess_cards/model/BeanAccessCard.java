@@ -44,6 +44,9 @@ public class BeanAccessCard {
     @Column(name = "tecnical_service_warehouses_two", nullable = false)
     private boolean TechnicalServiceWarehousesTwo;
 
+    @Column(name = "access_card_number")
+    private String accessCardNumber;
+
     @OneToMany(mappedBy = "accessCard", cascade = CascadeType.ALL)
     private List<BeanResponsiveCards> responsives;
 

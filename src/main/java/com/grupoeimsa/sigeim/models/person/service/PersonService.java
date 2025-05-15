@@ -251,7 +251,7 @@ public class PersonService {
         dto.setCommentsHardwareSoftware(person.getCommentsHardwareSoftware());
         dto.setCommentsEmail(person.getCommentsEmail());
         dto.setEntryDate(person.getEntryDate());
-
+        dto.setExecutiveCode(person.getExecutiveCode());
         return dto;
     }
 
@@ -278,7 +278,7 @@ public class PersonService {
         person.setEntryDate(dto.getEntryDate());
         person.setExecutiveCode(dto.getExecutiveCode());
 
-        System.out.println("Codigo de empleado resivido: " + person.getExecutiveCode());
+        System.out.println("Codigo de empleado recibido: " + person.getExecutiveCode());
 
         personRepository.save(person);
     }
@@ -434,6 +434,7 @@ public class PersonService {
                     person.getDepartament(),
                     person.getPhoneNumber(),
                     person.getStatus(),
+                    person.getExecutiveCode(),
                     serials
             );
         }).collect(Collectors.toList());
