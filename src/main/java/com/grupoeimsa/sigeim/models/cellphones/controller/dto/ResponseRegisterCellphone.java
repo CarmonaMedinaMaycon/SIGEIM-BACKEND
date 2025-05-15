@@ -37,4 +37,6 @@ public class ResponseRegisterCellphone {
     private String area;
 
     private Long personId;
+
+    private Double costoEquipo;
 }

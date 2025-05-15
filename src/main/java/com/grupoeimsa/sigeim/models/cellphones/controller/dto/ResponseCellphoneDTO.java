@@ -41,6 +41,8 @@ public class ResponseCellphoneDTO {
 
     private Boolean whatsappBussiness;
 
+    private Double costoEquipo;
+
     private List<BeanResponsiveCellphone> responsiveCellphone;
 
     private List<BeanHistoryPhotosCellphone> historyPhotosCellphone;

@@ -72,6 +72,7 @@ public class LicenseService {
         license.setAliasOutlook(licenseDTO.getAliasOutlook());
         license.setMailboxOutlook(licenseDTO.getMailboxOutlook());
         license.setCommentsOutlook(licenseDTO.getCommentsOutlook());
+        license.setImporteOutlook(licenseDTO.getImporteOutlook());
         license.setAuthPhoneNumber(licenseDTO.getAuthPhoneNumber());
         license.setAuthTwoFactorAuthenticationName(licenseDTO.getAuthTwoFactorAuthenticationName());
         license.setAuthDepartament(licenseDTO.getAuthDepartament());
@@ -80,12 +81,14 @@ public class LicenseService {
         license.setTypeCrm(licenseDTO.getTypeCrm());
         license.setSupplierCrm(licenseDTO.getSupplierCrm());
         license.setCommentsCrm(licenseDTO.getCommentsCrm());
+        license.setImporteCrm(licenseDTO.getImporteCrm());
         license.setBc(licenseDTO.isBc());
         license.setUserBc(licenseDTO.getUserBc());
         license.setIdUserBc(licenseDTO.getIdUserBc());
         license.setTypeBc(licenseDTO.getTypeBc());
         license.setSupplierBc(licenseDTO.getSupplierBc());
         license.setEnterpriseBc(licenseDTO.getEnterpriseBc());
+        license.setImporteBc(licenseDTO.getImporteBc());
         license.setPurecloud(licenseDTO.isPurecloud());
         license.setUserPureCloud(licenseDTO.getUserPureCloud());
         license.setIdUserPureCloud(licenseDTO.getIdUserPureCloud());
@@ -137,6 +140,7 @@ public class LicenseService {
         license.setAliasOutlook(licenseDTO.getAliasOutlook());
         license.setMailboxOutlook(licenseDTO.getMailboxOutlook());
         license.setCommentsOutlook(licenseDTO.getCommentsOutlook());
+        license.setImporteOutlook(licenseDTO.getImporteOutlook());
         license.setAuthPhoneNumber(licenseDTO.getAuthPhoneNumber());
         license.setAuthTwoFactorAuthenticationName(licenseDTO.getAuthTwoFactorAuthenticationName());
         license.setAuthDepartament(licenseDTO.getAuthDepartament());
@@ -145,12 +149,14 @@ public class LicenseService {
         license.setTypeCrm(licenseDTO.getTypeCrm());
         license.setSupplierCrm(licenseDTO.getSupplierCrm());
         license.setCommentsCrm(licenseDTO.getCommentsCrm());
+        license.setImporteCrm(licenseDTO.getImporteCrm());
         license.setBc(licenseDTO.isBc());
         license.setUserBc(licenseDTO.getUserBc());
         license.setIdUserBc(licenseDTO.getIdUserBc());
         license.setTypeBc(licenseDTO.getTypeBc());
         license.setSupplierBc(licenseDTO.getSupplierBc());
         license.setEnterpriseBc(licenseDTO.getEnterpriseBc());
+        license.setImporteBc(licenseDTO.getImporteBc());
         license.setPurecloud(licenseDTO.isPurecloud());
         license.setUserPureCloud(licenseDTO.getUserPureCloud());
         license.setIdUserPureCloud(licenseDTO.getIdUserPureCloud());
@@ -201,18 +207,19 @@ public class LicenseService {
         // Definir los encabezados
         String[] headers = {
                 "Núm.",
+                "Código de ejecutivo",
                 "Persona",
                 "Empresa",
                 "Departamento",
                 "Puesto",
                 // Outlook
-                "Outlook", "Cuenta Outlook", "Tipo Outlook", "Proveedor Outlook", "Alias", "Mailbox", "Comentarios Outlook",
+                "Outlook", "Cuenta Outlook", "Tipo Outlook", "Proveedor Outlook", "Alias", "Mailbox", "Comentarios Outlook", "Importe Outlook",
                 // Autenticación
                 "Teléfono Auth", "Nombre 2FA", "Departamento Auth",
                 // CRM
-                "CRM", "Usuario CRM", "Tipo CRM", "Proveedor CRM", "Comentarios CRM",
+                "CRM", "Usuario CRM", "Tipo CRM", "Proveedor CRM", "Comentarios CRM", "Importe Crm",
                 // Business Central
-                "BC", "Usuario BC", "ID Usuario BC", "Tipo BC", "Proveedor BC", "Empresa BC",
+                "BC", "Usuario BC", "ID Usuario BC", "Tipo BC", "Proveedor BC", "Empresa BC", "Importe BC",
                 // PureCloud
                 "PureCloud", "Usuario PureCloud", "ID PureCloud",
                 // RPA
@@ -262,14 +269,15 @@ public class LicenseService {
             // Información básica
             row.createCell(0).setCellValue(rowNum - 1);
             if (license.getPerson() != null) {
-                row.createCell(1).setCellValue(getSafeValue(
+                row.createCell(1).setCellValue(getSafeValue(license.getPerson().getExecutiveCode()));
+                row.createCell(2).setCellValue(getSafeValue(
                         license.getPerson().getName() + " " +
                                 license.getPerson().getSurname() + " " +
                                 license.getPerson().getLastname()
                 ));
-                row.createCell(2).setCellValue(getSafeValue(license.getPerson().getEnterprise()));
-                row.createCell(3).setCellValue(getSafeValue(license.getPerson().getDepartament()));
-                row.createCell(4).setCellValue(getSafeValue(license.getPerson().getPosition()));
+                row.createCell(3).setCellValue(getSafeValue(license.getPerson().getEnterprise()));
+                row.createCell(4).setCellValue(getSafeValue(license.getPerson().getDepartament()));
+                row.createCell(5).setCellValue(getSafeValue(license.getPerson().getPosition()));
             } else {
                 for (int i = 1; i <= 4; i++) {
                     row.createCell(i).setCellValue("SIN-INF");
@@ -277,78 +285,82 @@ public class LicenseService {
             }
 
             // Outlook
-            row.createCell(5).setCellValue(boolToString(license.isOutlook()));
-            row.createCell(6).setCellValue(getSafeValue(license.getAccountOutlook()));
-            row.createCell(7).setCellValue(getSafeValue(license.getTypeOutlook()));
-            row.createCell(8).setCellValue(getSafeValue(license.getSupplierOutlook()));
-            row.createCell(9).setCellValue(getSafeValue(license.getAliasOutlook()));
-            row.createCell(10).setCellValue(getSafeValue(license.getMailboxOutlook()));
-            row.createCell(11).setCellValue(getSafeValue(license.getCommentsOutlook()));
+            row.createCell(6).setCellValue(boolToString(license.isOutlook()));
+            row.createCell(7).setCellValue(getSafeValue(license.getAccountOutlook()));
+            row.createCell(8).setCellValue(getSafeValue(license.getTypeOutlook()));
+            row.createCell(9).setCellValue(getSafeValue(license.getSupplierOutlook()));
+            row.createCell(10).setCellValue(getSafeValue(license.getAliasOutlook()));
+            row.createCell(11).setCellValue(getSafeValue(license.getMailboxOutlook()));
+            row.createCell(12).setCellValue(getSafeValue(license.getCommentsOutlook()));
+            row.createCell(13).setCellValue(getSafeDoubleValue(license.getImporteOutlook()));
 
-            // Autenticación
-            row.createCell(12).setCellValue(getSafeValue(license.getAuthPhoneNumber()));
-            row.createCell(13).setCellValue(getSafeValue(license.getAuthTwoFactorAuthenticationName()));
-            row.createCell(14).setCellValue(getSafeValue(license.getAuthDepartament()));
+// Autenticación
+            row.createCell(14).setCellValue(getSafeValue(license.getAuthPhoneNumber()));
+            row.createCell(15).setCellValue(getSafeValue(license.getAuthTwoFactorAuthenticationName()));
+            row.createCell(16).setCellValue(getSafeValue(license.getAuthDepartament()));
 
-            // CRM
-            row.createCell(15).setCellValue(boolToString(license.isCrm()));
-            row.createCell(16).setCellValue(getSafeValue(license.getUserCrm()));
-            row.createCell(17).setCellValue(getSafeValue(license.getTypeCrm()));
-            row.createCell(18).setCellValue(getSafeValue(license.getSupplierCrm()));
-            row.createCell(19).setCellValue(getSafeValue(license.getCommentsCrm()));
+// CRM
+            row.createCell(17).setCellValue(boolToString(license.isCrm()));
+            row.createCell(18).setCellValue(getSafeValue(license.getUserCrm()));
+            row.createCell(19).setCellValue(getSafeValue(license.getTypeCrm()));
+            row.createCell(20).setCellValue(getSafeValue(license.getSupplierCrm()));
+            row.createCell(21).setCellValue(getSafeValue(license.getCommentsCrm()));
+            row.createCell(22).setCellValue(getSafeDoubleValue(license.getImporteCrm()));
 
-            // Business Central
-            row.createCell(20).setCellValue(boolToString(license.isBc()));
-            row.createCell(21).setCellValue(getSafeValue(license.getUserBc()));
-            row.createCell(22).setCellValue(getSafeValue(license.getIdUserBc()));
-            row.createCell(23).setCellValue(getSafeValue(license.getTypeBc()));
-            row.createCell(24).setCellValue(getSafeValue(license.getSupplierBc()));
-            row.createCell(25).setCellValue(getSafeValue(license.getEnterpriseBc()));
+// Business Central
+            row.createCell(23).setCellValue(boolToString(license.isBc()));
+            row.createCell(24).setCellValue(getSafeValue(license.getUserBc()));
+            row.createCell(25).setCellValue(getSafeValue(license.getIdUserBc()));
+            row.createCell(26).setCellValue(getSafeValue(license.getTypeBc()));
+            row.createCell(27).setCellValue(getSafeValue(license.getSupplierBc()));
+            row.createCell(28).setCellValue(getSafeValue(license.getEnterpriseBc()));
+            row.createCell(29).setCellValue(getSafeDoubleValue(license.getImporteBc()));
 
-            // PureCloud
-            row.createCell(26).setCellValue(boolToString(license.isPurecloud()));
-            row.createCell(27).setCellValue(getSafeValue(license.getUserPureCloud()));
-            row.createCell(28).setCellValue(getSafeValue(license.getIdUserPureCloud()));
+// PureCloud
+            row.createCell(30).setCellValue(boolToString(license.isPurecloud()));
+            row.createCell(31).setCellValue(getSafeValue(license.getUserPureCloud()));
+            row.createCell(32).setCellValue(getSafeValue(license.getIdUserPureCloud()));
 
-            // RPA
-            row.createCell(29).setCellValue(boolToString(license.isRpa()));
-            row.createCell(30).setCellValue(getSafeValue(license.getUserRpa()));
-            row.createCell(31).setCellValue(getSafeValue(license.getModuleRpa()));
-            row.createCell(32).setCellValue(getSafeValue(license.getEnterpriseRpa()));
+// RPA
+            row.createCell(33).setCellValue(boolToString(license.isRpa()));
+            row.createCell(34).setCellValue(getSafeValue(license.getUserRpa()));
+            row.createCell(35).setCellValue(getSafeValue(license.getModuleRpa()));
+            row.createCell(36).setCellValue(getSafeValue(license.getEnterpriseRpa()));
 
-            // Otros
-            row.createCell(33).setCellValue(boolToString(license.isPowerbi()));
-            row.createCell(34).setCellValue(boolToString(license.isCopilot()));
-            row.createCell(35).setCellValue(boolToString(license.isTactical()));
+// Otros
+            row.createCell(37).setCellValue(boolToString(license.isPowerbi()));
+            row.createCell(38).setCellValue(boolToString(license.isCopilot()));
+            row.createCell(39).setCellValue(boolToString(license.isTactical()));
 
-            // Redes Sociales
-            row.createCell(36).setCellValue(boolToString(license.isInstagram()));
-            row.createCell(37).setCellValue(getSafeValue(license.getUserInstagram()));
-            row.createCell(38).setCellValue(boolToString(license.isFacebook()));
-            row.createCell(39).setCellValue(getSafeValue(license.getUserFacebook()));
-            row.createCell(40).setCellValue(boolToString(license.isTiktok()));
-            row.createCell(41).setCellValue(getSafeValue(license.getUserTiktok()));
-            row.createCell(42).setCellValue(boolToString(license.isLinkedin()));
-            row.createCell(43).setCellValue(getSafeValue(license.getUserLinkedin()));
-            row.createCell(44).setCellValue(boolToString(license.isYoutube()));
-            row.createCell(45).setCellValue(getSafeValue(license.getUserYoutube()));
+// Redes Sociales
+            row.createCell(40).setCellValue(boolToString(license.isInstagram()));
+            row.createCell(41).setCellValue(getSafeValue(license.getUserInstagram()));
+            row.createCell(42).setCellValue(boolToString(license.isFacebook()));
+            row.createCell(43).setCellValue(getSafeValue(license.getUserFacebook()));
+            row.createCell(44).setCellValue(boolToString(license.isTiktok()));
+            row.createCell(45).setCellValue(getSafeValue(license.getUserTiktok()));
+            row.createCell(46).setCellValue(boolToString(license.isLinkedin()));
+            row.createCell(47).setCellValue(getSafeValue(license.getUserLinkedin()));
+            row.createCell(48).setCellValue(boolToString(license.isYoutube()));
+            row.createCell(49).setCellValue(getSafeValue(license.getUserYoutube()));
 
-            // Plataformas
-            row.createCell(46).setCellValue(boolToString(license.isAdobe()));
-            row.createCell(47).setCellValue(boolToString(license.isMailchimp()));
-            row.createCell(48).setCellValue(boolToString(license.isLinktree()));
+// Plataformas
+            row.createCell(50).setCellValue(boolToString(license.isAdobe()));
+            row.createCell(51).setCellValue(boolToString(license.isMailchimp()));
+            row.createCell(52).setCellValue(boolToString(license.isLinktree()));
 
-            // E-commerce
-            row.createCell(49).setCellValue(boolToString(license.isMagento()));
-            row.createCell(50).setCellValue(getSafeValue(license.getMagentoUser()));
-            row.createCell(51).setCellValue(boolToString(license.isShopify()));
-            row.createCell(52).setCellValue(getSafeValue(license.getUserShopify()));
-            row.createCell(53).setCellValue(boolToString(license.isMercadoLibre()));
-            row.createCell(54).setCellValue(boolToString(license.isAmazon()));
-            row.createCell(55).setCellValue(boolToString(license.isConekta()));
-            row.createCell(56).setCellValue(boolToString(license.isOpenPay()));
-            row.createCell(57).setCellValue(boolToString(license.isKuesky()));
-            row.createCell(58).setCellValue(boolToString(license.isHasUsb()));
+// E-commerce
+            row.createCell(53).setCellValue(boolToString(license.isMagento()));
+            row.createCell(54).setCellValue(getSafeValue(license.getMagentoUser()));
+            row.createCell(55).setCellValue(boolToString(license.isShopify()));
+            row.createCell(56).setCellValue(getSafeValue(license.getUserShopify()));
+            row.createCell(57).setCellValue(boolToString(license.isMercadoLibre()));
+            row.createCell(58).setCellValue(boolToString(license.isAmazon()));
+            row.createCell(59).setCellValue(boolToString(license.isConekta()));
+            row.createCell(60).setCellValue(boolToString(license.isOpenPay()));
+            row.createCell(61).setCellValue(boolToString(license.isKuesky()));
+            row.createCell(62).setCellValue(boolToString(license.isHasUsb()));
+
         }
 
         // Ajustar tamaño de columnas para todas las filas
@@ -394,4 +406,5 @@ public class LicenseService {
     private String getSafeValue(String value) {
         return value != null ? value : "";
     }
+    private Double getSafeDoubleValue(Double value) {return value != null ? value : 0; }
 }

@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class ResponseLicencesPersonSelectDto {
     private Long personId;
     private String personName;
-    private Boolean hasLicence;
     private String departament;
     private String phoneNumber;
 }

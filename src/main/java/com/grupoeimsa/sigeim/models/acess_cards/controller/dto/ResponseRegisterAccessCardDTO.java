@@ -18,4 +18,5 @@ public class ResponseRegisterAccessCardDTO {
     private boolean technicalServiceWarehouses;
     private boolean technicalServiceWarehousesTwo;
     private Long personId;
+    private String accessCardNumber;
 }

@@ -108,6 +108,7 @@ public class PersonService {
         person.setDateEnd(responsePersonDTO.getDateEnd());
         person.setEntryDate(responsePersonDTO.getEntryDate());
         person.setStatus(true);
+        person.setExecutiveCode(responsePersonDTO.getExecutiveCode());
 
         sendNotification(person.getFullName(), person.getWhoRegistered(), person.getDateEnd());
 
@@ -115,7 +116,7 @@ public class PersonService {
     }
 
     public void sendNotification(String userName, String whoRegistered, String dateEnd) {
-        sendEmail("dcarrillo@grupoeimsa.com", "Notificación de registro de usuario",
+        sendEmail("egonzalez@interferenciales.com.mx", "Notificación de registro de usuario - SIGEIM",
                 "Saludos Daniel se te informa que un nuevo usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
                         whoRegistered + " el registro finalizó: " + dateEnd);
     }
@@ -187,20 +188,22 @@ public class PersonService {
         }
 
         // === 3. Dar de baja la licencia y cancelar sus responsivas ===
-        if (person.getLicense() != null) {
-            BeanLicense license = person.getLicense();
-            license.setStatus(false);
+        if (person.getLicenses() != null && !person.getLicenses().isEmpty()) {
+            for (BeanLicense license : person.getLicenses()) {
+                license.setStatus(false);
 
-            if (license.getResponsivesLicenses() != null) {
-                license.getResponsivesLicenses().forEach(responsive -> {
-                    if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
-                        responsive.setStatus(EStatus.CANCELADA);
-                    }
-                });
+                if (license.getResponsivesLicenses() != null) {
+                    license.getResponsivesLicenses().forEach(responsive -> {
+                        if (responsive.getStatus() == EStatus.ACTIVA_POR_FIRMAR || responsive.getStatus() == EStatus.ACTIVA_FIRMADA) {
+                            responsive.setStatus(EStatus.CANCELADA);
+                        }
+                    });
+                }
+
+                licenseRepository.save(license);
             }
-
-            licenseRepository.save(license);
         }
+
 
         // === 4. Reasignar equipos, cambiar estado y cancelar responsivas ===
         if (!person.getComputerEquipaments().isEmpty()) {
@@ -248,7 +251,7 @@ public class PersonService {
         dto.setCommentsHardwareSoftware(person.getCommentsHardwareSoftware());
         dto.setCommentsEmail(person.getCommentsEmail());
         dto.setEntryDate(person.getEntryDate());
-
+        dto.setExecutiveCode(person.getExecutiveCode());
         return dto;
     }
 
@@ -273,6 +276,9 @@ public class PersonService {
         person.setCommentsHardwareSoftware(dto.getCommentsHardwareSoftware());
         person.setCommentsEmail(dto.getCommentsEmail());
         person.setEntryDate(dto.getEntryDate());
+        person.setExecutiveCode(dto.getExecutiveCode());
+
+        System.out.println("Codigo de empleado recibido: " + person.getExecutiveCode());
 
         personRepository.save(person);
     }
@@ -299,7 +305,6 @@ public class PersonService {
                 .map(person -> new ResponseLicencesPersonSelectDto(
                         person.getPersonId(),
                         person.getFullName(),
-                        person.getLicense() != null,
                         person.getDepartament(),
                         person.getPhoneNumber()
                 ))
@@ -323,7 +328,7 @@ public class PersonService {
                 p.getFullName(),
                 p.getDepartament(),
                 p.getEnterprise(),
-                p.getLicense() != null,
+                p.getLicenses() != null,
                 p.getCellphone() != null && !p.getCellphone().isEmpty()
         )).toList();
     }
@@ -429,6 +434,7 @@ public class PersonService {
                     person.getDepartament(),
                     person.getPhoneNumber(),
                     person.getStatus(),
+                    person.getExecutiveCode(),
                     serials
             );
         }).collect(Collectors.toList());
@@ -451,7 +457,8 @@ public class PersonService {
                 person.getPosition(),
                 person.getEntryDate(),
                 person.getPhoneNumber(),
-                person.getEmail()
+                person.getEmail(),
+                person.getExecutiveCode()
         );
     }
 
@@ -504,88 +511,91 @@ public class PersonService {
     }
 
 
-    public ResponseLicenseDto getLicensesByPersonId(Long id) {
-        BeanLicense license = licenseRepository.findByPersonPersonId(id)
-                .orElse(null);
+    public List<ResponseLicenseDto> getLicensesByPersonId(Long id) {
+        List<BeanLicense> licenses = licenseRepository.findByPersonPersonId(id);
 
-        if (license == null) {
-            return null;
+
+        if (licenses == null || licenses.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        ResponseLicenseDto dto = new ResponseLicenseDto();
+        return licenses.stream().map(license -> {
+            ResponseLicenseDto dto = new ResponseLicenseDto();
 
-        // Office
-        dto.setOutlook(license.isOutlook());
-        dto.setAccountOutlook(license.getAccountOutlook());
-        dto.setTypeOutlook(license.getTypeOutlook());
-        dto.setAlias(license.getAliasOutlook());
-        dto.setMailbox(license.getMailboxOutlook());
-        dto.setCommentsOutlook(license.getCommentsOutlook());
-        dto.setPhoneNumber(license.getAuthPhoneNumber());
-        dto.setTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+            // Office
+            dto.setOutlook(license.isOutlook());
+            dto.setAccountOutlook(license.getAccountOutlook());
+            dto.setTypeOutlook(license.getTypeOutlook());
+            dto.setAlias(license.getAliasOutlook());
+            dto.setMailbox(license.getMailboxOutlook());
+            dto.setCommentsOutlook(license.getCommentsOutlook());
+            dto.setPhoneNumber(license.getAuthPhoneNumber());
+            dto.setTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
 
-        // CRM
-        dto.setCrm(license.isCrm());
-        dto.setUserCrm(license.getUserCrm());
-        dto.setTypeCrm(license.getTypeCrm());
-        dto.setCommentsCrm(license.getCommentsCrm());
+            // CRM
+            dto.setCrm(license.isCrm());
+            dto.setUserCrm(license.getUserCrm());
+            dto.setTypeCrm(license.getTypeCrm());
+            dto.setCommentsCrm(license.getCommentsCrm());
 
-        // Business Central
-        dto.setBc(license.isBc());
-        dto.setUserBc(license.getUserBc());
-        dto.setIdUserBc(license.getIdUserBc());
-        dto.setTypeBc(license.getTypeBc());
-        dto.setEnterpriseBc(license.getEnterpriseBc());
+            // Business Central
+            dto.setBc(license.isBc());
+            dto.setUserBc(license.getUserBc());
+            dto.setIdUserBc(license.getIdUserBc());
+            dto.setTypeBc(license.getTypeBc());
+            dto.setEnterpriseBc(license.getEnterpriseBc());
 
-        // PureCloud
-        dto.setPurecloud(license.isPurecloud());
-        dto.setUserPureCloud(license.getUserPureCloud());
-        dto.setIdUserPureCloud(license.getIdUserPureCloud());
+            // PureCloud
+            dto.setPurecloud(license.isPurecloud());
+            dto.setUserPureCloud(license.getUserPureCloud());
+            dto.setIdUserPureCloud(license.getIdUserPureCloud());
 
-        // RPA
-        dto.setRpa(license.isRpa());
-        dto.setUserRpa(license.getUserRpa());
-        dto.setModuleRpa(license.getModuleRpa());
-        dto.setEnterpriseRpa(license.getEnterpriseRpa());
+            // RPA
+            dto.setRpa(license.isRpa());
+            dto.setUserRpa(license.getUserRpa());
+            dto.setModuleRpa(license.getModuleRpa());
+            dto.setEnterpriseRpa(license.getEnterpriseRpa());
 
-        // Herramientas adicionales
-        dto.setTactical(license.isTactical());
+            // Herramientas adicionales
+            dto.setTactical(license.isTactical());
 
-        // Redes Sociales
-        dto.setInstagram(license.isInstagram());
-        dto.setUserInstagram(license.getUserInstagram());
-        dto.setFacebook(license.isFacebook());
-        dto.setUserFacebook(license.getUserFacebook());
-        dto.setTiktok(license.isTiktok());
-        dto.setUserTiktok(license.getUserTiktok());
-        dto.setLinkedin(license.isLinkedin());
-        dto.setUserLinkedin(license.getUserLinkedin());
-        dto.setYoutube(license.isYoutube());
-        dto.setUserYoutube(license.getUserYoutube());
+            // Redes Sociales
+            dto.setInstagram(license.isInstagram());
+            dto.setUserInstagram(license.getUserInstagram());
+            dto.setFacebook(license.isFacebook());
+            dto.setUserFacebook(license.getUserFacebook());
+            dto.setTiktok(license.isTiktok());
+            dto.setUserTiktok(license.getUserTiktok());
+            dto.setLinkedin(license.isLinkedin());
+            dto.setUserLinkedin(license.getUserLinkedin());
+            dto.setYoutube(license.isYoutube());
+            dto.setUserYoutube(license.getUserYoutube());
 
-        // Herramientas digitales
-        dto.setAdobe(license.isAdobe());
-        dto.setMailchimp(license.isMailchimp());
-        dto.setLinktree(license.isLinktree());
+            // Herramientas digitales
+            dto.setAdobe(license.isAdobe());
+            dto.setMailchimp(license.isMailchimp());
+            dto.setLinktree(license.isLinktree());
 
-        // E-commerce
-        dto.setMagento(license.isMagento());
-        dto.setMagentoUser(license.getMagentoUser());
-        dto.setShopify(license.isShopify());
-        dto.setUserShopify(license.getUserShopify());
-        dto.setMercadoLibre(license.isMercadoLibre());
-        dto.setAmazon(license.isAmazon());
-        dto.setConekta(license.isConekta());
-        dto.setOpenPay(license.isOpenPay());
-        dto.setKuesky(license.isKuesky());
+            // E-commerce
+            dto.setMagento(license.isMagento());
+            dto.setMagentoUser(license.getMagentoUser());
+            dto.setShopify(license.isShopify());
+            dto.setUserShopify(license.getUserShopify());
+            dto.setMercadoLibre(license.isMercadoLibre());
+            dto.setAmazon(license.isAmazon());
+            dto.setConekta(license.isConekta());
+            dto.setOpenPay(license.isOpenPay());
+            dto.setKuesky(license.isKuesky());
 
-        // Autenticación extra
-        dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
-        dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
-        dto.setAuthDepartament(license.getAuthDepartament());
-        dto.setStatus(license.isStatus());
+            // Autenticación extra
+            dto.setAuthPhoneNumber(license.getAuthPhoneNumber());
+            dto.setAuthTwoFactorAuthenticationName(license.getAuthTwoFactorAuthenticationName());
+            dto.setAuthDepartament(license.getAuthDepartament());
+            dto.setStatus(license.isStatus());
 
-        return dto;
+            return dto;
+        }).collect(Collectors.toList());
+
     }
 
 

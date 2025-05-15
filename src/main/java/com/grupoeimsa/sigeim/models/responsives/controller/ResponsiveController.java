@@ -21,6 +21,8 @@ import com.grupoeimsa.sigeim.models.responsives.model.BeanResponsiveEquipaments;
 import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveEquipments;
 import com.grupoeimsa.sigeim.models.responsives.service.ResponsiveService;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -47,6 +49,9 @@ import java.util.Optional;
 @RequestMapping("api/sigeim/responsives")
 @CrossOrigin(origins = {"*"})
 public class ResponsiveController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResponsiveService.class);
+
 
     private final ResponsiveService responsiveService;
 
@@ -372,9 +377,13 @@ public class ResponsiveController {
             responsiveService.generateAccessResponsive(dto);
             return ResponseEntity.ok().build();
         } catch (CustomException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", e.getMessage()));
+            logger.warn("Error controlado: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Collections.singletonMap("message", "Error interno al generar la responsiva."));
+            logger.error("Error inesperado al generar la responsiva", e);
+            return ResponseEntity.internalServerError()
+                    .body(Collections.singletonMap("message", "Error interno al generar la responsiva: " + e.getMessage()));
         }
     }
 

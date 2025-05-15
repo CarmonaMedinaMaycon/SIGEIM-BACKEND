@@ -44,6 +44,9 @@ public class BeanLicense {
     @Column(name = "comments_outlook", nullable = false)
     private String commentsOutlook;
 
+    @Column(name = "importe_outlook")
+    private Double importeOutlook;
+
     @Column(name = "phone_authenticator", nullable = false)
     private String authPhoneNumber;
 
@@ -70,6 +73,9 @@ public class BeanLicense {
     @Column(name = "comments_crm", nullable = false)
     private String commentsCrm;
 
+    @Column(name = "importe_crm")
+    private Double importeCrm;
+
     @Column(name = "bc", nullable = false)
     private boolean bc;
 
@@ -87,6 +93,9 @@ public class BeanLicense {
 
     @Column(name = "enterprise_bc", nullable = false)
     private String enterpriseBc;
+
+    @Column(name = "importe_bc")
+    private Double importeBc;
 
     @Column(name = "purecloud", nullable = false)
     private boolean purecloud;
@@ -190,13 +199,11 @@ public class BeanLicense {
     @Column(name = "status", nullable = false)
     private boolean status;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
     @JsonBackReference("person-license")
     private BeanPerson person;
 
     @OneToMany(mappedBy = "license", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BeanResponsiveLicenses> responsivesLicenses;
-
-
 }

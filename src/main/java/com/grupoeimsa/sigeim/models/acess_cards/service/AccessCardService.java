@@ -75,7 +75,7 @@ public class AccessCardService {
         accessCard.setWarehouseBasement(dto.isWarehouseBasement());
         accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
         accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
-
+        accessCard.setAccessCardNumber(dto.getAccessCardNumber());
         accessCard.setPerson(person);
 
         accessCardRepository.save(accessCard);
@@ -95,7 +95,7 @@ public class AccessCardService {
         accessCard.setWarehouseBasement(dto.isWarehouseBasement());
         accessCard.setTechnicalServiceWarehouses(dto.isTechnicalServiceWarehouses());
         accessCard.setTechnicalServiceWarehousesTwo(dto.isTechnicalServiceWarehousesTwo());
-
+        accessCard.setAccessCardNumber(dto.getAccessCardNumber());
         // 🔁 Asignar la persona por ID
         BeanPerson person = personRepository.findById(dto.getPersonId())
                 .orElseThrow(() -> new CustomException("El usuario no fue encontrado"));
@@ -157,7 +157,8 @@ public class AccessCardService {
                 card.isMainWarehouse(),
                 card.isWarehouseBasement(),
                 card.isTechnicalServiceWarehouses(),
-                card.isTechnicalServiceWarehousesTwo()
+                card.isTechnicalServiceWarehousesTwo(),
+                card.getAccessCardNumber()
         ));
     }
 

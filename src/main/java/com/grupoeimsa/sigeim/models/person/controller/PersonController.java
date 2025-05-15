@@ -148,9 +148,11 @@ public class PersonController {
 
 
     @PostMapping("/license")
-    public ResponseEntity<ResponseLicenseDto> getLicenses(@RequestBody RequestPersonIdDto dto) {
-        return ResponseEntity.ok(personService.getLicensesByPersonId(dto.getId()));
+    public ResponseEntity<List<ResponseLicenseDto>> getLicenses(@RequestBody RequestPersonIdDto dto) {
+        List<ResponseLicenseDto> licenses = personService.getLicensesByPersonId(dto.getId());
+        return ResponseEntity.ok(licenses);
     }
+
 
     @PostMapping("/access-card")
     public ResponseEntity<ResponseAccessCardDto> getActiveAccessCard(@RequestBody RequestPersonIdDto dto) {

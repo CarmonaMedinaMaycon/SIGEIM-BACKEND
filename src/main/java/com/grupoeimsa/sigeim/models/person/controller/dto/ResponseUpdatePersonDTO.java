@@ -27,6 +27,7 @@ public class ResponseUpdatePersonDTO {
     private String commentsHardwareSoftware;
     private String commentsEmail;
     private String emailRegistered;
+    private String executiveCode;
 
 
     public ResponseUpdatePersonDTO(BeanPerson beanPerson) {
@@ -45,5 +46,6 @@ public class ResponseUpdatePersonDTO {
         this.emailRegistered = beanPerson.getEmailRegistered();
         this.commentsHardwareSoftware = beanPerson.getCommentsHardwareSoftware();
         this.commentsEmail = beanPerson.getCommentsEmail();
+        this.executiveCode = beanPerson.getExecutiveCode();
     }
 }
