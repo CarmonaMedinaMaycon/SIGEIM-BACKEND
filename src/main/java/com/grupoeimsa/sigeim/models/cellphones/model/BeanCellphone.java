@@ -26,6 +26,9 @@ public class BeanCellphone {
     @Column(name = "equipament_name", nullable = false)
     private String equipamentName;
 
+    @Column(name = "costo_equipo")
+    private Double costoEquipo;
+
     @Column(name = "legal_name", nullable = false)
     private String legalName;
 

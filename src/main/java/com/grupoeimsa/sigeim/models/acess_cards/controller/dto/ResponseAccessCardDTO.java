@@ -20,6 +20,7 @@ public class ResponseAccessCardDTO {
     private boolean warehouseBasement;
     private boolean technicalServiceWarehouses;
     private boolean technicalServiceWarehousesTwo;
+    private String accessCardNumber;
     private BeanPerson person;
 
     public ResponseAccessCardDTO(BeanAccessCard beanAccessCard) {
@@ -31,6 +32,7 @@ public class ResponseAccessCardDTO {
         this.warehouseBasement = beanAccessCard.isWarehouseBasement();
         this.technicalServiceWarehouses = beanAccessCard.isTechnicalServiceWarehouses();
         this.technicalServiceWarehousesTwo = beanAccessCard.isTechnicalServiceWarehousesTwo();
+        this.accessCardNumber = beanAccessCard.getAccessCardNumber();
         this.person = beanAccessCard.getPerson();
     }
 

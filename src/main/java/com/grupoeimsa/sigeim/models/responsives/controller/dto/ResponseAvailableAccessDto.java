@@ -6,4 +6,5 @@ import lombok.Data;
 public class ResponseAvailableAccessDto {
     private Long personId;
     private String fullName;
+    private Long licenseId;
 }

@@ -18,4 +18,5 @@ public class ResponseAccessCardTableDto {
     private boolean warehouseBasement;
     private boolean technicalServiceWarehouses;
     private boolean technicalServiceWarehousesTwo;
+    private String accessCardNumber;
 }

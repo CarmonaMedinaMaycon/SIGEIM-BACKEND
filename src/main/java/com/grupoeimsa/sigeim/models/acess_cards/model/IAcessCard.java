@@ -13,10 +13,12 @@ import java.util.Optional;
 public interface IAcessCard extends JpaRepository<BeanAccessCard, Long>, JpaSpecificationExecutor<BeanAccessCard> {
 
     @Query("SELECT a FROM BeanAccessCard a " +
-            "JOIN a.person p " + // Unir con la tabla person
-            "WHERE (:search IS NULL  OR p.name LIKE %:search% OR " + // Búsqueda por nombre en BeanPerson
-            "p.surname LIKE %:search% OR " + // Búsqueda por apellido paterno en BeanPerson
-            "p.lastname LIKE %:search%) AND " +  // Búsqueda por lastname
+            "JOIN a.person p " +
+            "WHERE (:search IS NULL OR " +
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(p.surname) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(p.lastname) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(a.accessCardNumber) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
             "(:departament IS NULL OR LOWER(p.departament) LIKE LOWER(CONCAT('%', :departament, '%'))) AND " +
             "(:enterprise IS NULL OR LOWER(p.enterprise) LIKE LOWER(CONCAT('%', :enterprise, '%'))) AND " +
             "(:status IS NULL OR p.status = :status)")
@@ -27,6 +29,7 @@ public interface IAcessCard extends JpaRepository<BeanAccessCard, Long>, JpaSpec
             @Param("status") Boolean status,
             Pageable pageable
     );
+
 
 
     @Query("""

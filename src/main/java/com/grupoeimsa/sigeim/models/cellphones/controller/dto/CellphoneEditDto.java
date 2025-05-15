@@ -22,4 +22,5 @@ public class CellphoneEditDto {
     private Long personId;
     private String number;
     private String area;
+    private Double costoEquipo;
 }

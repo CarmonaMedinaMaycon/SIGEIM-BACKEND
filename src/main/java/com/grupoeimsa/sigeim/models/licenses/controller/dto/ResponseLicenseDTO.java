@@ -35,6 +35,8 @@ public class ResponseLicenseDTO {
 
     private String commentsOutlook;
 
+    private Double importeOutlook;
+
     private String authPhoneNumber;
 
     private String authTwoFactorAuthenticationName;
@@ -51,6 +53,8 @@ public class ResponseLicenseDTO {
 
     private String commentsCrm;
 
+    private Double importeCrm;
+
     private boolean bc;
 
     private String userBc;
@@ -62,6 +66,8 @@ public class ResponseLicenseDTO {
     private String supplierBc;
 
     private String enterpriseBc;
+
+    private Double importeBc;
 
     private boolean purecloud;
 
@@ -146,6 +152,7 @@ public class ResponseLicenseDTO {
         this.aliasOutlook = license.getAliasOutlook();
         this.mailboxOutlook = license.getMailboxOutlook();
         this.commentsOutlook = license.getCommentsOutlook();
+        this.importeOutlook = license.getImporteOutlook();
         this.authPhoneNumber = license.getAuthPhoneNumber();
         this.authTwoFactorAuthenticationName = license.getAuthTwoFactorAuthenticationName();
         this.authDepartament = license.getAuthDepartament();
@@ -154,12 +161,14 @@ public class ResponseLicenseDTO {
         this.typeCrm = license.getTypeCrm();
         this.supplierCrm = license.getSupplierCrm();
         this.commentsCrm = license.getCommentsCrm();
+        this.importeCrm = license.getImporteCrm();
         this.bc = license.isBc();
         this.userBc = license.getUserBc();
         this.idUserBc = license.getIdUserBc();
         this.typeBc = license.getTypeBc();
         this.supplierBc = license.getSupplierBc();
         this.enterpriseBc = license.getEnterpriseBc();
+        this.importeBc = license.getImporteBc();
         this.purecloud = license.isPurecloud();
         this.userPureCloud = license.getUserPureCloud();
         this.idUserPureCloud = license.getIdUserPureCloud();
