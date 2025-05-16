@@ -197,6 +197,8 @@ public class ResponseLicenseDTO {
         this.userLinkedin = license.getUserLinkedin();
         this.youtube = license.isYoutube();
         this.userYoutube = license.getUserYoutube();
+        this.twitter = license.isTwitter();
+        this.userTwitter = license.getUserTwitter();
         this.adobe = license.isAdobe();
         this.mailchimp = license.isMailchimp();
         this.linktree = license.isLinktree();
@@ -209,6 +211,8 @@ public class ResponseLicenseDTO {
         this.conekta = license.isConekta();
         this.openPay = license.isOpenPay();
         this.kuesky = license.isKuesky();
+        this.payPal = license.isPayPal();
+        this.userPayPal = license.getUserPayPal();
         this.personId = license.getPerson() != null ? license.getPerson().getPersonId() : null;
         this.responsiveLicenseId =
                 license.getResponsivesLicenses() != null && !license.getResponsivesLicenses().isEmpty()
