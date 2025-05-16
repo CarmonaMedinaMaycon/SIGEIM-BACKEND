@@ -157,6 +157,12 @@ public class BeanLicense {
     @Column(name = "user_youtube", nullable = false)
     private String userYoutube;
 
+    @Column(name = "twitter", nullable = false)
+    private boolean twitter;
+
+    @Column(name = "user_twitter", nullable = false)
+    private String userTwitter;
+
     @Column(name = "adobe", nullable = false)
     private boolean adobe;
 
@@ -192,6 +198,12 @@ public class BeanLicense {
 
     @Column(name = "kuesky", nullable = false)
     private boolean kuesky;
+
+    @Column(name = "paypal", nullable = false)
+    private boolean payPal;
+
+    @Column(name = "user_paypal", nullable = false)
+    private String userPayPal;
 
     @Column(name = "has_usb", nullable = false)
     private boolean hasUsb;
