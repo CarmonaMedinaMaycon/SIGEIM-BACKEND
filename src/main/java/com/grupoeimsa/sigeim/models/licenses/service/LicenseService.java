@@ -251,7 +251,7 @@ public class LicenseService {
                 "Conekta",
                 "OpenPay",
                 "Kuesky",
-                "PayPal",
+                "PayPal", "Usuario PayPal",
                 "USB"
         };
 
@@ -353,27 +353,27 @@ public class LicenseService {
             row.createCell(47).setCellValue(getSafeValue(license.getUserLinkedin()));
             row.createCell(48).setCellValue(boolToString(license.isYoutube()));
             row.createCell(49).setCellValue(getSafeValue(license.getUserYoutube()));
-            row.createCell(48).setCellValue(boolToString(license.isTwitter()));
-            row.createCell(49).setCellValue(getSafeValue(license.getUserTwitter()));
+            row.createCell(50).setCellValue(boolToString(license.isTwitter()));
+            row.createCell(51).setCellValue(getSafeValue(license.getUserTwitter()));
 
 // Plataformas
-            row.createCell(50).setCellValue(boolToString(license.isAdobe()));
-            row.createCell(51).setCellValue(boolToString(license.isMailchimp()));
-            row.createCell(52).setCellValue(boolToString(license.isLinktree()));
+            row.createCell(52).setCellValue(boolToString(license.isAdobe()));
+            row.createCell(53).setCellValue(boolToString(license.isMailchimp()));
+            row.createCell(54).setCellValue(boolToString(license.isLinktree()));
 
 // E-commerce
-            row.createCell(53).setCellValue(boolToString(license.isMagento()));
-            row.createCell(54).setCellValue(getSafeValue(license.getMagentoUser()));
-            row.createCell(55).setCellValue(boolToString(license.isShopify()));
-            row.createCell(56).setCellValue(getSafeValue(license.getUserShopify()));
-            row.createCell(57).setCellValue(boolToString(license.isMercadoLibre()));
-            row.createCell(58).setCellValue(boolToString(license.isAmazon()));
-            row.createCell(59).setCellValue(boolToString(license.isConekta()));
-            row.createCell(60).setCellValue(boolToString(license.isOpenPay()));
-            row.createCell(61).setCellValue(boolToString(license.isKuesky()));
-            row.createCell(48).setCellValue(boolToString(license.isPayPal()));
-            row.createCell(49).setCellValue(getSafeValue(license.getUserPayPal()));
-            row.createCell(62).setCellValue(boolToString(license.isHasUsb()));
+            row.createCell(55).setCellValue(boolToString(license.isMagento()));
+            row.createCell(56).setCellValue(getSafeValue(license.getMagentoUser()));
+            row.createCell(57).setCellValue(boolToString(license.isShopify()));
+            row.createCell(58).setCellValue(getSafeValue(license.getUserShopify()));
+            row.createCell(59).setCellValue(boolToString(license.isMercadoLibre()));
+            row.createCell(60).setCellValue(boolToString(license.isAmazon()));
+            row.createCell(61).setCellValue(boolToString(license.isConekta()));
+            row.createCell(62).setCellValue(boolToString(license.isOpenPay()));
+            row.createCell(63).setCellValue(boolToString(license.isKuesky()));
+            row.createCell(64).setCellValue(boolToString(license.isPayPal()));
+            row.createCell(65).setCellValue(getSafeValue(license.getUserPayPal()));
+            row.createCell(66).setCellValue(boolToString(license.isHasUsb()));
 
         }
 
