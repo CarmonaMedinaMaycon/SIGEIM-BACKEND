@@ -98,6 +98,10 @@ public class EditLicenseDTO {
 
     private String userYoutube;
 
+    private boolean twitter;
+
+    private String userTwitter;
+
     private boolean adobe;
 
     private boolean mailchimp;
@@ -121,6 +125,10 @@ public class EditLicenseDTO {
     private boolean openPay;
 
     private boolean kuesky;
+
+    private boolean payPal;
+
+    private String userPayPal;
 
     private Long personId;
 

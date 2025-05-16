@@ -107,6 +107,8 @@ public class LicenseService {
         license.setUserLinkedin(licenseDTO.getUserLinkedin());
         license.setYoutube(licenseDTO.isYoutube());
         license.setUserYoutube(licenseDTO.getUserYoutube());
+        license.setTwitter(licenseDTO.isTwitter());
+        license.setUserTwitter(licenseDTO.getUserTwitter());
         license.setAdobe(licenseDTO.isAdobe());
         license.setMailchimp(licenseDTO.isMailchimp());
         license.setLinktree(licenseDTO.isLinktree());
@@ -119,6 +121,8 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
+        license.setPayPal(licenseDTO.isPayPal());
+        license.setUserPayPal(licenseDTO.getUserPayPal());
         license.setHasUsb(licenseDTO.isHasUsb());
         license.setStatus(true);
         BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
@@ -175,6 +179,8 @@ public class LicenseService {
         license.setUserLinkedin(licenseDTO.getUserLinkedin());
         license.setYoutube(licenseDTO.isYoutube());
         license.setUserYoutube(licenseDTO.getUserYoutube());
+        license.setTwitter(licenseDTO.isTwitter());
+        license.setUserTwitter(licenseDTO.getUserTwitter());
         license.setAdobe(licenseDTO.isAdobe());
         license.setMailchimp(licenseDTO.isMailchimp());
         license.setLinktree(licenseDTO.isLinktree());
@@ -187,6 +193,8 @@ public class LicenseService {
         license.setConekta(licenseDTO.isConekta());
         license.setOpenPay(licenseDTO.isOpenPay());
         license.setKuesky(licenseDTO.isKuesky());
+        license.setPayPal(licenseDTO.isPayPal());
+        license.setUserPayPal(licenseDTO.getUserPayPal());
         license.setHasUsb(licenseDTO.isHasUsb());
         BeanPerson person = personsRepository.findById(licenseDTO.getPersonId())
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + licenseDTO.getPersonId()));
@@ -232,6 +240,7 @@ public class LicenseService {
                 "TikTok", "Usuario TikTok",
                 "LinkedIn", "Usuario LinkedIn",
                 "YouTube", "Usuario YouTube",
+                "Twitter", "Usuario Twitter",
                 // Plataformas
                 "Adobe", "Mailchimp", "Linktree",
                 // E-commerce
@@ -242,6 +251,7 @@ public class LicenseService {
                 "Conekta",
                 "OpenPay",
                 "Kuesky",
+                "PayPal",
                 "USB"
         };
 
@@ -343,6 +353,8 @@ public class LicenseService {
             row.createCell(47).setCellValue(getSafeValue(license.getUserLinkedin()));
             row.createCell(48).setCellValue(boolToString(license.isYoutube()));
             row.createCell(49).setCellValue(getSafeValue(license.getUserYoutube()));
+            row.createCell(48).setCellValue(boolToString(license.isTwitter()));
+            row.createCell(49).setCellValue(getSafeValue(license.getUserTwitter()));
 
 // Plataformas
             row.createCell(50).setCellValue(boolToString(license.isAdobe()));
@@ -359,6 +371,8 @@ public class LicenseService {
             row.createCell(59).setCellValue(boolToString(license.isConekta()));
             row.createCell(60).setCellValue(boolToString(license.isOpenPay()));
             row.createCell(61).setCellValue(boolToString(license.isKuesky()));
+            row.createCell(48).setCellValue(boolToString(license.isPayPal()));
+            row.createCell(49).setCellValue(getSafeValue(license.getUserPayPal()));
             row.createCell(62).setCellValue(boolToString(license.isHasUsb()));
 
         }

@@ -42,8 +42,10 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
             "l.userTiktok LIKE %:search% OR " +
             "l.userLinkedin LIKE %:search% OR " +
             "l.userYoutube LIKE %:search% OR " +
+            "l.userTwitter LIKE %:search% OR " +
             "l.magentoUser LIKE %:search% OR " +
             "l.userShopify LIKE %:search% OR " +
+            "l.userPayPal LIKE %:search% OR " +
             "p.name LIKE %:search% OR " + // Búsqueda por nombre en BeanPerson
             "p.surname LIKE %:search% OR " + // Búsqueda por apellido paterno en BeanPerson
             "p.lastname LIKE %:search%) AND " + // Búsqueda por apellido materno en BeanPerson
