@@ -96,6 +96,8 @@ public class LicenseService {
         license.setUserRpa(licenseDTO.getUserRpa());
         license.setModuleRpa(licenseDTO.getModuleRpa());
         license.setEnterpriseRpa(licenseDTO.getEnterpriseRpa());
+        license.setPowerbi(licenseDTO.isPowerbi());
+        license.setCopilot(licenseDTO.isCopilot());
         license.setTactical(licenseDTO.isTactical());
         license.setInstagram(licenseDTO.isInstagram());
         license.setUserInstagram(licenseDTO.getUserInstagram());
@@ -168,6 +170,8 @@ public class LicenseService {
         license.setUserRpa(licenseDTO.getUserRpa());
         license.setModuleRpa(licenseDTO.getModuleRpa());
         license.setEnterpriseRpa(licenseDTO.getEnterpriseRpa());
+        license.setPowerbi(licenseDTO.isPowerbi());
+        license.setCopilot(licenseDTO.isCopilot());
         license.setTactical(licenseDTO.isTactical());
         license.setInstagram(licenseDTO.isInstagram());
         license.setUserInstagram(licenseDTO.getUserInstagram());
