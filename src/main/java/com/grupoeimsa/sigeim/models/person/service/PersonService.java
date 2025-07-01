@@ -117,7 +117,7 @@ public class PersonService {
 
     public void sendNotification(String userName, String whoRegistered, String dateEnd) {
         sendEmail("egonzalez@interferenciales.com.mx", "Notificación de registro de usuario - SIGEIM",
-                "Saludos Daniel se te informa que un nuevo usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
+                "Saludos Agente de Sistemas se te informa que un nuevo usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
                         whoRegistered + " el registro finalizó: " + dateEnd);
     }
 
@@ -126,6 +126,7 @@ public class PersonService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom("notificacionesigeim@grupoeimsa.com");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(text);
