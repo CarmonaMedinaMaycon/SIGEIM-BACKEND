@@ -79,6 +79,34 @@ public class BeanPerson {
     @Column(name = "executive_code")
     private String executiveCode;
 
+    //disablePerson
+
+    @Column(name = "exit_date")
+    private LocalDate exitDate;
+
+    @Column(name = "reason_for_exit")
+    private String reasonForExit;
+
+    @Column(name = "termination_comments")
+    private String terminationComments;
+
+    @Column(name = "termination_handle_by")
+    private String terminationHandleBy;
+
+    @Column(name = "email_termination_handler_by")
+    private String emailTerminationHandlerBy;
+
+    @Column(name = "delivered_equipment")
+    private Boolean deliveredEquipment;
+
+    @Column(name = "delivered_phone")
+    private Boolean deliveredPhone;
+
+    @Column(name = "delivered_access_card")
+    private Boolean deliveredAccessCard;
+
+
+
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("person-cellphone")
     private List<BeanCellphone> cellphone;

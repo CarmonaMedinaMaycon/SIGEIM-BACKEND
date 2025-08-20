@@ -1,6 +1,5 @@
 package com.grupoeimsa.sigeim.models.person.controller.dto;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,25 +9,19 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponsePersonalInfoDto {
-    private Long personId;
+public class ResponseDisablePersonDTO {
+    private Long id;
     private String name;
     private String surname;
     private String lastname;
-    private String enterprise;
-    private String departament;
-    private String position;
-    private LocalDate entryDate;
-    private String phoneNumber;
     private String email;
-    private String executiveCode;
-    private Boolean status;
-    private LocalDate exitDate;
     private String reasonForExit;
     private String terminationComments;
-    private String terminationHandleBy;
-    private String emailTerminationHandlerBy;
+    private LocalDate exitDate;
+    private String terminationHandledBy;
+    private String emailTerminationHandledBy;
     private Boolean deliveredEquipment;
     private Boolean deliveredPhone;
     private Boolean deliveredAccessCard;
+
 }

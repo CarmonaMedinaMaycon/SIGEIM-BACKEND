@@ -116,13 +116,24 @@ public class PersonService {
     }
 
     public void sendNotification(String userName, String whoRegistered, String dateEnd) {
-        sendEmail("egonzalez@interferenciales.com.mx", "Notificación de registro de usuario - SIGEIM",
+        sendEmail(new String[] {
+                        "egonzalez@interferenciales.com.mx",
+                }, "Notificación de registro de usuario - SIGEIM",
                 "Saludos Agente de Sistemas se te informa que un nuevo usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
                         whoRegistered + " el registro finalizó: " + dateEnd);
     }
 
+    public void sendNotificationDisable(String userName, String whoRegistered, LocalDate dateEnd) {
+        sendEmail(new String[] {
+                        "egonzalez@interferenciales.com.mx",
+                        "mcarmona@grupoeimsa.com"
+                }, "Notificación de Baja de usuario - SIGEIM",
+                "Saludos Agente de Sistemas se te informa que un se dio de baja el usuario ("+userName+")"+ " ha sido registrado en el sistema por " +
+                        whoRegistered + " la baja fue el: " + dateEnd + " podras ver los datos de baja en los detalles del usuario");
+    }
 
-    private void sendEmail(String to, String subject, String text) {
+
+    private void sendEmail(String[] to, String subject, String text) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -132,14 +143,14 @@ public class PersonService {
             helper.setText(text);
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new CustomException("Failed to send notification email");
+            throw new CustomException("Failed to send notification email " + e);
         }
     }
 
     @Transactional
-    public void enableDisable(Long id) {
+    public void enableDisable(ResponseDisablePersonDTO responseDisablePersonDTO) {
         // Buscar a la persona
-        BeanPerson person = personRepository.findById(id)
+        BeanPerson person = personRepository.findById(responseDisablePersonDTO.getId())
                 .orElseThrow(() -> new CustomException("Person not found"));
 
         // No se permite desactivar a "Sistemas"
@@ -226,6 +237,17 @@ public class PersonService {
 
         // === 5. Desactivar al empleado ===
         person.setStatus(false);
+        person.setReasonForExit(responseDisablePersonDTO.getReasonForExit());
+        person.setExitDate(responseDisablePersonDTO.getExitDate());
+        person.setTerminationComments(responseDisablePersonDTO.getTerminationComments());
+        person.setTerminationHandleBy(responseDisablePersonDTO.getTerminationHandledBy());
+        person.setEmailTerminationHandlerBy(responseDisablePersonDTO.getEmailTerminationHandledBy());
+        person.setDeliveredEquipment(responseDisablePersonDTO.getDeliveredEquipment());
+        person.setDeliveredPhone(responseDisablePersonDTO.getDeliveredPhone());
+        person.setDeliveredAccessCard(responseDisablePersonDTO.getDeliveredAccessCard());
+
+        sendNotificationDisable(person.getFullName(), person.getTerminationHandleBy(), person.getExitDate());
+
         personRepository.save(person);
     }
 
@@ -459,7 +481,16 @@ public class PersonService {
                 person.getEntryDate(),
                 person.getPhoneNumber(),
                 person.getEmail(),
-                person.getExecutiveCode()
+                person.getExecutiveCode(),
+                person.getStatus(),
+                person.getExitDate(),
+                person.getReasonForExit(),
+                person.getTerminationComments(),
+                person.getEmailTerminationHandlerBy(),
+                person.getTerminationHandleBy(),
+                person.getDeliveredAccessCard(),
+                person.getDeliveredEquipment(),
+                person.getDeliveredPhone()
         );
     }
 

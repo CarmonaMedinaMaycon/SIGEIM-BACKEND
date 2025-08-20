@@ -10,6 +10,8 @@ import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.responsives.model.EStatus;
 import com.grupoeimsa.sigeim.utils.CustomException;
 import jakarta.persistence.criteria.Join;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -179,6 +183,62 @@ public class AccessCardService {
 
         // 2. Eliminar la tarjeta del sistema
         accessCardRepository.delete(accessCard);
+    }
+
+    private String getSafeValue(Object value) {
+        return (value != null) ? value.toString() : "SIN-INF";
+    }
+
+    public byte[] generateExcel() throws IOException {
+        List<BeanAccessCard> accessCards = accessCardRepository.findAll();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Tarjetas de acceso");
+
+        String[] headers = { " # ", "Empleado", "Numero de tarjeta", "Servicio Tecnico", "Almacen principal", "Almacen Servicio Tecnico 1", "Almacen Servicio Tecnico 2", "Entre Edificios", "Puerta Principal", "Almacen Sotano", " " };
+
+        Row headerRow = sheet.createRow(0);
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // Ajustar el tamaño de las columnas de la cabecera
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        int rowNum = 1;
+        for (BeanAccessCard accessCard : accessCards) {
+            Row row = sheet.createRow(rowNum++);
+
+            row.createCell(0).setCellValue(rowNum - 1);
+            row.createCell(1).setCellValue(getSafeValue(accessCard.getPerson().getFullName()));
+            row.createCell(2).setCellValue(getSafeValue(accessCard.getAccessCardNumber()));
+            row.createCell(3).setCellValue((accessCard.isAccessTechnicalService() ? "Sí" : "No"));
+            row.createCell(4).setCellValue((accessCard.isMainWarehouse() ? "Sí" : "No"));
+            row.createCell(5).setCellValue((accessCard.isTechnicalServiceWarehouses() ? "Sí" : "No"));
+            row.createCell(6).setCellValue((accessCard.isTechnicalServiceWarehousesTwo() ? "Sí" : "No"));
+            row.createCell(7).setCellValue((accessCard.isAccessBetweenBuildings() ? "Sí" : "No"));
+            row.createCell(8).setCellValue((accessCard.isMainDoor() ? "Sí" : "No"));
+            row.createCell(9).setCellValue((accessCard.isWarehouseBasement() ? "Sí" : "No"));
+            row.createCell(10).setCellValue(getSafeValue(""));
+        }
+
+        for (int i = 0; i < headers.length-1; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        return baos.toByteArray();
     }
 
 

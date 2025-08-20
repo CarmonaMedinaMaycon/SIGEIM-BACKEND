@@ -73,9 +73,8 @@ public class PersonController {
 
     @PutMapping("/enable-disable")
     //    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
-    public ResponseEntity<String> enableDisable(@RequestBody Map < String, Object > requestBody){
-        Long id = Long.valueOf(requestBody.get("id").toString());
-        personService.enableDisable(id);
+    public ResponseEntity<String> enableDisable(@Valid @RequestBody ResponseDisablePersonDTO responseDisablePersonDTO){
+        personService.enableDisable(responseDisablePersonDTO);
         return new ResponseEntity<>(
                 "Person status modified",
                 HttpStatus.OK
