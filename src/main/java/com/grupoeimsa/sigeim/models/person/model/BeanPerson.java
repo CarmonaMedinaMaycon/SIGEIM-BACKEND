@@ -5,6 +5,8 @@ import com.grupoeimsa.sigeim.models.acess_cards.model.BeanAccessCard;
 import com.grupoeimsa.sigeim.models.cellphones.model.BeanCellphone;
 import com.grupoeimsa.sigeim.models.computing_equipaments.model.BeanComputerEquipament;
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
+import com.grupoeimsa.sigeim.models.tickets.model.BeanTicket;
+import com.grupoeimsa.sigeim.models.tickets.model.BeanTicketMessage;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -123,6 +125,12 @@ public class BeanPerson {
     @JsonManagedReference("person-accesscard")
     private BeanAccessCard accessCard;
 
+    @OneToMany(mappedBy = "person", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    @JsonManagedReference("person-tickets")
+    private List<BeanTicket> tickets;
+
+    @OneToMany(mappedBy = "personAuthor", fetch = FetchType.EAGER, orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<BeanTicketMessage> ticketMessages;
 
     public String getFullName() {
         return name + " " + lastname + (surname != null ? " " + surname : "");

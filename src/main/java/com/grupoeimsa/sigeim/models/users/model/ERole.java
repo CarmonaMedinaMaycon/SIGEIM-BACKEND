@@ -4,5 +4,7 @@ public enum ERole {
     ADMIN,
     RRHH,
     GUESS,
-    BETO
+    BETO,
+    TICKETS
+
 }
