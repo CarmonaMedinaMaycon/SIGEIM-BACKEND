@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -88,6 +89,27 @@ public class LicenseController {
         licenseService.deleteLicense(dto);
         System.out.println(dto.getLicenseId());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/types")
+    public List<String> getTypes() {
+        return licenseService.getAllTypes();
+    }
+
+    @GetMapping("/suppliers")
+    public List<String> getSuppliers() {
+        return licenseService.getAllSuppliers();
+    }
+
+    @PutMapping("/update-importe")
+    public ResponseEntity<String> updateImporte(
+            @RequestParam String category,
+            @RequestParam String type,
+            @RequestParam String supplier,
+            @RequestParam Double importe) {
+
+        int updated = licenseService.actualizarImporte(category, type, supplier, importe);
+        return ResponseEntity.ok(updated + " registros actualizados");
     }
 
 }

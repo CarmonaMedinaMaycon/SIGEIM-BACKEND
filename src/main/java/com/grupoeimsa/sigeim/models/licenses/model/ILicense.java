@@ -3,8 +3,10 @@ package com.grupoeimsa.sigeim.models.licenses.model;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,9 +73,48 @@ public interface ILicense extends JpaRepository<BeanLicense, Long> {
 """)
     List<BeanLicense> findAvailableForAccessResponsive();
 
-
-
     List<BeanLicense> findByPersonPersonId(Long personId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE BeanLicense l SET l.importeOutlook = :importe " +
+            "WHERE l.typeOutlook = :type AND l.supplierOutlook = :supplier")
+    int updateOutlookImporte(@Param("type") String type,
+                             @Param("supplier") String supplier,
+                             @Param("importe") Double importe);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE BeanLicense l SET l.importeCrm = :importe " +
+            "WHERE l.typeCrm = :type AND l.supplierCrm = :supplier")
+    int updateCrmImporte(@Param("type") String type,
+                         @Param("supplier") String supplier,
+                         @Param("importe") Double importe);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE BeanLicense l SET l.importeBc = :importe " +
+            "WHERE l.typeBc = :type AND l.supplierBc = :supplier")
+    int updateBcImporte(@Param("type") String type,
+                        @Param("supplier") String supplier,
+                        @Param("importe") Double importe);
+
+    // ---- SELECT para combos ----
+    @Query(value = "SELECT type_outlook FROM licenses WHERE type_outlook IS NOT NULL " +
+            "UNION " +
+            "SELECT type_crm FROM licenses WHERE type_crm IS NOT NULL " +
+            "UNION " +
+            "SELECT type_bc FROM licenses WHERE type_bc IS NOT NULL",
+            nativeQuery = true)
+    List<String> findAllTypes();
+
+    @Query(value = "SELECT supplier_outlook FROM licenses WHERE supplier_outlook IS NOT NULL " +
+            "UNION " +
+            "SELECT supplier_crm FROM licenses WHERE supplier_crm IS NOT NULL " +
+            "UNION " +
+            "SELECT supplier_bc FROM licenses WHERE supplier_bc IS NOT NULL",
+            nativeQuery = true)
+    List<String> findAllSuppliers();
 
 
 }

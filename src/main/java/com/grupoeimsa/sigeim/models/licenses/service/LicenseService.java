@@ -415,10 +415,25 @@ public class LicenseService {
         }
     }
 
-
-
     private String getSafeValue(String value) {
         return value != null ? value : "";
     }
     private Double getSafeDoubleValue(Double value) {return value != null ? value : 0; }
+
+    public int actualizarImporte(String category, String type, String supplier, Double nuevoImporte) {
+        return switch (category.toLowerCase()) {
+            case "outlook" -> licensesRepository.updateOutlookImporte(type, supplier, nuevoImporte);
+            case "crm"     -> licensesRepository.updateCrmImporte(type, supplier, nuevoImporte);
+            case "bc"      -> licensesRepository.updateBcImporte(type, supplier, nuevoImporte);
+            default        -> throw new IllegalArgumentException("Categoría no soportada: " + category);
+        };
+    }
+
+    public List<String> getAllTypes() {
+        return licensesRepository.findAllTypes();
+    }
+
+    public List<String> getAllSuppliers() {
+        return licensesRepository.findAllSuppliers();
+    }
 }
