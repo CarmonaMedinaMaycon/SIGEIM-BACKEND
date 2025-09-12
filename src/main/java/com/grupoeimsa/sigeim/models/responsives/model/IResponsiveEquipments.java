@@ -22,4 +22,14 @@ WHERE (:estado IS NULL OR r.status = :estado)
             Pageable pageable
     );
 
+
+    @Query("""
+SELECT p.email 
+FROM BeanResponsiveEquipaments r
+JOIN r.computerEquipament e
+JOIN e.person p
+WHERE r.responsiveEquipamentId = :id
+""")
+    String findEmailByResponsiveId(@Param("id") Long id);
+
 }
