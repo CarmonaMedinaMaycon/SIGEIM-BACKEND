@@ -40,6 +40,8 @@ import com.grupoeimsa.sigeim.models.responsives.model.IResponsiveLicenses;
 import com.grupoeimsa.sigeim.models.template_responsives.model.BeanTemplateResponsive;
 import com.grupoeimsa.sigeim.models.template_responsives.model.ITemplate;
 import com.grupoeimsa.sigeim.utils.CustomException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
@@ -73,6 +75,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -101,8 +105,10 @@ public class ResponsiveService {
     private final IResponsiveLicenses responsiveLicensesRepository;
     private final IResponsiveCards responsiveCardsRepository;
     private final IAcessCard acessCardRepository;
+    private final JavaMailSender mailSender;
 
-    public ResponsiveService(ITemplate templateRepository, IAcessCard acessCardRepository, IResponsiveLicenses responsiveLicensesRepository, ILicense licenseRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository, IResponsiveCards responsiveCardsRepository) {
+
+    public ResponsiveService(ITemplate templateRepository, IAcessCard acessCardRepository, IResponsiveLicenses responsiveLicensesRepository, ILicense licenseRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository, IResponsiveCards responsiveCardsRepository, JavaMailSender mailSender) {
         this.templateRepository = templateRepository;
         this.responsiveEquipmentRepository = responsiveEquipmentRepository;
         this.equipamentRepository = equipamentRepository;
@@ -112,8 +118,68 @@ public class ResponsiveService {
         this.responsiveLicensesRepository = responsiveLicensesRepository;
         this.responsiveCardsRepository = responsiveCardsRepository;
         this.acessCardRepository = acessCardRepository;
+        this.mailSender = mailSender;
     }
 
+    public void sendNotificationEditResponsive(String email) {
+        String htmlMessage = """
+<p>Saludos,</p>
+<p>Se informa que su responsiva de equipo de cómputo ha sido modificada. Un agente de Sistemas se pondrá en contacto con usted.</p>
+<br>
+<p>--<br>
+<b>NOTIFICACIONES SIGEIM | Sistemas</b><br>
+Oficina Cuernavaca | 777.317.70.34<br>
+Móvil | 55 2023 88 07
+</p>
+<p style="font-size: 10px; color: gray;">
+Aviso de Privacidad: Equipos Interferenciales de México S.A. de C.V., y sus empresas subsidiarias, filiales y afiliadas (en lo sucesivo "Equipos Interferenciales"), con domicilio en Privada de los Ríos No. 11 Col. Tlaltenango, Cuernavaca, Morelos, CP. 62170, utilizará sus datos personales recabados para: conformación, actualización y conservación de expedientes de clientes, consumidores y proveedores, efectuar la comercialización y distribución de nuestros productos y servicios (equipos, instrumentos e insumos médicos y hospitalarios), para verificar y confirmar su identidad, antecedentes crediticios y situación patrimonial en términos de apertura de créditos, para el cumplimiento de los términos y condiciones de la relación jurídica que exista o llegara a existir con el Titular por cuanto a los productos y servicios de equipos, instrumental e insumos médicos y hospitalarios que proporcionamos y que adquiere o solicitar y, para administrar los productos y servicios de equipos, instrumental e insumos médicos y hospitalarios que solicita o contrata con nosotros. Para mayor información acerca del tratamiento y de los derechos que puede hacer valer, usted puede acceder al aviso de privacidad integral a través de la página web de Equipos Interferenciales www.interferenciales.com.mx
+</p>
+""";
+
+        sendEmail(new String[] {
+                        email,"egonzalez@interferenciales.com.mx",
+                "mcarmona@grupoeimsa.com"
+                }, "Notificación de edicion en responsiva de computo - SIGEIM",
+                htmlMessage);
+    }
+
+    public void sendNotificationDisableResponsive(String email, String equipo) {
+        String htmlMessage = """
+<p>Saludos,</p>
+<p>Se informa que su responsiva de equipo de cómputo con número de serie %s ha sido cancelada y queda absuelto de cualquier responsabilidad.</p>
+<br>
+<p>--<br>
+<b>NOTIFICACIONES SIGEIM | Sistemas</b><br>
+Oficina Cuernavaca | 777.317.70.34<br>
+Móvil | 55 2023 88 07
+</p>
+<p style="font-size: 10px; color: gray;">
+Aviso de Privacidad: Equipos Interferenciales de México S.A. de C.V., y sus empresas subsidiarias, filiales y afiliadas (en lo sucesivo "Equipos Interferenciales"), con domicilio en Privada de los Ríos No. 11 Col. Tlaltenango, Cuernavaca, Morelos, CP. 62170, utilizará sus datos personales recabados para: conformación, actualización y conservación de expedientes de clientes, consumidores y proveedores, efectuar la comercialización y distribución de nuestros productos y servicios (equipos, instrumentos e insumos médicos y hospitalarios), para verificar y confirmar su identidad, antecedentes crediticios y situación patrimonial en términos de apertura de créditos, para el cumplimiento de los términos y condiciones de la relación jurídica que exista o llegara a existir con el Titular por cuanto a los productos y servicios de equipos, instrumental e insumos médicos y hospitalarios que proporcionamos y que adquiere o solicitar y, para administrar los productos y servicios de equipos, instrumental e insumos médicos y hospitalarios que solicita o contrata con nosotros. Para mayor información acerca del tratamiento y de los derechos que puede hacer valer, usted puede acceder al aviso de privacidad integral a través de la página web de Equipos Interferenciales www.interferenciales.com.mx
+</p>
+""".formatted(equipo);
+
+        sendEmail(new String[] {
+                        "egonzalez@interferenciales.com.mx",
+                        "mcarmona@grupoeimsa.com",
+                        email
+                }, "Notificación de cancelación en responsiva de cómputo - SIGEIM",
+                htmlMessage);
+    }
+
+
+    private void sendEmail(String[] to, String subject, String text) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("notificacionesigeim@grupoeimsa.com");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new CustomException("Failed to send notification email");
+        }
+    }
 
     public void generateResponsive(GenerateResponsiveDto dto) throws Exception {
 
@@ -244,6 +310,7 @@ public class ResponsiveService {
         responsive.setObservations(dto.getPlaceholders().get("observaciones"));
         responsive.setWhoGives(dto.getPlaceholders().get("sistemas"));
 
+
         responsiveEquipmentRepository.save(responsive);
 
         document.close();
@@ -308,6 +375,11 @@ public class ResponsiveService {
     public void updateResponsive(UpdateResponsiveDto dto) throws Exception {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(dto.getResponsiveId())
                 .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
+
+        String email = responsiveEquipmentRepository.findEmailByResponsiveId(dto.getResponsiveId());
+        if (email == null || email.isBlank()) {
+            throw new CustomException("La persona asociada a la responsiva no tiene email registrado");
+        }
 
         BeanTemplateResponsive template = templateRepository.findByTemplateName(dto.getTemplateName())
                 .orElseThrow(() -> new CustomException("Plantilla no encontrada"));
@@ -379,6 +451,8 @@ public class ResponsiveService {
         responsive.setWhoGives(dto.getPlaceholders().get("sistemas"));
         responsive.setModificationDate(LocalDate.now());
         responsive.setStatus(EStatus.ACTIVA_POR_FIRMAR);
+
+        sendNotificationEditResponsive(email);
 
         responsiveEquipmentRepository.save(responsive);
 
@@ -743,8 +817,10 @@ public class ResponsiveService {
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(responsiveId)
                 .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
+        String email = responsiveEquipmentRepository.findEmailByResponsiveId(responsiveId);
         responsive.setStatus(EStatus.CANCELADA);
         responsive.setModificationDate(LocalDate.now());
+        sendNotificationDisableResponsive(email, responsive.getComputerEquipament().getSerialNumber());
 
         responsiveEquipmentRepository.save(responsive);
     }

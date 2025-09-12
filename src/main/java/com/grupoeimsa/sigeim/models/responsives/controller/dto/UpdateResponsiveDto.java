@@ -12,6 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class UpdateResponsiveDto {
     private Long responsiveId;
+    private String email;
     private String templateName;
     private Map<String, String> placeholders;
     private List<Map<String, String>> equipaments;
