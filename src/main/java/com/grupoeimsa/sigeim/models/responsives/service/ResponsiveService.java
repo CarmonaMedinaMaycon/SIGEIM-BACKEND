@@ -13,6 +13,7 @@ import com.grupoeimsa.sigeim.models.computing_equipaments.model.IComputerEquipam
 import com.grupoeimsa.sigeim.models.licenses.model.BeanLicense;
 import com.grupoeimsa.sigeim.models.licenses.model.ILicense;
 import com.grupoeimsa.sigeim.models.person.model.BeanPerson;
+import com.grupoeimsa.sigeim.models.person.model.IPerson;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.DownloadResponsiveDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveCellphoneDto;
 import com.grupoeimsa.sigeim.models.responsives.controller.dto.GenerateResponsiveDto;
@@ -106,9 +107,10 @@ public class ResponsiveService {
     private final IResponsiveCards responsiveCardsRepository;
     private final IAcessCard acessCardRepository;
     private final JavaMailSender mailSender;
+    private final IPerson personRepository;
 
 
-    public ResponsiveService(ITemplate templateRepository, IAcessCard acessCardRepository, IResponsiveLicenses responsiveLicensesRepository, ILicense licenseRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository, IResponsiveCards responsiveCardsRepository, JavaMailSender mailSender) {
+    public ResponsiveService(ITemplate templateRepository, IAcessCard acessCardRepository, IResponsiveLicenses responsiveLicensesRepository, ILicense licenseRepository, IResponsiveCellphone responsiveCellphoneRepository, ICellphone cellphoneRepository, IResponsiveEquipments responsiveEquipmentRepository, IComputerEquipament equipamentRepository, IResponsiveCards responsiveCardsRepository, JavaMailSender mailSender, IPerson personRepository) {
         this.templateRepository = templateRepository;
         this.responsiveEquipmentRepository = responsiveEquipmentRepository;
         this.equipamentRepository = equipamentRepository;
@@ -119,6 +121,7 @@ public class ResponsiveService {
         this.responsiveCardsRepository = responsiveCardsRepository;
         this.acessCardRepository = acessCardRepository;
         this.mailSender = mailSender;
+        this.personRepository = personRepository;
     }
 
     public void sendNotificationEditResponsive(String email) {
@@ -376,7 +379,8 @@ Aviso de Privacidad: Equipos Interferenciales de México S.A. de C.V., y sus emp
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(dto.getResponsiveId())
                 .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
-        String email = responsiveEquipmentRepository.findEmailByResponsiveId(dto.getResponsiveId());
+        String email = getEmailForResponsible(responsive);
+
         if (email == null || email.isBlank()) {
             throw new CustomException("La persona asociada a la responsiva no tiene email registrado");
         }
@@ -461,6 +465,25 @@ Aviso de Privacidad: Equipos Interferenciales de México S.A. de C.V., y sus emp
         outputStream.close();
     }
 
+    public String getEmailForResponsible(BeanResponsiveEquipaments responsive) {
+        String responsibleName = responsive.getResponsibleName().toLowerCase().trim();
+
+        // Consulta todas las personas y filtra por coincidencia de nombre completo
+        List<BeanPerson> persons = personRepository.findAll();
+
+        for (BeanPerson p : persons) {
+            // Concatenamos los campos de la persona
+            String fullName = (p.getName() + " "  + p.getLastname() + (p.getSurname() != null ? " " + p.getSurname() : ""))
+                    .toLowerCase().trim();
+
+
+            if (fullName.equals(responsibleName)) {
+                return p.getEmail();
+            }
+        }
+
+        throw new CustomException("No se encontró el email del responsable de la responsiva");
+    }
 
 
     public Page<ResponseResponsiveEquipmentsDto> getResponsivesEquipments(RequestSearchResponsiveEquipmentsDto dto) {
@@ -817,7 +840,7 @@ Aviso de Privacidad: Equipos Interferenciales de México S.A. de C.V., y sus emp
         BeanResponsiveEquipaments responsive = responsiveEquipmentRepository.findById(responsiveId)
                 .orElseThrow(() -> new CustomException("Responsiva no encontrada"));
 
-        String email = responsiveEquipmentRepository.findEmailByResponsiveId(responsiveId);
+        String email = getEmailForResponsible(responsive);
         responsive.setStatus(EStatus.CANCELADA);
         responsive.setModificationDate(LocalDate.now());
         sendNotificationDisableResponsive(email, responsive.getComputerEquipament().getSerialNumber());
